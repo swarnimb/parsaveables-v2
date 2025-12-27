@@ -1,32 +1,46 @@
+import { lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { AnimatePresence } from 'framer-motion'
 
-// Pages (placeholders for now)
-import Login from '@/pages/Login'
-import Leaderboard from '@/pages/Leaderboard'
-import Rounds from '@/pages/Rounds'
-import Podcast from '@/pages/Podcast'
-import Activity from '@/pages/Activity'
-import Betting from '@/pages/Betting'
-import Dashboard from '@/pages/Dashboard'
-import About from '@/pages/About'
-import NotFound from '@/pages/NotFound'
+// Lazy load pages for code splitting
+const Login = lazy(() => import('@/pages/Login'))
+const Leaderboard = lazy(() => import('@/pages/Leaderboard'))
+const Rounds = lazy(() => import('@/pages/Rounds'))
+const Podcast = lazy(() => import('@/pages/Podcast'))
+const Activity = lazy(() => import('@/pages/Activity'))
+const Betting = lazy(() => import('@/pages/Betting'))
+const Dashboard = lazy(() => import('@/pages/Dashboard'))
+const About = lazy(() => import('@/pages/About'))
+const NotFound = lazy(() => import('@/pages/NotFound'))
 
 // Admin pages
-import ControlCenter from '@/pages/admin/ControlCenter'
-import BettingControls from '@/pages/admin/BettingControls'
-import ProcessScorecards from '@/pages/admin/ProcessScorecards'
+const ControlCenter = lazy(() => import('@/pages/admin/ControlCenter'))
+const BettingControls = lazy(() => import('@/pages/admin/BettingControls'))
+const ProcessScorecards = lazy(() => import('@/pages/admin/ProcessScorecards'))
 
 // Layout wrapper for authenticated pages
 import AppLayout from '@/components/layout/AppLayout'
+
+// Loading fallback component
+function PageLoader() {
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="flex flex-col items-center gap-3">
+        <div className="h-12 w-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
+        <p className="text-sm text-muted-foreground">Loading...</p>
+      </div>
+    </div>
+  )
+}
 
 // Animated Routes Component
 function AnimatedRoutes() {
   const location = useLocation()
 
   return (
-    <AnimatePresence mode="wait">
-      <Routes location={location} key={location.pathname}>
+    <Suspense fallback={<PageLoader />}>
+      <AnimatePresence mode="wait">
+        <Routes location={location} key={location.pathname}>
         {/* Public route */}
         <Route path="/login" element={<Login />} />
 
@@ -51,6 +65,7 @@ function AnimatedRoutes() {
         <Route path="*" element={<NotFound />} />
       </Routes>
     </AnimatePresence>
+    </Suspense>
   )
 }
 
