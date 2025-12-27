@@ -1,0 +1,201 @@
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '@/hooks/useAuth'
+import { playerAPI } from '@/services/api'
+
+export default function Login() {
+  const [mode, setMode] = useState('signin') // 'signin' or 'signup'
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [selectedPlayerId, setSelectedPlayerId] = useState('')
+  const [unclaimedPlayers, setUnclaimedPlayers] = useState([])
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
+
+  const { signIn, signUp, isAuthenticated, loading } = useAuth()
+  const navigate = useNavigate()
+
+  // Fetch unclaimed players when switching to signup mode
+  useEffect(() => {
+    if (mode === 'signup') {
+      playerAPI.getUnclaimedPlayers()
+        .then(setUnclaimedPlayers)
+        .catch(err => {
+          console.error('Error fetching players:', err)
+          console.error('Error message:', err.message)
+          console.error('Error details:', err.details)
+        })
+    }
+  }, [mode])
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated && !loading) {
+      navigate('/leaderboard')
+    }
+  }, [isAuthenticated, loading, navigate])
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setErrorMessage('')
+    setIsSubmitting(true)
+
+    try {
+      if (mode === 'signin') {
+        await signIn(email, password)
+      } else {
+        // Sign up mode
+        if (!selectedPlayerId) {
+          setErrorMessage('Please select your player name')
+          setIsSubmitting(false)
+          return
+        }
+        await signUp(email, password, parseInt(selectedPlayerId))
+      }
+      // Navigation will happen via useEffect when isAuthenticated becomes true
+    } catch (error) {
+      setErrorMessage(error.message || `Failed to ${mode === 'signin' ? 'sign in' : 'sign up'}`)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <p className="text-muted-foreground">Loading...</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-background px-4">
+      <div className="max-w-md w-full">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold mb-2">ParSaveables v2</h1>
+        </div>
+
+        {/* Auth Form */}
+        <div className="border border-border rounded-lg p-6 bg-card">
+          {/* Tabs */}
+          <div className="flex gap-2 mb-6 border-b border-border">
+            <button
+              type="button"
+              onClick={() => setMode('signin')}
+              className={`pb-2 px-4 font-medium transition-colors ${
+                mode === 'signin'
+                  ? 'text-primary border-b-2 border-primary'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Sign In
+            </button>
+            <button
+              type="button"
+              onClick={() => setMode('signup')}
+              className={`pb-2 px-4 font-medium transition-colors ${
+                mode === 'signup'
+                  ? 'text-primary border-b-2 border-primary'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Sign Up
+            </button>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Email */}
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium mb-2">
+                Email
+              </label>
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="w-full px-3 py-2 border border-input rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+                placeholder="you@example.com"
+              />
+            </div>
+
+            {/* Password */}
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium mb-2">
+                Password
+              </label>
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="w-full px-3 py-2 border border-input rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+                placeholder="••••••••"
+              />
+            </div>
+
+            {/* Player Selection (Sign Up only) */}
+            {mode === 'signup' && (
+              <div>
+                <label htmlFor="player" className="block text-sm font-medium mb-2">
+                  Select Your Player Name
+                </label>
+                <select
+                  id="player"
+                  value={selectedPlayerId}
+                  onChange={(e) => setSelectedPlayerId(e.target.value)}
+                  required
+                  className="w-full px-3 py-2 border border-input rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+                >
+                  <option value="">Choose your name...</option>
+                  {unclaimedPlayers.map(player => (
+                    <option key={player.id} value={player.id}>
+                      {player.player_name}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {unclaimedPlayers.length === 0
+                    ? 'Loading players...'
+                    : `${unclaimedPlayers.length} player(s) available`}
+                </p>
+              </div>
+            )}
+
+            {/* Error Message */}
+            {errorMessage && (
+              <div className="p-3 rounded-md bg-destructive/10 border border-destructive/20">
+                <p className="text-sm text-destructive">{errorMessage}</p>
+              </div>
+            )}
+
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full py-2 px-4 bg-primary text-primary-foreground rounded-md font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {isSubmitting
+                ? mode === 'signin' ? 'Signing in...' : 'Creating account...'
+                : mode === 'signin' ? 'Sign In' : 'Sign Up'}
+            </button>
+          </form>
+
+          {/* Note */}
+          {mode === 'signin' ? (
+            <p className="mt-4 text-xs text-muted-foreground text-center">
+              Don't have an account? Click "Sign Up" above
+            </p>
+          ) : (
+            <p className="mt-4 text-xs text-muted-foreground text-center">
+              Select your name from existing players to create your account
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}

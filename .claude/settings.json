@@ -1,0 +1,12 @@
+{
+  "project": "your-project-name",
+  "testCommand": "npm test",
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+
+  "paths": {
+    "src": "./src",
+    "tests": "./tests",
+    "docs": "./docs"
+  }
+}
