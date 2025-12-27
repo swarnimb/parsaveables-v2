@@ -1,11 +1,17 @@
 import { useState, useEffect } from 'react'
-import { Trophy, Coins, TrendingUp, Award, Calendar, Target, Flame } from 'lucide-react'
+import { Trophy, Coins, TrendingUp, Award, Calendar, Target, Flame, Swords, TrendingDown, ShoppingCart, Gift, DollarSign, XCircle, Ban, Sparkles } from 'lucide-react'
 import { supabase } from '@/services/supabase'
 import { eventAPI } from '@/services/api'
 import { getCurrentEvent } from '@/utils/seasonUtils'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import PageContainer from '@/components/layout/PageContainer'
+import { motion } from 'framer-motion'
+import { staggerContainer, staggerItem, cardHover, scaleIn } from '@/utils/animations'
+import { SkeletonStats, SkeletonCard } from '@/components/ui/skeleton'
+import Confetti, { useConfetti, confettiPresets } from '@/components/shared/Confetti'
+import CelebrationModal from '@/components/shared/CelebrationModal'
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState('points')
@@ -17,6 +23,8 @@ export default function Dashboard() {
   const [pulpStats, setPulpStats] = useState(null)
   const [transactions, setTransactions] = useState([])
   const [loading, setLoading] = useState(true)
+  const { confetti, trigger: triggerConfetti } = useConfetti()
+  const [celebration, setCelebration] = useState(null)
 
   // Fetch player data and events
   useEffect(() => {
@@ -175,18 +183,20 @@ export default function Dashboard() {
   }, [activeTab, player])
 
   const getTransactionIcon = (type) => {
-    const icons = {
-      'achievement_unlock': '🏆',
-      'round_placement': '📊',
-      'bet_win': '💰',
-      'bet_loss': '❌',
-      'challenge_win': '⚔️',
-      'challenge_loss': '💔',
-      'challenge_reject': '🚫',
-      'advantage_purchase': '🛒',
-      'weekly_bonus': '🎁'
+    const iconMap = {
+      'achievement_unlock': <Trophy className="h-5 w-5 text-yellow-600" />,
+      'round_placement': <TrendingUp className="h-5 w-5 text-blue-600" />,
+      'bet_win': <Coins className="h-5 w-5 text-green-600" />,
+      'bet_win_perfect': <Award className="h-5 w-5 text-green-600" />,
+      'bet_loss': <XCircle className="h-5 w-5 text-red-600" />,
+      'challenge_win': <Swords className="h-5 w-5 text-green-600" />,
+      'challenge_loss': <TrendingDown className="h-5 w-5 text-red-600" />,
+      'challenge_reject': <Ban className="h-5 w-5 text-orange-600" />,
+      'challenge_rejected_penalty': <Ban className="h-5 w-5 text-orange-600" />,
+      'advantage_purchase': <ShoppingCart className="h-5 w-5 text-purple-600" />,
+      'weekly_bonus': <Gift className="h-5 w-5 text-blue-600" />
     }
-    return icons[type] || '💵'
+    return iconMap[type] || <DollarSign className="h-5 w-5 text-muted-foreground" />
   }
 
   const getTransactionColor = (amount) => {
@@ -197,14 +207,21 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-6">
-        <p className="text-center text-muted-foreground">Loading...</p>
-      </div>
+      <PageContainer className="container mx-auto px-4 sm:px-6 py-8 max-w-6xl">
+        <div className="mb-8">
+          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-3">Dashboard</h1>
+        </div>
+        <SkeletonStats />
+        <div className="mt-6 space-y-4">
+          <SkeletonCard />
+          <SkeletonCard />
+        </div>
+      </PageContainer>
     )
   }
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 py-8 max-w-6xl">
+    <PageContainer className="container mx-auto px-4 sm:px-6 py-8 max-w-6xl">
       <div className="mb-8">
         <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-3">Dashboard</h1>
         <p className="text-base text-muted-foreground">
@@ -251,8 +268,14 @@ export default function Dashboard() {
           {/* Main Stats Grid */}
           {playerStats && (
             <>
-              <div className="grid md:grid-cols-4 gap-4">
-                <Card className="p-4">
+              <motion.div
+                className="grid md:grid-cols-4 gap-4"
+                variants={staggerContainer}
+                initial="initial"
+                animate="animate"
+              >
+                <motion.div variants={staggerItem} whileHover={cardHover.hover}>
+                  <Card className="p-4">
                   <div className="flex items-center gap-3">
                     <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
                       <Trophy className="h-5 w-5 text-primary" />
@@ -263,8 +286,10 @@ export default function Dashboard() {
                     </div>
                   </div>
                 </Card>
+                </motion.div>
 
-                <Card className="p-4">
+                <motion.div variants={staggerItem} whileHover={cardHover.hover}>
+                  <Card className="p-4">
                   <div className="flex items-center gap-3">
                     <div className="h-10 w-10 rounded-full bg-blue-500/10 flex items-center justify-center">
                       <Calendar className="h-5 w-5 text-blue-600" />
@@ -275,8 +300,10 @@ export default function Dashboard() {
                     </div>
                   </div>
                 </Card>
+                </motion.div>
 
-                <Card className="p-4">
+                <motion.div variants={staggerItem} whileHover={cardHover.hover}>
+                  <Card className="p-4">
                   <div className="flex items-center gap-3">
                     <div className="h-10 w-10 rounded-full bg-green-500/10 flex items-center justify-center">
                       <TrendingUp className="h-5 w-5 text-green-600" />
@@ -287,8 +314,10 @@ export default function Dashboard() {
                     </div>
                   </div>
                 </Card>
+                </motion.div>
 
-                <Card className="p-4">
+                <motion.div variants={staggerItem} whileHover={cardHover.hover}>
+                  <Card className="p-4">
                   <div className="flex items-center gap-3">
                     <div className="h-10 w-10 rounded-full bg-yellow-500/10 flex items-center justify-center">
                       <Award className="h-5 w-5 text-yellow-600" />
@@ -299,7 +328,8 @@ export default function Dashboard() {
                     </div>
                   </div>
                 </Card>
-              </div>
+                </motion.div>
+              </motion.div>
 
               {/* Performance Stats */}
               <Card className="p-6">
@@ -380,91 +410,213 @@ export default function Dashboard() {
 
         {/* PULPs Tab */}
         <TabsContent value="pulps" className="space-y-6">
-          {/* PULP Balance Card */}
-          <Card className="p-6">
-            <div className="flex items-center justify-between">
+          {/* Premium PULP Balance Card */}
+          <motion.div
+            variants={scaleIn}
+            initial="initial"
+            animate="animate"
+            className="relative overflow-hidden rounded-xl border-2 border-primary/20 bg-gradient-to-br from-primary/5 via-background to-primary/10 p-6 shadow-lg"
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent opacity-50"></div>
+
+            <div className="relative z-10 flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Coins className="h-8 w-8 text-primary" />
-                </div>
+                <motion.div
+                  animate={{
+                    scale: [1, 1.05, 1],
+                    rotate: [0, 5, -5, 0]
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                  className="h-16 w-16 rounded-full bg-primary/20 flex items-center justify-center relative"
+                >
+                  <div className="absolute inset-0 rounded-full bg-primary/30 blur-md"></div>
+                  <Coins className="h-8 w-8 text-primary relative z-10" />
+                </motion.div>
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">Your PULP Balance</p>
-                  <p className="text-4xl font-bold">{pulpBalance?.toLocaleString() || '0'}</p>
+                  <div className="flex items-center gap-2 mb-1">
+                    <p className="text-sm font-medium text-muted-foreground">Your PULP Balance</p>
+                    <motion.button
+                      whileHover={{ scale: 1.1, rotate: 10 }}
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => {
+                        triggerConfetti('win', { x: 0.3, y: 0.3 })
+                        setCelebration({
+                          title: 'You\'re Doing Great!',
+                          description: `You've earned ${pulpBalance?.toLocaleString() || '0'} PULPs total! Keep playing rounds, placing bets, and unlocking achievements to earn more!`,
+                          icon: <Sparkles className="h-12 w-12" />,
+                          accentColor: 'purple',
+                          confettiPreset: 'achievement',
+                          reward: null
+                        })
+                      }}
+                      className="h-6 w-6 rounded-full bg-yellow-500/20 hover:bg-yellow-500/30 flex items-center justify-center transition-colors"
+                    >
+                      <Sparkles className="h-4 w-4 text-yellow-600" />
+                    </motion.button>
+                  </div>
+                  <motion.p
+                    key={pulpBalance}
+                    initial={{ scale: 1.1, color: '#10b981' }}
+                    animate={{ scale: 1, color: 'inherit' }}
+                    transition={{ duration: 0.3 }}
+                    className="text-4xl font-bold tracking-tight"
+                  >
+                    {pulpBalance?.toLocaleString() || '0'}
+                    <span className="text-lg font-semibold text-muted-foreground ml-2">PULPs</span>
+                  </motion.p>
                 </div>
               </div>
               <a
                 href="/betting"
-                className="text-primary hover:underline text-sm"
+                className="flex items-center gap-2 text-sm font-medium text-primary hover:underline"
               >
                 Go to Betting →
               </a>
             </div>
-          </Card>
+          </motion.div>
 
           {/* Earnings Breakdown */}
           {pulpStats && (
-            <div className="grid md:grid-cols-4 gap-4">
-              <Card className="p-4">
-                <p className="text-sm text-muted-foreground mb-1">Total Earned</p>
-                <p className="text-2xl font-bold text-green-600">
-                  +{pulpStats.totalEarned?.toLocaleString() || 0}
-                </p>
-              </Card>
-              <Card className="p-4">
-                <p className="text-sm text-muted-foreground mb-1">Total Spent</p>
-                <p className="text-2xl font-bold text-red-600">
-                  -{pulpStats.totalSpent?.toLocaleString() || 0}
-                </p>
-              </Card>
-              <Card className="p-4">
-                <p className="text-sm text-muted-foreground mb-1">Active Bets</p>
-                <p className="text-2xl font-bold">{pulpStats.activeBets || 0}</p>
-              </Card>
-              <Card className="p-4">
-                <p className="text-sm text-muted-foreground mb-1">Active Challenges</p>
-                <p className="text-2xl font-bold">{pulpStats.activeChallenges || 0}</p>
-              </Card>
-            </div>
+            <motion.div
+              className="grid md:grid-cols-4 gap-4"
+              variants={staggerContainer}
+              initial="initial"
+              animate="animate"
+            >
+              <motion.div variants={staggerItem}>
+                <Card className="p-4 border-green-500/20 bg-gradient-to-br from-green-500/5 to-background">
+                  <p className="text-sm font-medium text-muted-foreground mb-2">Total Earned</p>
+                  <p className="text-3xl font-bold text-green-600">
+                    +{pulpStats.totalEarned?.toLocaleString() || 0}
+                  </p>
+                  <div className="mt-2 h-1 bg-muted rounded-full overflow-hidden">
+                    <div className="h-full bg-green-500 rounded-full" style={{ width: '100%' }}></div>
+                  </div>
+                </Card>
+              </motion.div>
+
+              <motion.div variants={staggerItem}>
+                <Card className="p-4 border-red-500/20 bg-gradient-to-br from-red-500/5 to-background">
+                  <p className="text-sm font-medium text-muted-foreground mb-2">Total Spent</p>
+                  <p className="text-3xl font-bold text-red-600">
+                    -{pulpStats.totalSpent?.toLocaleString() || 0}
+                  </p>
+                  <div className="mt-2 h-1 bg-muted rounded-full overflow-hidden">
+                    <div className="h-full bg-red-500 rounded-full" style={{ width: '100%' }}></div>
+                  </div>
+                </Card>
+              </motion.div>
+
+              <motion.div variants={staggerItem}>
+                <Card className="p-4 border-blue-500/20 bg-gradient-to-br from-blue-500/5 to-background">
+                  <p className="text-sm font-medium text-muted-foreground mb-2">Active Bets</p>
+                  <p className="text-3xl font-bold text-blue-600">{pulpStats.activeBets || 0}</p>
+                  <div className="mt-2 h-1 bg-muted rounded-full overflow-hidden">
+                    <div className="h-full bg-blue-500 rounded-full" style={{ width: `${Math.min((pulpStats.activeBets || 0) * 20, 100)}%` }}></div>
+                  </div>
+                </Card>
+              </motion.div>
+
+              <motion.div variants={staggerItem}>
+                <Card className="p-4 border-purple-500/20 bg-gradient-to-br from-purple-500/5 to-background">
+                  <p className="text-sm font-medium text-muted-foreground mb-2">Active Challenges</p>
+                  <p className="text-3xl font-bold text-purple-600">{pulpStats.activeChallenges || 0}</p>
+                  <div className="mt-2 h-1 bg-muted rounded-full overflow-hidden">
+                    <div className="h-full bg-purple-500 rounded-full" style={{ width: `${Math.min((pulpStats.activeChallenges || 0) * 33, 100)}%` }}></div>
+                  </div>
+                </Card>
+              </motion.div>
+            </motion.div>
           )}
 
           {/* Transaction History */}
           <Card className="p-6">
-            <h3 className="font-semibold mb-4">Transaction History</h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold">Recent Transactions</h3>
+              <span className="text-xs text-muted-foreground">Last 20</span>
+            </div>
             {transactions.length === 0 ? (
-              <div className="text-center text-muted-foreground py-8">
-                No transactions yet. Start betting to earn PULPs!
+              <div className="text-center text-muted-foreground py-8 border border-dashed border-border rounded-lg">
+                <Coins className="h-12 w-12 mx-auto mb-3 opacity-20" />
+                <p>No transactions yet.</p>
+                <p className="text-sm">Start betting to earn PULPs!</p>
               </div>
             ) : (
-              <div className="space-y-3">
+              <motion.div
+                className="space-y-2"
+                variants={staggerContainer}
+                initial="initial"
+                animate="animate"
+              >
                 {transactions.map((txn) => (
-                  <div
+                  <motion.div
                     key={txn.id}
-                    className="flex items-center justify-between p-3 border border-border rounded-lg"
+                    variants={staggerItem}
+                    whileHover={{ scale: 1.01, x: 4 }}
+                    onClick={() => {
+                      if (txn.amount > 0) {
+                        triggerConfetti('win', { x: 0.5, y: 0.5 })
+                      }
+                    }}
+                    className={`flex items-center justify-between p-4 border border-border rounded-lg bg-gradient-to-r from-background to-muted/20 hover:border-primary/30 transition-colors ${
+                      txn.amount > 0 ? 'cursor-pointer' : ''
+                    }`}
                   >
-                    <div className="flex items-center gap-3">
-                      <span className="text-2xl">{getTransactionIcon(txn.transaction_type)}</span>
-                      <div>
-                        <p className="font-medium">{txn.description}</p>
+                    <div className="flex items-center gap-3 flex-1">
+                      <div className={`h-10 w-10 rounded-full flex items-center justify-center text-xl ${
+                        txn.amount > 0 ? 'bg-green-500/10' : 'bg-red-500/10'
+                      }`}>
+                        {getTransactionIcon(txn.transaction_type)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium truncate">{txn.description}</p>
                         <p className="text-xs text-muted-foreground">
-                          {new Date(txn.created_at).toLocaleString()}
+                          {new Date(txn.created_at).toLocaleDateString()} • {new Date(txn.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </p>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className={`font-bold ${getTransactionColor(txn.amount)}`}>
-                        {txn.amount > 0 ? '+' : ''}{txn.amount} PULPs
+                    <div className="text-right flex-shrink-0 ml-4">
+                      <p className={`text-lg font-bold ${getTransactionColor(txn.amount)}`}>
+                        {txn.amount > 0 ? '+' : ''}{txn.amount}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        Balance: {txn.balance_after}
+                        Bal: {txn.balance_after?.toLocaleString()}
                       </p>
                     </div>
-                  </div>
+                  </motion.div>
                 ))}
-              </div>
+              </motion.div>
             )}
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
+
+      {/* Confetti Effect */}
+      {confetti.active && (
+        <Confetti
+          active={confetti.active}
+          {...(confetti.preset ? confettiPresets[confetti.preset] : {})}
+          origin={confetti.origin}
+        />
+      )}
+
+      {/* Celebration Modal */}
+      {celebration && (
+        <CelebrationModal
+          isOpen={!!celebration}
+          onClose={() => setCelebration(null)}
+          title={celebration.title}
+          description={celebration.description}
+          icon={celebration.icon}
+          accentColor={celebration.accentColor}
+          confettiPreset={celebration.confettiPreset}
+          reward={celebration.reward}
+        />
+      )}
+    </PageContainer>
   )
 }

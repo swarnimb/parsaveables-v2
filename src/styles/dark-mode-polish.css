@@ -1,0 +1,295 @@
+/* Dark Mode Polish & Enhancements */
+
+/* Smooth backdrop blur in dark mode */
+.dark .backdrop-blur-sm,
+.dark .backdrop-blur-md {
+  backdrop-filter: blur(12px) saturate(150%);
+}
+
+/* Enhanced gradients in dark mode */
+.dark .bg-gradient-to-br,
+.dark .bg-gradient-to-r,
+.dark .bg-gradient-to-l {
+  background-blend-mode: soft-light;
+}
+
+/* Better shadows in dark mode */
+.dark .shadow-lg {
+  box-shadow:
+    0 10px 15px -3px rgba(0, 0, 0, 0.5),
+    0 4px 6px -2px rgba(0, 0, 0, 0.3);
+}
+
+.dark .shadow-xl {
+  box-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.5),
+    0 10px 10px -5px rgba(0, 0, 0, 0.3);
+}
+
+.dark .shadow-2xl {
+  box-shadow:
+    0 25px 50px -12px rgba(0, 0, 0, 0.7);
+}
+
+/* Glowing effects in dark mode */
+.dark .glow-primary {
+  box-shadow:
+    0 0 20px rgba(210, 240, 98, 0.3),
+    0 0 40px rgba(210, 240, 98, 0.1);
+}
+
+.dark .glow-accent {
+  box-shadow:
+    0 0 20px rgba(var(--primary), 0.3),
+    0 0 40px rgba(var(--primary), 0.1);
+}
+
+/* Better borders in dark mode */
+.dark .border-primary\/20 {
+  border-color: hsl(var(--primary) / 0.3);
+}
+
+.dark .border-primary\/30 {
+  border-color: hsl(var(--primary) / 0.4);
+}
+
+/* Enhanced card backgrounds in dark mode */
+.dark .bg-card {
+  background-color: hsl(var(--card));
+  background-image: linear-gradient(
+    135deg,
+    hsl(var(--card)) 0%,
+    hsl(var(--card) / 0.95) 100%
+  );
+}
+
+/* Podcast player dark mode enhancements */
+.dark audio::-webkit-media-controls-panel {
+  background-color: hsl(var(--muted));
+}
+
+/* Better text contrast on colored backgrounds in dark mode */
+.dark .text-blue-600 {
+  color: hsl(210, 90%, 65%);
+}
+
+.dark .text-green-600 {
+  color: hsl(142, 75%, 60%);
+}
+
+.dark .text-red-600 {
+  color: hsl(0, 85%, 65%);
+}
+
+.dark .text-yellow-600 {
+  color: hsl(48, 95%, 60%);
+}
+
+.dark .text-purple-600 {
+  color: hsl(271, 75%, 70%);
+}
+
+.dark .text-amber-600 {
+  color: hsl(43, 90%, 60%);
+}
+
+.dark .text-orange-600 {
+  color: hsl(25, 90%, 62%);
+}
+
+/* Improved bg colors for icon containers in dark mode */
+.dark .bg-blue-500\/10 {
+  background-color: hsl(217, 91%, 60% / 0.15);
+}
+
+.dark .bg-green-500\/10 {
+  background-color: hsl(142, 76%, 36% / 0.15);
+}
+
+.dark .bg-red-500\/10 {
+  background-color: hsl(0, 84%, 60% / 0.15);
+}
+
+.dark .bg-yellow-500\/10 {
+  background-color: hsl(48, 96%, 53% / 0.15);
+}
+
+.dark .bg-purple-500\/10 {
+  background-color: hsl(271, 81%, 56% / 0.15);
+}
+
+.dark .bg-amber-500\/10 {
+  background-color: hsl(43, 96%, 56% / 0.15);
+}
+
+/* Better primary color backgrounds in dark mode */
+.dark .bg-primary\/5 {
+  background-color: hsl(var(--primary) / 0.08);
+}
+
+.dark .bg-primary\/10 {
+  background-color: hsl(var(--primary) / 0.12);
+}
+
+.dark .bg-primary\/20 {
+  background-color: hsl(var(--primary) / 0.18);
+}
+
+/* Confetti colors optimized for dark mode */
+.dark [style*="background-color: #10b981"],
+.dark [style*="background-color: #3b82f6"],
+.dark [style*="background-color: #f59e0b"],
+.dark [style*="background-color: #ef4444"],
+.dark [style*="background-color: #8b5cf6"],
+.dark [style*="background-color: #ec4899"] {
+  opacity: 0.9;
+  filter: brightness(1.2) saturate(1.1);
+}
+
+/* Celebration modal dark mode */
+.dark .celebration-modal-bg {
+  background-color: hsl(var(--card) / 0.98);
+  border: 2px solid hsl(var(--primary) / 0.3);
+}
+
+/* Better muted backgrounds in dark mode */
+.dark .bg-muted\/20 {
+  background-color: hsl(var(--muted) / 0.25);
+}
+
+.dark .bg-muted\/30 {
+  background-color: hsl(var(--muted) / 0.35);
+}
+
+.dark .bg-muted\/50 {
+  background-color: hsl(var(--muted) / 0.55);
+}
+
+/* Skeleton loaders in dark mode */
+.dark .skeleton {
+  background-color: hsl(var(--muted));
+  background-image: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.05),
+    transparent
+  );
+}
+
+/* Range inputs in dark mode */
+.dark input[type="range"]::-webkit-slider-thumb {
+  background-color: hsl(var(--primary));
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+}
+
+.dark input[type="range"]::-moz-range-thumb {
+  background-color: hsl(var(--primary));
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+}
+
+/* Better focus rings in dark mode */
+.dark *:focus-visible {
+  outline: 2px solid hsl(var(--primary) / 0.8);
+  outline-offset: 2px;
+}
+
+/* Bottom navigation dark mode */
+.dark .bottom-nav {
+  background-color: hsl(var(--background) / 0.98);
+  border-top-color: hsl(var(--border) / 0.5);
+}
+
+/* Active tab indicator brightness in dark mode */
+.dark [data-state="active"] {
+  background-color: hsl(var(--background));
+  border-bottom: 2px solid hsl(var(--primary));
+}
+
+/* Podcast artwork glow in dark mode */
+.dark .podcast-artwork {
+  box-shadow:
+    0 8px 16px rgba(0, 0, 0, 0.4),
+    0 0 30px rgba(var(--primary), 0.15);
+}
+
+/* Better glass-morphism in dark mode */
+.dark .glass {
+  background-color: hsl(var(--background) / 0.7);
+  backdrop-filter: blur(10px) saturate(150%);
+  border: 1px solid hsl(var(--border) / 0.3);
+}
+
+/* Improved gradient overlays in dark mode */
+.dark .gradient-overlay {
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    hsl(var(--background) / 0.8) 100%
+  );
+}
+
+/* Better hover states in dark mode */
+.dark .hover\:bg-accent\/50:hover {
+  background-color: hsl(var(--accent) / 0.3);
+}
+
+.dark .hover\:bg-accent\/30:hover {
+  background-color: hsl(var(--accent) / 0.2);
+}
+
+/* Podium colors in dark mode */
+.dark .podium-gold {
+  background: linear-gradient(135deg, hsl(48, 95%, 45%) 0%, hsl(43, 90%, 55%) 100%);
+  box-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
+}
+
+.dark .podium-silver {
+  background: linear-gradient(135deg, hsl(0, 0%, 65%) 0%, hsl(0, 0%, 75%) 100%);
+  box-shadow: 0 0 20px rgba(192, 192, 192, 0.3);
+}
+
+.dark .podium-bronze {
+  background: linear-gradient(135deg, hsl(25, 75%, 50%) 0%, hsl(25, 75%, 60%) 100%);
+  box-shadow: 0 0 20px rgba(205, 127, 50, 0.3);
+}
+
+/* Betting page color-coded sections in dark mode */
+.dark .from-blue-500\/5 {
+  --tw-gradient-from: hsl(217, 91%, 60% / 0.08);
+}
+
+.dark .from-red-500\/5 {
+  --tw-gradient-from: hsl(0, 84%, 60% / 0.08);
+}
+
+.dark .from-amber-500\/5 {
+  --tw-gradient-from: hsl(43, 96%, 56% / 0.08);
+}
+
+/* Better transition for theme switching */
+* {
+  transition-property: background-color, border-color, color, box-shadow;
+  transition-duration: 200ms;
+  transition-timing-function: ease-in-out;
+}
+
+/* Prevent transition on page load */
+.no-transition * {
+  transition: none !important;
+}
+
+/* Ensure images look good in both modes */
+.dark img {
+  opacity: 0.95;
+}
+
+.dark img:hover {
+  opacity: 1;
+}
+
+/* Better code/pre blocks in dark mode (if any) */
+.dark pre,
+.dark code {
+  background-color: hsl(var(--muted) / 0.5);
+  border: 1px solid hsl(var(--border));
+}

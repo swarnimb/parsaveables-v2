@@ -1,4 +1,5 @@
 import * as React from "react"
+import { motion } from "framer-motion"
 
 const Button = React.forwardRef(({
   className = "",
@@ -27,14 +28,16 @@ const Button = React.forwardRef(({
   }
 
   return (
-    <button
+    <motion.button
       ref={ref}
       className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${className}`}
       disabled={disabled}
+      whileTap={{ scale: disabled ? 1 : 0.95 }}
+      transition={{ duration: 0.1 }}
       {...props}
     >
       {children}
-    </button>
+    </motion.button>
   )
 })
 Button.displayName = "Button"

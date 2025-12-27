@@ -1,0 +1,262 @@
+/* Mobile-First Polish & Touch Optimizations */
+
+/* Smooth scroll behavior */
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Remove tap highlight on mobile (we'll use custom animations instead) */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Ensure minimum touch target size (44x44px per iOS guidelines) */
+button,
+a,
+[role="button"],
+input[type="checkbox"],
+input[type="radio"],
+select {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Exception for inline buttons that are clearly part of larger touch targets */
+button.inline-button,
+.touch-target-exempt {
+  min-height: auto;
+  min-width: auto;
+}
+
+/* Active state for touch interactions */
+.touchable {
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.touchable::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background-color: currentColor;
+  opacity: 0.1;
+  transform: translate(-50%, -50%);
+  transition: width 0.3s ease, height 0.3s ease;
+  pointer-events: none;
+}
+
+.touchable:active::after {
+  width: 200%;
+  height: 200%;
+}
+
+/* Mobile-optimized scrolling */
+.mobile-scroll {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* Pull-to-refresh visual indicator space (for visual consistency) */
+@media (max-width: 768px) {
+  .page-container {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Prevent horizontal scroll */
+body {
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Improved focus states for mobile */
+@media (hover: none) {
+  /* Only on touch devices */
+
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 2px;
+  }
+}
+
+/* Swipeable cards */
+.swipeable {
+  touch-action: pan-y;
+  user-select: none;
+}
+
+/* Mobile modal improvements */
+@media (max-width: 768px) {
+  [role="dialog"],
+  .modal {
+    max-height: 90vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Prevent zoom on input focus (iOS) */
+@media (max-width: 768px) {
+  input[type="text"],
+  input[type="number"],
+  input[type="email"],
+  input[type="password"],
+  select,
+  textarea {
+    font-size: 16px; /* Prevents iOS zoom */
+  }
+}
+
+/* Haptic feedback simulation (visual only) */
+@keyframes haptic-feedback {
+  0% { transform: scale(1); }
+  50% { transform: scale(0.98); }
+  100% { transform: scale(1); }
+}
+
+.haptic-light {
+  animation: haptic-feedback 0.1s ease;
+}
+
+.haptic-medium {
+  animation: haptic-feedback 0.15s ease;
+}
+
+.haptic-heavy {
+  animation: haptic-feedback 0.2s ease;
+}
+
+/* Better tap targets for icon buttons */
+.icon-button {
+  position: relative;
+  padding: 12px;
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Mobile-friendly bottom navigation spacing */
+@media (max-width: 768px) {
+  .bottom-nav {
+    padding-bottom: max(env(safe-area-inset-bottom), 8px);
+  }
+}
+
+/* Improve touch precision for sliders */
+input[type="range"] {
+  -webkit-appearance: none;
+  height: 44px; /* Larger touch target */
+  background: transparent;
+  padding: 0;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 24px;
+  width: 24px;
+  cursor: pointer;
+}
+
+input[type="range"]::-moz-range-thumb {
+  height: 24px;
+  width: 24px;
+  cursor: pointer;
+  border: none;
+}
+
+/* Skeleton loaders - better mobile performance */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
+  }
+
+  .skeleton {
+    animation: shimmer 1.5s ease-in-out infinite;
+  }
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* Mobile card stacking improvements */
+@media (max-width: 640px) {
+  .card-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Improve mobile table scrolling */
+.mobile-table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 0 -1rem;
+  padding: 0 1rem;
+}
+
+@media (max-width: 768px) {
+  .mobile-table-scroll table {
+    min-width: 600px;
+  }
+}
+
+/* Better mobile spacing */
+@media (max-width: 768px) {
+  .mobile-tight {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .mobile-stack > * + * {
+    margin-top: 0.75rem;
+  }
+}
+
+/* Swipe indicator for carousels/modals */
+.swipe-indicator {
+  width: 40px;
+  height: 4px;
+  background-color: hsl(var(--muted-foreground) / 0.3);
+  border-radius: 2px;
+  margin: 8px auto;
+}
+
+/* Active press state for cards */
+.press-active:active {
+  transform: scale(0.98);
+  opacity: 0.9;
+  transition: transform 0.05s ease, opacity 0.05s ease;
+}

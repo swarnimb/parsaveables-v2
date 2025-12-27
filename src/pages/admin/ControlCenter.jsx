@@ -1,10 +1,11 @@
 import { Settings, Lock, FileText, Users, Trophy, Coins } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { Card } from '@/components/ui/card'
+import PageContainer from '@/components/layout/PageContainer'
 
 export default function ControlCenter() {
   return (
-    <div className="container mx-auto px-4 py-6 max-w-6xl">
+    <PageContainer className="container mx-auto px-4 py-6 max-w-6xl">
       <div className="mb-6">
         <h1 className="text-2xl font-bold mb-2">Admin Control Center</h1>
         <p className="text-muted-foreground">
@@ -117,6 +118,6 @@ export default function ControlCenter() {
           All authenticated users currently have access to admin controls. In production, implement proper admin role checks.
         </p>
       </div>
-    </div>
+    </PageContainer>
   )
 }

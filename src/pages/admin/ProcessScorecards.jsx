@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { FileText, RefreshCw, CheckCircle, XCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import PageContainer from '@/components/layout/PageContainer'
 
 export default function ProcessScorecards() {
   const [loading, setLoading] = useState(false)
@@ -36,7 +37,7 @@ export default function ProcessScorecards() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-6 max-w-4xl">
+    <PageContainer className="container mx-auto px-4 py-6 max-w-4xl">
       <div className="mb-6">
         <h1 className="text-2xl font-bold mb-2">Process Scorecards</h1>
         <p className="text-muted-foreground">
@@ -124,6 +125,6 @@ export default function ProcessScorecards() {
           Use this for manual processing or debugging.
         </p>
       </div>
-    </div>
+    </PageContainer>
   )
 }

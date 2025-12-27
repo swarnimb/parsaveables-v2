@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
+import { AnimatePresence } from 'framer-motion'
 
 // Pages (placeholders for now)
 import Login from '@/pages/Login'
@@ -19,10 +20,13 @@ import ProcessScorecards from '@/pages/admin/ProcessScorecards'
 // Layout wrapper for authenticated pages
 import AppLayout from '@/components/layout/AppLayout'
 
-function App() {
+// Animated Routes Component
+function AnimatedRoutes() {
+  const location = useLocation()
+
   return (
-    <BrowserRouter>
-      <Routes>
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
         {/* Public route */}
         <Route path="/login" element={<Login />} />
 
@@ -46,6 +50,14 @@ function App() {
         {/* 404 catch-all */}
         <Route path="*" element={<NotFound />} />
       </Routes>
+    </AnimatePresence>
+  )
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <AnimatedRoutes />
     </BrowserRouter>
   )
 }

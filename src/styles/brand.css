@@ -1,0 +1,279 @@
+/* ParSaveables Brand Utilities */
+
+/* Brand Gradients */
+.gradient-brand-primary {
+  background: linear-gradient(135deg, hsl(142, 76%, 36%) 0%, hsl(142, 76%, 48%) 100%);
+}
+
+.gradient-brand-gold {
+  background: linear-gradient(135deg, hsl(45, 95%, 55%) 0%, hsl(48, 96%, 65%) 100%);
+}
+
+.gradient-brand-forest {
+  background: linear-gradient(135deg, hsl(142, 76%, 36%) 0%, hsl(160, 30%, 25%) 100%);
+}
+
+.gradient-brand-neon {
+  background: linear-gradient(135deg, hsl(85, 85%, 65%) 0%, hsl(142, 76%, 56%) 100%);
+}
+
+/* Dark mode brand gradients */
+.dark .gradient-brand-primary {
+  background: linear-gradient(135deg, hsl(85, 85%, 65%) 0%, hsl(142, 76%, 56%) 100%);
+}
+
+.dark .gradient-brand-forest {
+  background: linear-gradient(135deg, hsl(160, 25%, 8%) 0%, hsl(160, 20%, 15%) 100%);
+}
+
+/* PULP Currency Styling */
+.pulp-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.75rem;
+  background: linear-gradient(135deg, hsl(45, 95%, 55%) 0%, hsl(48, 96%, 65%) 100%);
+  color: hsl(45, 95%, 15%);
+  border-radius: 9999px;
+  font-weight: 700;
+  box-shadow:
+    0 4px 12px rgba(251, 191, 36, 0.25),
+    0 0 20px rgba(251, 191, 36, 0.15);
+}
+
+.dark .pulp-badge {
+  background: linear-gradient(135deg, hsl(48, 96%, 60%) 0%, hsl(48, 96%, 70%) 100%);
+  color: hsl(48, 95%, 12%);
+  box-shadow:
+    0 4px 12px rgba(251, 191, 36, 0.4),
+    0 0 30px rgba(251, 191, 36, 0.2);
+}
+
+/* Brand Glow Effects */
+.glow-brand-green {
+  box-shadow:
+    0 0 20px rgba(16, 185, 129, 0.4),
+    0 0 40px rgba(16, 185, 129, 0.2);
+}
+
+.dark .glow-brand-green {
+  box-shadow:
+    0 0 25px rgba(163, 230, 53, 0.5),
+    0 0 50px rgba(163, 230, 53, 0.25);
+}
+
+.glow-brand-gold {
+  box-shadow:
+    0 0 20px rgba(251, 191, 36, 0.4),
+    0 0 40px rgba(251, 191, 36, 0.2);
+}
+
+/* Score Colors */
+.score-positive {
+  color: hsl(142, 76%, 36%);
+}
+
+.dark .score-positive {
+  color: hsl(142, 75%, 60%);
+}
+
+.score-negative {
+  color: hsl(0, 84%, 60%);
+}
+
+.dark .score-negative {
+  color: hsl(0, 85%, 65%);
+}
+
+.score-even {
+  color: hsl(45, 95%, 55%);
+}
+
+.dark .score-even {
+  color: hsl(48, 96%, 60%);
+}
+
+/* Disc Golf themed elements */
+.disc-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, hsl(142, 76%, 36%) 0%, hsl(142, 76%, 48%) 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.dark .disc-icon {
+  background: linear-gradient(135deg, hsl(85, 85%, 65%) 0%, hsl(142, 76%, 56%) 100%);
+  color: hsl(160, 25%, 8%);
+  box-shadow: 0 4px 12px rgba(163, 230, 53, 0.4);
+}
+
+/* Brand Card Variants */
+.card-brand-highlight {
+  background: linear-gradient(
+    135deg,
+    hsl(var(--card)) 0%,
+    hsl(142, 76%, 98%) 100%
+  );
+  border: 2px solid hsl(142, 76%, 85%);
+}
+
+.dark .card-brand-highlight {
+  background: linear-gradient(
+    135deg,
+    hsl(var(--card)) 0%,
+    hsl(160, 20%, 14%) 100%
+  );
+  border: 2px solid hsl(85, 85%, 35%);
+}
+
+/* Leaderboard Podium Colors */
+.podium-1st {
+  background: linear-gradient(135deg, hsl(48, 95%, 55%) 0%, hsl(45, 90%, 65%) 100%);
+  color: hsl(45, 95%, 15%);
+  box-shadow:
+    0 8px 20px rgba(251, 191, 36, 0.3),
+    0 0 40px rgba(251, 191, 36, 0.2);
+}
+
+.podium-2nd {
+  background: linear-gradient(135deg, hsl(0, 0%, 70%) 0%, hsl(0, 0%, 80%) 100%);
+  color: hsl(0, 0%, 15%);
+  box-shadow:
+    0 8px 20px rgba(192, 192, 192, 0.3),
+    0 0 40px rgba(192, 192, 192, 0.2);
+}
+
+.podium-3rd {
+  background: linear-gradient(135deg, hsl(25, 75%, 50%) 0%, hsl(25, 75%, 60%) 100%);
+  color: hsl(0, 0%, 15%);
+  box-shadow:
+    0 8px 20px rgba(205, 127, 50, 0.3),
+    0 0 40px rgba(205, 127, 50, 0.2);
+}
+
+/* Achievement Badge Variants */
+.achievement-rare {
+  background: linear-gradient(135deg, hsl(271, 81%, 56%) 0%, hsl(280, 80%, 65%) 100%);
+  color: white;
+}
+
+.achievement-epic {
+  background: linear-gradient(135deg, hsl(48, 96%, 60%) 0%, hsl(45, 95%, 55%) 100%);
+  color: hsl(45, 95%, 15%);
+}
+
+.achievement-legendary {
+  background: linear-gradient(135deg, hsl(340, 75%, 55%) 0%, hsl(271, 81%, 56%) 50%, hsl(48, 96%, 60%) 100%);
+  color: white;
+  animation: rainbow-shimmer 3s ease infinite;
+}
+
+@keyframes rainbow-shimmer {
+  0%, 100% {
+    filter: brightness(1) saturate(1);
+  }
+  50% {
+    filter: brightness(1.2) saturate(1.3);
+  }
+}
+
+/* Brand button variants */
+.btn-brand-primary {
+  background: linear-gradient(135deg, hsl(142, 76%, 36%) 0%, hsl(142, 76%, 42%) 100%);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+  transition: all 0.2s ease;
+}
+
+.btn-brand-primary:hover {
+  background: linear-gradient(135deg, hsl(142, 76%, 42%) 0%, hsl(142, 76%, 48%) 100%);
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35);
+  transform: translateY(-1px);
+}
+
+.dark .btn-brand-primary {
+  background: linear-gradient(135deg, hsl(85, 85%, 65%) 0%, hsl(85, 85%, 70%) 100%);
+  color: hsl(160, 25%, 8%);
+  box-shadow: 0 4px 12px rgba(163, 230, 53, 0.3);
+}
+
+.dark .btn-brand-primary:hover {
+  background: linear-gradient(135deg, hsl(85, 85%, 70%) 0%, hsl(85, 85%, 75%) 100%);
+  box-shadow: 0 6px 16px rgba(163, 230, 53, 0.4);
+}
+
+.btn-brand-gold {
+  background: linear-gradient(135deg, hsl(45, 95%, 55%) 0%, hsl(48, 96%, 60%) 100%);
+  color: hsl(45, 95%, 15%);
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
+  transition: all 0.2s ease;
+}
+
+.btn-brand-gold:hover {
+  background: linear-gradient(135deg, hsl(45, 95%, 60%) 0%, hsl(48, 96%, 65%) 100%);
+  box-shadow: 0 6px 16px rgba(251, 191, 36, 0.4);
+  transform: translateY(-1px);
+}
+
+/* Nature-themed backgrounds for light mode */
+.bg-nature-light {
+  background: linear-gradient(
+    180deg,
+    hsl(120, 25%, 98%) 0%,
+    hsl(140, 20%, 96%) 100%
+  );
+}
+
+/* Forest-themed backgrounds for dark mode */
+.dark .bg-nature-light,
+.bg-nature-dark {
+  background: linear-gradient(
+    180deg,
+    hsl(160, 25%, 8%) 0%,
+    hsl(160, 20%, 10%) 100%
+  );
+}
+
+/* Betting section brand colors */
+.betting-predictions {
+  border-color: hsl(217, 91%, 60% / 0.3);
+  background: linear-gradient(135deg, hsl(217, 91%, 98%) 0%, hsl(var(--background)) 100%);
+}
+
+.dark .betting-predictions {
+  border-color: hsl(200, 90%, 60% / 0.3);
+  background: linear-gradient(135deg, hsl(200, 90%, 12%) 0%, hsl(var(--background)) 100%);
+}
+
+.betting-challenges {
+  border-color: hsl(0, 84%, 60% / 0.3);
+  background: linear-gradient(135deg, hsl(0, 84%, 98%) 0%, hsl(var(--background)) 100%);
+}
+
+.dark .betting-challenges {
+  border-color: hsl(0, 70%, 55% / 0.3);
+  background: linear-gradient(135deg, hsl(0, 70%, 12%) 0%, hsl(var(--background)) 100%);
+}
+
+.betting-advantages {
+  border-color: hsl(45, 95%, 55% / 0.3);
+  background: linear-gradient(135deg, hsl(45, 95%, 98%) 0%, hsl(var(--background)) 100%);
+}
+
+.dark .betting-advantages {
+  border-color: hsl(48, 96%, 60% / 0.3);
+  background: linear-gradient(135deg, hsl(48, 96%, 12%) 0%, hsl(var(--background)) 100%);
+}

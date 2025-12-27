@@ -3,6 +3,8 @@ import { eventAPI } from '@/services/api'
 import { getCurrentEvent } from '@/utils/seasonUtils'
 import PodiumDisplay from '@/components/leaderboard/PodiumDisplay'
 import LeaderboardTable from '@/components/leaderboard/LeaderboardTable'
+import PageContainer from '@/components/layout/PageContainer'
+import { SkeletonPodium, SkeletonTable } from '@/components/ui/skeleton'
 
 export default function Leaderboard() {
   const [events, setEvents] = useState([])
@@ -64,9 +66,13 @@ export default function Leaderboard() {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-6">
-        <p className="text-center text-muted-foreground">Loading leaderboard...</p>
-      </div>
+      <PageContainer className="container mx-auto px-4 sm:px-6 py-8 max-w-6xl">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">Leaderboard</h1>
+        </div>
+        <SkeletonPodium />
+        <SkeletonTable rows={7} />
+      </PageContainer>
     )
   }
 
@@ -84,7 +90,7 @@ export default function Leaderboard() {
   const selectedEvent = events.find(e => e.id === selectedEventId)
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 py-8 max-w-6xl">
+    <PageContainer className="container mx-auto px-4 sm:px-6 py-8 max-w-6xl">
       {/* Header with Event Selector */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">Leaderboard</h1>
@@ -135,6 +141,6 @@ export default function Leaderboard() {
           <p className="text-muted-foreground">No data for this event yet.</p>
         </div>
       )}
-    </div>
+    </PageContainer>
   )
 }

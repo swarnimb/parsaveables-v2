@@ -3,10 +3,11 @@ import Tutorial from '@/components/tutorial/Tutorial'
 import { coreTutorial, pulpTutorial } from '@/components/tutorial/tutorialData'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import PageContainer from '@/components/layout/PageContainer'
 
 export default function About() {
   return (
-    <div className="container mx-auto px-4 py-6 max-w-4xl">
+    <PageContainer className="container mx-auto px-4 py-6 max-w-4xl">
       <div className="mb-6">
         <h1 className="text-2xl font-bold mb-2">About ParSaveables</h1>
         <p className="text-muted-foreground">
@@ -147,6 +148,6 @@ export default function About() {
           </div>
         </Card>
       </div>
-    </div>
+    </PageContainer>
   )
 }

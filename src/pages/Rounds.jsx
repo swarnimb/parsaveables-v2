@@ -1,6 +1,10 @@
 import { useState, useEffect } from 'react'
 import { roundAPI } from '@/services/api'
 import RoundCard from '@/components/rounds/RoundCard'
+import PageContainer from '@/components/layout/PageContainer'
+import { motion } from 'framer-motion'
+import { staggerContainer, staggerItem } from '@/utils/animations'
+import { SkeletonCard } from '@/components/ui/skeleton'
 
 export default function Rounds() {
   const [rounds, setRounds] = useState([])
@@ -24,9 +28,14 @@ export default function Rounds() {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-6">
-        <p className="text-center text-muted-foreground">Loading rounds...</p>
-      </div>
+      <PageContainer className="container mx-auto px-4 py-6 max-w-4xl">
+        <h1 className="text-2xl font-bold mb-6">Rounds</h1>
+        <div className="space-y-2">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <SkeletonCard key={i} className="h-20" />
+          ))}
+        </div>
+      </PageContainer>
     )
   }
 
@@ -41,7 +50,7 @@ export default function Rounds() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-6 max-w-4xl">
+    <PageContainer className="container mx-auto px-4 py-6 max-w-4xl">
       <h1 className="text-2xl font-bold mb-6">Rounds</h1>
 
       {rounds.length === 0 ? (
@@ -49,17 +58,24 @@ export default function Rounds() {
           <p className="text-muted-foreground">No rounds recorded yet.</p>
         </div>
       ) : (
-        <div className="space-y-2">
+        <motion.div
+          className="space-y-2"
+          variants={staggerContainer}
+          initial="initial"
+          animate="animate"
+        >
           {rounds.map((round) => (
-            <RoundCard
+            <motion.div key={round.id} variants={staggerItem}>
+              <RoundCard
               key={round.id}
               round={round}
               isExpanded={expandedRoundId === round.id}
               onToggle={() => handleToggle(round.id)}
             />
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       )}
-    </div>
+    </PageContainer>
   )
 }

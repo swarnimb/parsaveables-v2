@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { Trophy, ChevronDown } from 'lucide-react'
 import { getPlayerDisplayName } from '@/utils/playerUtils'
+import { motion } from 'framer-motion'
+import { staggerContainer, staggerItem } from '@/utils/animations'
 
 export default function PodiumDisplay({ players }) {
   const [expandedPlayer, setExpandedPlayer] = useState(null)
@@ -75,38 +77,49 @@ export default function PodiumDisplay({ players }) {
   return (
     <div className="mb-8">
       {/* Podium Display */}
-      <div className="grid grid-cols-3 gap-4 items-end max-w-2xl mx-auto">
+      <motion.div
+        className="grid grid-cols-3 gap-4 items-end max-w-2xl mx-auto"
+        variants={staggerContainer}
+        initial="initial"
+        animate="animate"
+      >
         {/* 2nd Place */}
         {second && (
-          <PodiumCard
+          <motion.div variants={staggerItem}>
+            <PodiumCard
             player={second}
             rank={2}
             heightClass="h-32"
             iconSize="h-8 w-8"
           />
+          </motion.div>
         )}
 
         {/* 1st Place */}
         {first && (
-          <PodiumCard
+          <motion.div variants={staggerItem}>
+            <PodiumCard
             player={first}
             rank={1}
             heightClass="h-40"
             iconSize="h-10 w-10"
             borderClass="border-2 border-primary"
           />
+          </motion.div>
         )}
 
         {/* 3rd Place */}
         {third && (
-          <PodiumCard
+          <motion.div variants={staggerItem}>
+            <PodiumCard
             player={third}
             rank={3}
             heightClass="h-32"
             iconSize="h-6 w-6"
           />
+          </motion.div>
         )}
-      </div>
+      </motion.div>
 
       {/* Expanded Stats - Full Width Below Entire Podium */}
       {expandedPlayerData && (

@@ -1,9 +1,13 @@
 import { useState, useEffect } from 'react'
-import { User, Users, Trophy, Swords, Coins, Target, Calendar, Mic2 } from 'lucide-react'
+import { User, Users, Trophy, Swords, Coins, Target, Calendar, Mic2, TrendingUp, TrendingDown, ShoppingCart, Gift, DollarSign, Award, XCircle, Ban } from 'lucide-react'
 import { supabase } from '@/services/supabase'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import PageContainer from '@/components/layout/PageContainer'
+import { motion } from 'framer-motion'
+import { staggerContainer, staggerItem, cardHover } from '@/utils/animations'
+import { SkeletonCard } from '@/components/ui/skeleton'
 
 export default function Activity() {
   const [activeTab, setActiveTab] = useState('player')
@@ -200,7 +204,12 @@ export default function Activity() {
       const color = data.amount > 0 ? 'text-green-600' : 'text-red-600'
 
       return (
-        <Card key={item.id} className="p-4">
+        <motion.div
+          key={item.id}
+          variants={staggerItem}
+          whileHover={cardHover.hover}
+        >
+          <Card className="p-4">
           <div className="flex items-start gap-3">
             <span className="text-2xl">{icon}</span>
             <div className="flex-1">
@@ -214,13 +223,19 @@ export default function Activity() {
             </Badge>
           </div>
         </Card>
+        </motion.div>
       )
     }
 
     // Bet item
     if (type === 'bet') {
       return (
-        <Card key={item.id} className="p-4">
+        <motion.div
+          key={item.id}
+          variants={staggerItem}
+          whileHover={cardHover.hover}
+        >
+          <Card className="p-4">
           <div className="flex items-start gap-3">
             <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
               <Target className="h-5 w-5 text-primary" />
@@ -245,6 +260,7 @@ export default function Activity() {
             </Badge>
           </div>
         </Card>
+        </motion.div>
       )
     }
 
@@ -254,7 +270,12 @@ export default function Activity() {
       const opponentName = isChallenger ? data.challenged?.player_name : data.challenger?.player_name
 
       return (
-        <Card key={item.id} className="p-4">
+        <motion.div
+          key={item.id}
+          variants={staggerItem}
+          whileHover={cardHover.hover}
+        >
+          <Card className="p-4">
           <div className="flex items-start gap-3">
             <div className="h-10 w-10 rounded-full bg-red-500/10 flex items-center justify-center flex-shrink-0">
               <Swords className="h-5 w-5 text-red-600" />
@@ -285,13 +306,19 @@ export default function Activity() {
             </Badge>
           </div>
         </Card>
+        </motion.div>
       )
     }
 
     // Achievement item
     if (type === 'achievement') {
       return (
-        <Card key={item.id} className="p-4">
+        <motion.div
+          key={item.id}
+          variants={staggerItem}
+          whileHover={cardHover.hover}
+        >
+          <Card className="p-4">
           <div className="flex items-start gap-3">
             <div className="h-10 w-10 rounded-full bg-yellow-500/10 flex items-center justify-center flex-shrink-0">
               <Trophy className="h-5 w-5 text-yellow-600" />
@@ -312,13 +339,19 @@ export default function Activity() {
             </Badge>
           </div>
         </Card>
+        </motion.div>
       )
     }
 
     // Round item
     if (type === 'round') {
       return (
-        <Card key={item.id} className="p-4">
+        <motion.div
+          key={item.id}
+          variants={staggerItem}
+          whileHover={cardHover.hover}
+        >
+          <Card className="p-4">
           <div className="flex items-start gap-3">
             <div className="h-10 w-10 rounded-full bg-blue-500/10 flex items-center justify-center flex-shrink-0">
               <Calendar className="h-5 w-5 text-blue-600" />
@@ -334,6 +367,7 @@ export default function Activity() {
             </div>
           </div>
         </Card>
+        </motion.div>
       )
     }
 
@@ -341,18 +375,20 @@ export default function Activity() {
   }
 
   const getTransactionIcon = (type) => {
-    const icons = {
-      'achievement_unlock': '🏆',
-      'round_placement': '📊',
-      'bet_win': '💰',
-      'bet_loss': '❌',
-      'challenge_win': '⚔️',
-      'challenge_loss': '💔',
-      'challenge_reject': '🚫',
-      'advantage_purchase': '🛒',
-      'weekly_bonus': '🎁'
+    const iconMap = {
+      'achievement_unlock': <Trophy className="h-5 w-5 text-yellow-600" />,
+      'round_placement': <TrendingUp className="h-5 w-5 text-blue-600" />,
+      'bet_win': <Coins className="h-5 w-5 text-green-600" />,
+      'bet_win_perfect': <Award className="h-5 w-5 text-green-600" />,
+      'bet_loss': <XCircle className="h-5 w-5 text-red-600" />,
+      'challenge_win': <Swords className="h-5 w-5 text-green-600" />,
+      'challenge_loss': <TrendingDown className="h-5 w-5 text-red-600" />,
+      'challenge_reject': <Ban className="h-5 w-5 text-orange-600" />,
+      'challenge_rejected_penalty': <Ban className="h-5 w-5 text-orange-600" />,
+      'advantage_purchase': <ShoppingCart className="h-5 w-5 text-purple-600" />,
+      'weekly_bonus': <Gift className="h-5 w-5 text-blue-600" />
     }
-    return icons[type] || '💵'
+    return iconMap[type] || <DollarSign className="h-5 w-5 text-muted-foreground" />
   }
 
   const formatTimestamp = (timestamp) => {
@@ -371,14 +407,24 @@ export default function Activity() {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-6">
-        <p className="text-center text-muted-foreground">Loading...</p>
-      </div>
+      <PageContainer className="container mx-auto px-4 py-6 max-w-4xl">
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold mb-2">Activity Feed</h1>
+          <p className="text-muted-foreground">
+            Stay updated on your progress and group activity
+          </p>
+        </div>
+        <div className="space-y-3">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <SkeletonCard key={i} className="h-24" />
+          ))}
+        </div>
+      </PageContainer>
     )
   }
 
   return (
-    <div className="container mx-auto px-4 py-6 max-w-4xl">
+    <PageContainer className="container mx-auto px-4 py-6 max-w-4xl">
       <div className="mb-6">
         <h1 className="text-2xl font-bold mb-2">Activity Feed</h1>
         <p className="text-muted-foreground">
@@ -399,7 +445,7 @@ export default function Activity() {
         </TabsList>
 
         {/* Player Feed Tab */}
-        <TabsContent value="player" className="space-y-3">
+        <TabsContent value="player">
           {playerFeed.length === 0 ? (
             <Card className="p-8 text-center">
               <p className="text-muted-foreground">
@@ -407,12 +453,19 @@ export default function Activity() {
               </p>
             </Card>
           ) : (
-            playerFeed.map(item => renderFeedItem(item, true))
+            <motion.div
+              className="space-y-3"
+              variants={staggerContainer}
+              initial="initial"
+              animate="animate"
+            >
+              {playerFeed.map(item => renderFeedItem(item, true))}
+            </motion.div>
           )}
         </TabsContent>
 
         {/* Community Feed Tab */}
-        <TabsContent value="community" className="space-y-3">
+        <TabsContent value="community">
           {communityFeed.length === 0 ? (
             <Card className="p-8 text-center">
               <p className="text-muted-foreground">
@@ -420,10 +473,17 @@ export default function Activity() {
               </p>
             </Card>
           ) : (
-            communityFeed.map(item => renderFeedItem(item, false))
+            <motion.div
+              className="space-y-3"
+              variants={staggerContainer}
+              initial="initial"
+              animate="animate"
+            >
+              {communityFeed.map(item => renderFeedItem(item, false))}
+            </motion.div>
           )}
         </TabsContent>
       </Tabs>
-    </div>
+    </PageContainer>
   )
 }

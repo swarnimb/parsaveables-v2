@@ -1,10 +1,11 @@
 import { Lock } from 'lucide-react'
 import BettingControlsModal from '@/components/admin/BettingControlsModal'
 import { Button } from '@/components/ui/button'
+import PageContainer from '@/components/layout/PageContainer'
 
 export default function BettingControls() {
   return (
-    <div className="container mx-auto px-4 py-6 max-w-4xl">
+    <PageContainer className="container mx-auto px-4 py-6 max-w-4xl">
       <div className="mb-6">
         <h1 className="text-2xl font-bold mb-2">Betting Controls</h1>
         <p className="text-muted-foreground">
@@ -67,6 +68,6 @@ export default function BettingControls() {
           All authenticated users currently have access to betting controls. In production, implement proper admin role checks.
         </p>
       </div>
-    </div>
+    </PageContainer>
   )
 }

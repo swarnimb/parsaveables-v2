@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { ChevronUp, ChevronDown, ChevronRight } from 'lucide-react'
 import { getPlayerDisplayName } from '@/utils/playerUtils'
+import { motion } from 'framer-motion'
+import { staggerContainer, staggerItem } from '@/utils/animations'
 
 export default function LeaderboardTable({ players, startRank = 1 }) {
   const [sortField, setSortField] = useState('total_points')
@@ -77,15 +79,20 @@ export default function LeaderboardTable({ players, startRank = 1 }) {
               </th>
             </tr>
           </thead>
-          <tbody>
+          <motion.tbody
+            variants={staggerContainer}
+            initial="initial"
+            animate="animate"
+          >
             {sortedPlayers.map((player, index) => {
               const isExpanded = expandedPlayer === player.player_name
               const stats = calculateStats(player)
 
               return (
                 <>
-                  <tr
+                  <motion.tr
                     key={player.player_name}
+                    variants={staggerItem}
                     className="border-t border-border hover:bg-accent/50 transition-colors cursor-pointer"
                     onClick={() => toggleExpand(player.player_name)}
                   >
@@ -116,7 +123,7 @@ export default function LeaderboardTable({ players, startRank = 1 }) {
                     <td className="px-4 py-3 text-sm text-right">
                       {player.best_score || '-'}
                     </td>
-                  </tr>
+                  </motion.tr>
                   {isExpanded && (
                     <tr key={`${player.player_name}-expanded`} className="bg-muted/30">
                       <td colSpan="6" className="px-4 py-4">
@@ -152,19 +159,25 @@ export default function LeaderboardTable({ players, startRank = 1 }) {
                 </>
               )
             })}
-          </tbody>
+          </motion.tbody>
         </table>
       </div>
 
       {/* Mobile Card View */}
-      <div className="md:hidden">
+      <motion.div
+        className="md:hidden"
+        variants={staggerContainer}
+        initial="initial"
+        animate="animate"
+      >
         {sortedPlayers.map((player, index) => {
           const isExpanded = expandedPlayer === player.player_name
           const stats = calculateStats(player)
 
           return (
-            <div
+            <motion.div
               key={player.player_name}
+              variants={staggerItem}
               className="border-b border-border last:border-b-0"
             >
               <div
@@ -226,10 +239,10 @@ export default function LeaderboardTable({ players, startRank = 1 }) {
                   </div>
                 </div>
               )}
-            </div>
+            </motion.div>
           )
         })}
-      </div>
+      </motion.div>
     </div>
   )
 }
