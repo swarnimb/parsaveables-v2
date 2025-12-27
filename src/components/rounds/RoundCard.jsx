@@ -239,9 +239,10 @@ export default function RoundCard({ round, isExpanded, onToggle }) {
                 </motion.div>
               )}
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
 
       {/* Full-screen Image Modal */}
       {isImageFullScreen && round.scorecard_image_url && (
