@@ -44,40 +44,25 @@ export default function RoundCard({ round, isExpanded, onToggle }) {
         onClick={onToggle}
         className="w-full px-6 py-4 flex items-center justify-between hover:bg-accent/30 transition-colors text-left group"
       >
-        <div className="flex items-center gap-6 flex-1">
-          {/* Date - Enhanced */}
-          <div className="flex items-center gap-3 min-w-[140px]">
-            <div className="h-10 w-10 rounded-lg bg-blue-500/10 flex items-center justify-center group-hover:bg-blue-500/20 transition-colors">
-              <Calendar className="h-5 w-5 text-blue-600" />
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground font-medium">Date</p>
-              <p className="text-sm font-bold">{round.date}</p>
-            </div>
+        <div className="flex items-center gap-4 flex-1">
+          {/* Date */}
+          <div className="flex items-center gap-2 min-w-[100px]">
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <span className="text-xs text-muted-foreground">{round.date}</span>
           </div>
 
-          {/* Course - Enhanced */}
-          <div className="flex items-center gap-3 flex-1">
-            <div className="h-10 w-10 rounded-lg bg-green-500/10 flex items-center justify-center group-hover:bg-green-500/20 transition-colors">
-              <MapPin className="h-5 w-5 text-green-600" />
-            </div>
-            <div className="flex-1">
-              <p className="text-xs text-muted-foreground font-medium">Course</p>
-              <p className="text-sm font-bold truncate">{round.course_name}</p>
-            </div>
+          {/* Course */}
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <MapPin className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+            <span className="text-sm font-semibold truncate">{round.course_name}</span>
           </div>
 
-          {/* Player Count - Enhanced */}
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-lg bg-purple-500/10 flex items-center justify-center group-hover:bg-purple-500/20 transition-colors">
-              <Users className="h-5 w-5 text-purple-600" />
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground font-medium">Players</p>
-              <p className="text-sm font-bold">
-                {round.player_count}
-              </p>
-            </div>
+          {/* Player Count */}
+          <div className="flex items-center gap-2">
+            <Users className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm text-muted-foreground">
+              {round.player_count}
+            </span>
           </div>
         </div>
 
@@ -97,18 +82,12 @@ export default function RoundCard({ round, isExpanded, onToggle }) {
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3 }}
-            className="border-t-2 border-border/50 p-6 bg-gradient-to-br from-muted/20 to-muted/40"
+            className="border-t-2 border-border/50 p-4 bg-muted/50"
           >
-            <div className="grid md:grid-cols-2 gap-8">
-              {/* Left: Scorecard Image */}
-              <div className="flex flex-col">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="h-8 w-8 rounded-lg bg-amber-500/10 flex items-center justify-center">
-                    <Award className="h-4 w-4 text-amber-600" />
-                  </div>
-                  <h3 className="text-base font-bold">Scorecard</h3>
-                </div>
-                {round.scorecard_image_url ? (
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* Scorecard Image - Only if available */}
+              {round.scorecard_image_url && (
+                <div className="flex flex-col">
                   <motion.div
                     whileHover={{ scale: 1.02 }}
                     className="relative group"
@@ -117,126 +96,69 @@ export default function RoundCard({ round, isExpanded, onToggle }) {
                       src={round.scorecard_image_url}
                       alt="Scorecard"
                       onClick={() => setIsImageFullScreen(true)}
-                      className="rounded-xl border-2 border-border w-full object-contain max-h-[500px] cursor-pointer shadow-lg group-hover:shadow-xl transition-all"
+                      className="rounded-lg border border-border w-full object-contain max-h-[400px] cursor-pointer shadow-md group-hover:shadow-lg transition-all"
                     />
-                    <div className="absolute inset-0 rounded-xl bg-black/0 group-hover:bg-black/5 transition-colors flex items-center justify-center">
-                      <p className="text-white font-semibold opacity-0 group-hover:opacity-100 transition-opacity bg-black/50 px-4 py-2 rounded-lg">
+                    <div className="absolute inset-0 rounded-lg bg-black/0 group-hover:bg-black/5 transition-colors flex items-center justify-center">
+                      <p className="text-white text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity bg-black/50 px-3 py-1.5 rounded">
                         Click to enlarge
                       </p>
                     </div>
                   </motion.div>
-                ) : (
-                  <div className="rounded-xl border-2 border-dashed border-border bg-muted/50 h-[300px] flex items-center justify-center">
-                    <div className="text-center">
-                      <Award className="h-12 w-12 text-muted-foreground mx-auto mb-3 opacity-30" />
-                      <p className="text-sm text-muted-foreground font-medium">No scorecard image available</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Right: Player List */}
-              <div className="flex flex-col">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="h-8 w-8 rounded-lg bg-yellow-500/10 flex items-center justify-center">
-                    <Trophy className="h-4 w-4 text-yellow-600" />
-                  </div>
-                  <h3 className="text-base font-bold">Players & Scores</h3>
                 </div>
+              )}
+
+              {/* Player List - Single Card */}
+              <div className={`flex flex-col ${round.scorecard_image_url ? '' : 'md:col-span-2'}`}>
 
               {loadingPlayers ? (
-                <div className="space-y-3">
-                  {Array.from({ length: 3 }).map((_, i) => (
-                    <div key={i} className="h-20 bg-muted/50 rounded-xl animate-pulse" />
-                  ))}
+                <div className="bg-card border border-border rounded-lg p-4">
+                  <div className="space-y-2">
+                    {Array.from({ length: 3 }).map((_, i) => (
+                      <div key={i} className="h-12 bg-muted/50 rounded animate-pulse" />
+                    ))}
+                  </div>
                 </div>
               ) : (
-                <motion.div
-                  className="space-y-3"
-                  variants={staggerContainer}
-                  initial="initial"
-                  animate="animate"
-                >
-                  {players.map((player, index) => {
-                    const isWinner = index === 0
-                    const isPodium = index < 3
-                    const rankColors = {
-                      0: 'from-yellow-500/20 to-amber-500/10 border-yellow-500/30',
-                      1: 'from-gray-400/20 to-gray-500/10 border-gray-400/30',
-                      2: 'from-orange-600/20 to-orange-700/10 border-orange-600/30'
-                    }
+                <div className="bg-card border border-border rounded-lg overflow-hidden">
+                  <div className="divide-y divide-border">
+                    {players.map((player, index) => {
+                      const isWinner = index === 0
 
-                    return (
-                      <motion.div
-                        variants={staggerItem}
-                        key={player.player_name}
-                        whileHover={{ scale: 1.02, x: 4 }}
-                        className={`flex items-center justify-between p-4 rounded-xl border-2 transition-all ${
-                          isPodium
-                            ? `bg-gradient-to-r ${rankColors[index]} shadow-md`
-                            : 'bg-card border-border hover:border-primary/30'
-                        }`}
-                      >
-                        <div className="flex items-center gap-4 flex-1">
-                          {/* Rank Badge */}
-                          <div className={`flex items-center justify-center w-10 h-10 rounded-lg font-bold ${
-                            isWinner ? 'bg-yellow-500/20 text-yellow-600 text-lg' :
-                            isPodium ? 'bg-gray-500/20 text-gray-600' :
-                            'bg-muted text-muted-foreground text-sm'
-                          }`}>
-                            {isWinner ? '🏆' : `#${index + 1}`}
+                      return (
+                        <div
+                          key={player.player_name}
+                          className="flex items-center justify-between p-3 hover:bg-muted/30 transition-colors"
+                        >
+                          <div className="flex items-center gap-3 flex-1 min-w-0">
+                            {/* Rank */}
+                            <span className={`text-sm font-bold min-w-[24px] ${isWinner ? 'text-yellow-600' : 'text-muted-foreground'}`}>
+                              {isWinner ? '🏆' : `#${index + 1}`}
+                            </span>
+
+                            {/* Player Name */}
+                            <span className="text-sm font-medium truncate">{player.player_name}</span>
                           </div>
 
-                          {/* Player Info */}
-                          <div className="flex-1">
-                            <p className={`font-bold ${isWinner ? 'text-lg' : 'text-base'}`}>
-                              {player.player_name}
-                            </p>
-                            <div className="flex items-center gap-3 mt-1 flex-wrap">
-                              <span className={`text-sm font-semibold ${
-                                player.total_score === 0 ? 'text-gray-600' :
-                                player.total_score < 0 ? 'text-green-600' :
-                                'text-red-600'
-                              }`}>
-                                {player.total_score === 0 ? 'E' : player.total_score > 0 ? `+${player.total_score}` : player.total_score ?? 'N/A'}
-                              </span>
+                          <div className="flex items-center gap-4">
+                            {/* Score */}
+                            <span className={`text-sm font-semibold min-w-[40px] text-right ${
+                              player.total_score === 0 ? 'text-gray-600' :
+                              player.total_score < 0 ? 'text-green-600' :
+                              'text-red-600'
+                            }`}>
+                              {player.total_score === 0 ? 'E' : player.total_score > 0 ? `+${player.total_score}` : player.total_score ?? 'N/A'}
+                            </span>
 
-                              {/* Special Shots */}
-                              <div className="flex items-center gap-2">
-                                {player.birdies > 0 && (
-                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/20">
-                                    <Bird className="h-3 w-3 text-blue-600" />
-                                    <span className="text-xs font-semibold text-blue-600">{player.birdies}</span>
-                                  </span>
-                                )}
-                                {player.eagles > 0 && (
-                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-purple-500/10 border border-purple-500/20">
-                                    <Zap className="h-3 w-3 text-purple-600" />
-                                    <span className="text-xs font-semibold text-purple-600">{player.eagles}</span>
-                                  </span>
-                                )}
-                                {player.aces > 0 && (
-                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-yellow-500/10 border border-yellow-500/20">
-                                    <Target className="h-3 w-3 text-yellow-600" />
-                                    <span className="text-xs font-semibold text-yellow-600">{player.aces}</span>
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Points */}
-                          <div className="text-right">
-                            <p className={`font-bold ${isWinner ? 'text-xl text-yellow-600' : isPodium ? 'text-lg text-primary' : 'text-base text-muted-foreground'}`}>
+                            {/* Points */}
+                            <span className="text-sm font-bold text-green-600 min-w-[50px] text-right">
                               {player.final_total?.toFixed(1)}
-                            </p>
-                            <p className="text-xs text-muted-foreground">pts</p>
+                            </span>
                           </div>
                         </div>
-                      </motion.div>
-                    )
-                  })}
-                </motion.div>
+                      )
+                    })}
+                  </div>
+                </div>
               )}
             </div>
           </div>

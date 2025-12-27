@@ -117,13 +117,6 @@ export default function Leaderboard() {
         )}
       </div>
 
-      {/* Event Info */}
-      {selectedEvent && (
-        <div className="mb-4 text-sm text-muted-foreground">
-          {selectedEvent.type} • {players.length} player(s)
-        </div>
-      )}
-
       {/* Podium Display for Top 3 */}
       {topThree.length > 0 && (
         <PodiumDisplay players={topThree} />

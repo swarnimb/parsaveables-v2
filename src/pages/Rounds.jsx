@@ -51,7 +51,6 @@ export default function Rounds() {
 
   return (
     <PageContainer className="container mx-auto px-4 py-6 max-w-4xl">
-      <h1 className="text-2xl font-bold mb-6">Rounds</h1>
 
       {rounds.length === 0 ? (
         <div className="border border-border rounded-lg p-8 text-center">

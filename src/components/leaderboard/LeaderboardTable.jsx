@@ -68,15 +68,6 @@ export default function LeaderboardTable({ players, startRank = 1 }) {
               >
                 Points <SortIcon field="total_points" />
               </th>
-              <th
-                className="px-4 py-3 text-right text-sm font-medium cursor-pointer hover:bg-accent"
-                onClick={() => handleSort('total_birdies')}
-              >
-                Birdies <SortIcon field="total_birdies" />
-              </th>
-              <th className="px-4 py-3 text-right text-sm font-medium">
-                Best Score
-              </th>
             </tr>
           </thead>
           <motion.tbody
@@ -109,7 +100,7 @@ export default function LeaderboardTable({ players, startRank = 1 }) {
                     </td>
                     <td className="px-4 py-3 text-sm text-right">
                       <div className="flex flex-col items-end">
-                        <span className="font-semibold">
+                        <span className="font-semibold text-green-600">
                           {player.total_points?.toFixed(1) || '0.0'}
                         </span>
                         <span className="text-xs text-muted-foreground">
@@ -117,15 +108,9 @@ export default function LeaderboardTable({ players, startRank = 1 }) {
                         </span>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-sm text-right">
-                      {player.total_birdies || 0}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-right">
-                      {player.best_score || '-'}
-                    </td>
                   </motion.tr>
                   {isExpanded && (
-                    <tr key={`${player.player_name}-expanded`} className="bg-muted/30">
+                    <tr key={`${player.player_name}-expanded`} className="bg-muted/50">
                       <td colSpan="6" className="px-4 py-4">
                         <div className="grid grid-cols-6 gap-4 text-sm">
                           <div>
@@ -195,22 +180,18 @@ export default function LeaderboardTable({ players, startRank = 1 }) {
                     <span className="font-semibold">{getPlayerDisplayName(player.player_name)}</span>
                   </div>
                   <div className="text-right">
-                    <div className="font-bold text-primary">
-                      {player.total_points?.toFixed(1) || '0.0'} pts
+                    <div className="font-bold text-green-600">
+                      {player.total_points?.toFixed(1) || '0.0'}
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      {player.rounds_played || 0} rounds
+                      {player.rounds_played || 0}r
                     </div>
                   </div>
-                </div>
-                <div className="flex gap-4 text-sm text-muted-foreground">
-                  <span>Birdies: {player.total_birdies || 0}</span>
-                  <span>Best: {player.best_score || '-'}</span>
                 </div>
               </div>
 
               {isExpanded && (
-                <div className="bg-muted/30 p-4 border-t border-border">
+                <div className="bg-muted/50 p-4 border-t border-border">
                   <div className="grid grid-cols-3 gap-3 text-sm">
                     <div>
                       <p className="text-muted-foreground mb-1">Wins</p>
