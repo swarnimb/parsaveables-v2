@@ -40,7 +40,7 @@ export default function PodiumDisplay({ players }) {
               <Trophy className="h-6 w-6 text-primary" />
             </div>
           )}
-          <p className={`font-semibold ${rank === 1 ? 'text-sm mt-6' : 'text-xs'} truncate`}>
+          <p className={`font-semibold ${rank === 1 ? 'text-sm mt-6' : 'text-xs'} line-clamp-2 text-center`}>
             {displayName}
           </p>
           <div>

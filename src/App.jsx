@@ -2,18 +2,18 @@ import { lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { AnimatePresence } from 'framer-motion'
 
-// Lazy load pages for code splitting
-const Login = lazy(() => import('@/pages/Login'))
-const Leaderboard = lazy(() => import('@/pages/Leaderboard'))
-const Rounds = lazy(() => import('@/pages/Rounds'))
+// Eagerly load frequently accessed pages for instant navigation
+import Login from '@/pages/Login'
+import Leaderboard from '@/pages/Leaderboard'
+import Rounds from '@/pages/Rounds'
+import Activity from '@/pages/Activity'
+import Betting from '@/pages/Betting'
+import Dashboard from '@/pages/Dashboard'
+
+// Lazy load less frequently accessed pages
 const Podcast = lazy(() => import('@/pages/Podcast'))
-const Activity = lazy(() => import('@/pages/Activity'))
-const Betting = lazy(() => import('@/pages/Betting'))
-const Dashboard = lazy(() => import('@/pages/Dashboard'))
 const About = lazy(() => import('@/pages/About'))
 const NotFound = lazy(() => import('@/pages/NotFound'))
-
-// Admin pages
 const ControlCenter = lazy(() => import('@/pages/admin/ControlCenter'))
 const BettingControls = lazy(() => import('@/pages/admin/BettingControls'))
 const ProcessScorecards = lazy(() => import('@/pages/admin/ProcessScorecards'))
@@ -38,9 +38,8 @@ function AnimatedRoutes() {
   const location = useLocation()
 
   return (
-    <Suspense fallback={<PageLoader />}>
-      <AnimatePresence mode="wait">
-        <Routes location={location} key={location.pathname}>
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
         {/* Public route */}
         <Route path="/login" element={<Login />} />
 
@@ -49,23 +48,22 @@ function AnimatedRoutes() {
           <Route path="/" element={<Navigate to="/leaderboard" replace />} />
           <Route path="/leaderboard" element={<Leaderboard />} />
           <Route path="/rounds" element={<Rounds />} />
-          <Route path="/podcast" element={<Podcast />} />
+          <Route path="/podcast" element={<Suspense fallback={<PageLoader />}><Podcast /></Suspense>} />
           <Route path="/activity" element={<Activity />} />
           <Route path="/betting" element={<Betting />} />
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/about" element={<About />} />
+          <Route path="/about" element={<Suspense fallback={<PageLoader />}><About /></Suspense>} />
 
           {/* Admin routes */}
-          <Route path="/admin/control-center" element={<ControlCenter />} />
-          <Route path="/admin/betting-controls" element={<BettingControls />} />
-          <Route path="/admin/process-scorecards" element={<ProcessScorecards />} />
+          <Route path="/admin/control-center" element={<Suspense fallback={<PageLoader />}><ControlCenter /></Suspense>} />
+          <Route path="/admin/betting-controls" element={<Suspense fallback={<PageLoader />}><BettingControls /></Suspense>} />
+          <Route path="/admin/process-scorecards" element={<Suspense fallback={<PageLoader />}><ProcessScorecards /></Suspense>} />
         </Route>
 
         {/* 404 catch-all */}
-        <Route path="*" element={<NotFound />} />
+        <Route path="*" element={<Suspense fallback={<PageLoader />}><NotFound /></Suspense>} />
       </Routes>
     </AnimatePresence>
-    </Suspense>
   )
 }
 

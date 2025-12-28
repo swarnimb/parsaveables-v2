@@ -52,9 +52,9 @@ export default function RoundCard({ round, isExpanded, onToggle }) {
           </div>
 
           {/* Course */}
-          <div className="flex items-center gap-2 flex-1 min-w-0">
-            <MapPin className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-            <span className="text-sm font-semibold truncate">{round.course_name}</span>
+          <div className="flex items-start gap-2 flex-1 min-w-0">
+            <MapPin className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
+            <span className="text-sm font-semibold line-clamp-2">{round.course_name}</span>
           </div>
 
           {/* Player Count */}
@@ -136,7 +136,7 @@ export default function RoundCard({ round, isExpanded, onToggle }) {
                             </span>
 
                             {/* Player Name */}
-                            <span className="text-sm font-medium truncate">{player.player_name}</span>
+                            <span className="text-sm font-medium line-clamp-2 break-words">{player.player_name}</span>
                           </div>
 
                           <div className="flex items-center gap-4">
