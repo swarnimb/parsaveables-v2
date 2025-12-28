@@ -40,7 +40,7 @@ export default function PodiumDisplay({ players }) {
               <Trophy className="h-6 w-6 text-primary" />
             </div>
           )}
-          <p className={`font-semibold ${rank === 1 ? 'text-sm mt-6' : 'text-xs'} line-clamp-2 text-center`}>
+          <p className={`font-semibold ${rank === 1 ? 'text-base mt-6' : 'text-sm'} line-clamp-2 text-center`}>
             {displayName}
           </p>
           <div>
@@ -48,7 +48,7 @@ export default function PodiumDisplay({ players }) {
               {player.total_points?.toFixed(1) || '0.0'}
             </p>
             <p className="text-xs text-muted-foreground">
-              {player.rounds_played || 0}r
+              {player.rounds_played || 0} rounds
             </p>
           </div>
           <div className="flex justify-center mt-1">

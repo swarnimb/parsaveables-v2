@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Settings, Lock, FileText, ChevronDown } from 'lucide-react'
+import { Settings, Lock, FileText } from 'lucide-react'
 
 export default function AdminDropdown() {
   const [isOpen, setIsOpen] = useState(false)
@@ -10,13 +10,12 @@ export default function AdminDropdown() {
       {/* Trigger button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 p-2 hover:bg-accent rounded-lg transition-colors"
+        className="p-2 hover:bg-accent rounded-lg transition-colors"
         aria-label="Admin menu"
       >
         <div className="h-8 w-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center">
           <Settings className="h-4 w-4" />
         </div>
-        <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {/* Dropdown menu */}
@@ -33,7 +32,6 @@ export default function AdminDropdown() {
             {/* Header */}
             <div className="px-4 py-3 border-b border-border">
               <p className="font-medium">Admin Tools</p>
-              <p className="text-sm text-muted-foreground">Manage the app</p>
             </div>
 
             {/* Menu items */}

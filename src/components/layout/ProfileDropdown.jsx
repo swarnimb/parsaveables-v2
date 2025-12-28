@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { User, LayoutDashboard, Info, LogOut, ChevronDown } from 'lucide-react'
+import { User, LayoutDashboard, Info, LogOut } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 
 export default function ProfileDropdown() {
@@ -22,13 +22,12 @@ export default function ProfileDropdown() {
       {/* Trigger button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 p-2 hover:bg-accent rounded-lg transition-colors"
+        className="p-2 hover:bg-accent rounded-lg transition-colors"
         aria-label="Profile menu"
       >
         <div className="h-8 w-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center">
           <User className="h-4 w-4" />
         </div>
-        <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {/* Dropdown menu */}
@@ -45,7 +44,6 @@ export default function ProfileDropdown() {
             {/* User info header */}
             <div className="px-4 py-3 border-b border-border">
               <p className="font-medium">{userName}</p>
-              <p className="text-sm text-muted-foreground">View Profile</p>
             </div>
 
             {/* Menu items */}

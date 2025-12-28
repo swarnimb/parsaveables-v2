@@ -92,13 +92,13 @@ export default function LeaderboardTable({ players, startRank = 1 }) {
                         className={`h-4 w-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
                       />
                     </td>
-                    <td className="px-4 py-3 text-sm font-medium">
+                    <td className="px-4 py-3 text-xs font-medium">
                       {index + startRank}
                     </td>
-                    <td className="px-4 py-3 text-sm font-medium">
+                    <td className="px-4 py-3 text-xs font-medium">
                       {getPlayerDisplayName(player.player_name)}
                     </td>
-                    <td className="px-4 py-3 text-sm text-right">
+                    <td className="px-4 py-3 text-xs text-right">
                       <div className="flex flex-col items-end">
                         <span className="font-semibold text-green-600">
                           {player.total_points?.toFixed(1) || '0.0'}
@@ -174,17 +174,17 @@ export default function LeaderboardTable({ players, startRank = 1 }) {
                     <ChevronRight
                       className={`h-4 w-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
                     />
-                    <span className="text-lg font-bold text-muted-foreground">
+                    <span className="text-base font-bold text-muted-foreground">
                       #{index + startRank}
                     </span>
-                    <span className="font-semibold">{getPlayerDisplayName(player.player_name)}</span>
+                    <span className="text-sm font-medium">{getPlayerDisplayName(player.player_name)}</span>
                   </div>
                   <div className="text-right">
-                    <div className="font-bold text-green-600">
+                    <div className="text-sm font-bold text-green-600">
                       {player.total_points?.toFixed(1) || '0.0'}
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      {player.rounds_played || 0}r
+                      {player.rounds_played || 0} rounds
                     </div>
                   </div>
                 </div>
