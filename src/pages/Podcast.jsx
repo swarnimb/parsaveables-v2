@@ -17,20 +17,20 @@ export default function Podcast() {
     const mockEpisodes = [
       {
         id: 1,
-        title: 'The Winter Championships',
-        date: '2024-12-01',
-        audioUrl: null, // Would be actual URL
+        title: 'The Season Kickoff',
+        date: '2025-01-01',
+        audioUrl: 'https://bcovevbtcdsgzbrieiin.supabase.co/storage/v1/object/public/podcast-episodes/ParSaveables-EP01.mp3',
       },
       {
         id: 2,
-        title: 'The Great PULP Heist',
-        date: '2024-11-01',
+        title: 'The Winter Championships',
+        date: '2024-12-01',
         audioUrl: null,
       },
       {
         id: 3,
-        title: 'Fall Golf & Falling Stocks',
-        date: '2024-10-01',
+        title: 'The Great PULP Heist',
+        date: '2024-11-01',
         audioUrl: null,
       }
     ]
@@ -118,54 +118,60 @@ export default function Podcast() {
               <Card className="p-6">
                 {/* Episode Header: Date and Title */}
                 <div className="flex items-center justify-between mb-4">
-                  <span className="text-xs text-muted-foreground">
-                    {new Date(episode.date).toLocaleDateString('en-US', {
-                      month: 'short',
-                      year: 'numeric'
-                    })}
-                  </span>
-                  <h3 className="text-lg font-bold text-right">{episode.title}</h3>
+                  <div className="text-xs text-muted-foreground text-center leading-tight">
+                    <div>{new Date(episode.date).toLocaleDateString('en-US', { month: 'short' })}</div>
+                    <div>{new Date(episode.date).toLocaleDateString('en-US', { year: 'numeric' })}</div>
+                  </div>
+                  <h3 className="text-lg font-bold text-right flex-1 ml-4">{episode.title}</h3>
                 </div>
 
                 {/* Play Controls */}
-                {episode.audioUrl ? (
-                  <div className="space-y-3">
-                    {/* Play/Pause Button and Slider */}
-                    <div className="flex items-center gap-4">
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => togglePlay(episode.id)}
-                        className="h-12 w-12 rounded-full bg-primary hover:bg-primary/90 flex items-center justify-center shadow-md transition-colors flex-shrink-0"
-                      >
-                        {isPlaying ? (
-                          <Pause className="h-6 w-6 text-primary-foreground" />
-                        ) : (
-                          <Play className="h-6 w-6 text-primary-foreground ml-0.5" />
-                        )}
-                      </motion.button>
+                <div className="space-y-3">
+                  {/* Play/Pause Button and Slider */}
+                  <div className="flex items-center gap-4">
+                    <motion.button
+                      whileHover={episode.audioUrl ? { scale: 1.05 } : {}}
+                      whileTap={episode.audioUrl ? { scale: 0.95 } : {}}
+                      onClick={() => episode.audioUrl && togglePlay(episode.id)}
+                      disabled={!episode.audioUrl}
+                      className={`h-12 w-12 rounded-full flex items-center justify-center shadow-md transition-colors flex-shrink-0 ${
+                        episode.audioUrl
+                          ? 'bg-primary hover:bg-primary/90 cursor-pointer'
+                          : 'bg-muted cursor-not-allowed'
+                      }`}
+                    >
+                      {isPlaying ? (
+                        <Pause className={`h-6 w-6 ${episode.audioUrl ? 'text-primary-foreground' : 'text-muted-foreground'}`} />
+                      ) : (
+                        <Play className={`h-6 w-6 ml-0.5 ${episode.audioUrl ? 'text-primary-foreground' : 'text-muted-foreground'}`} />
+                      )}
+                    </motion.button>
 
-                      {/* Progress Slider */}
-                      <div className="flex-1 space-y-1">
-                        <input
-                          type="range"
-                          min="0"
-                          max="100"
-                          value={progress}
-                          onChange={(e) => handleSeek(episode.id, e.target.value)}
-                          className="w-full h-2 rounded-lg appearance-none cursor-pointer bg-muted"
-                          style={{
-                            background: `linear-gradient(to right, hsl(var(--primary)) ${progress}%, hsl(var(--muted)) ${progress}%)`
-                          }}
-                        />
-                        <div className="flex justify-between text-xs text-muted-foreground">
-                          <span>{formatTime(currentTime)}</span>
-                          <span>{formatTime(duration)}</span>
-                        </div>
+                    {/* Progress Slider */}
+                    <div className="flex-1 space-y-1">
+                      <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        value={progress}
+                        onChange={(e) => episode.audioUrl && handleSeek(episode.id, e.target.value)}
+                        disabled={!episode.audioUrl}
+                        className={`w-full h-2 rounded-lg appearance-none ${episode.audioUrl ? 'cursor-pointer' : 'cursor-not-allowed'} bg-muted`}
+                        style={{
+                          background: episode.audioUrl
+                            ? `linear-gradient(to right, hsl(var(--primary)) ${progress}%, hsl(var(--muted)) ${progress}%)`
+                            : 'hsl(var(--muted))'
+                        }}
+                      />
+                      <div className="flex justify-between text-xs text-muted-foreground">
+                        <span>{formatTime(currentTime)}</span>
+                        <span>{formatTime(duration)}</span>
                       </div>
                     </div>
+                  </div>
 
-                    {/* Hidden Audio Element */}
+                  {/* Hidden Audio Element */}
+                  {episode.audioUrl && (
                     <audio
                       ref={(el) => {
                         if (el) audioRefs.current[episode.id] = el
@@ -175,14 +181,8 @@ export default function Podcast() {
                       onLoadedMetadata={() => handleLoadedMetadata(episode.id)}
                       onEnded={() => handleEnded(episode.id)}
                     />
-                  </div>
-                ) : (
-                  <div className="p-4 rounded-lg bg-muted/50 border border-border text-center">
-                    <p className="text-sm text-muted-foreground">
-                      Episode audio coming soon! Check back after the end of the month.
-                    </p>
-                  </div>
-                )}
+                  )}
+                </div>
               </Card>
             </motion.div>
           )
