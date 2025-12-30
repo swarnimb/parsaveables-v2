@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom'
+import { NavLink, useLocation } from 'react-router-dom'
 import { Trophy, History, Mic2, Bell, Coins } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
@@ -12,6 +12,15 @@ const navItems = [
 ]
 
 export default function BottomNav() {
+  const location = useLocation()
+
+  // Find the index of the active tab
+  const activeIndex = navItems.findIndex(item => item.path === location.pathname)
+
+  // Calculate indicator position (each tab is 20% wide since we have 5 tabs with flex-1)
+  // Position at center of each tab: 10%, 30%, 50%, 70%, 90%
+  const indicatorPosition = activeIndex >= 0 ? (activeIndex * 20) + 10 : 10
+
   const handleTap = () => {
     // Haptic feedback simulation via CSS animation
     // In a real app with native capabilities, you'd trigger:
@@ -22,7 +31,20 @@ export default function BottomNav() {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-t border-border bottom-nav shadow-lg">
-      <div className="flex items-center justify-around">
+      <div className="relative flex items-center justify-around">
+        {/* Single persistent indicator */}
+        <motion.div
+          className="absolute top-0 h-1 w-12 bg-primary rounded-full"
+          animate={{
+            left: `calc(${indicatorPosition}% - 24px)` // 24px is half of w-12 (48px)
+          }}
+          transition={{
+            type: 'spring',
+            stiffness: 300,
+            damping: 30
+          }}
+        />
+
         {navItems.map(({ path, icon: Icon, label }) => (
           <NavLink
             key={path}
@@ -48,15 +70,6 @@ export default function BottomNav() {
                     isActive && 'bg-primary/10'
                   )}
                 >
-                  {/* Active Indicator - positioned relative to icon */}
-                  {isActive && (
-                    <motion.div
-                      layoutId="activeTab"
-                      className="absolute -top-2 left-1/2 -translate-x-1/2 w-12 h-1 bg-primary rounded-full"
-                      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                    />
-                  )}
-
                   <Icon className={cn(
                     'h-5 w-5 transition-transform duration-200',
                     isActive && 'scale-110'
