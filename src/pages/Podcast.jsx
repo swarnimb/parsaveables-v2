@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { Play, Pause, Calendar } from 'lucide-react'
+import { Play, Pause } from 'lucide-react'
 import PageContainer from '@/components/layout/PageContainer'
 import { Card } from '@/components/ui/card'
 import { motion } from 'framer-motion'
@@ -17,19 +17,19 @@ export default function Podcast() {
     const mockEpisodes = [
       {
         id: 1,
-        title: 'December 2024 Recap: The Winter Championships',
+        title: 'The Winter Championships',
         date: '2024-12-01',
         audioUrl: null, // Would be actual URL
       },
       {
         id: 2,
-        title: 'November 2024: The Great PULP Heist',
+        title: 'The Great PULP Heist',
         date: '2024-11-01',
         audioUrl: null,
       },
       {
         id: 3,
-        title: 'October 2024: Fall Golf & Falling Stocks',
+        title: 'Fall Golf & Falling Stocks',
         date: '2024-10-01',
         audioUrl: null,
       }
@@ -118,16 +118,12 @@ export default function Podcast() {
               <Card className="p-6">
                 {/* Episode Header: Date and Title */}
                 <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3 flex-1">
-                    <Calendar className="h-5 w-5 text-muted-foreground flex-shrink-0" />
-                    <span className="text-sm text-muted-foreground">
-                      {new Date(episode.date).toLocaleDateString('en-US', {
-                        month: 'long',
-                        day: 'numeric',
-                        year: 'numeric'
-                      })}
-                    </span>
-                  </div>
+                  <span className="text-xs text-muted-foreground">
+                    {new Date(episode.date).toLocaleDateString('en-US', {
+                      month: 'short',
+                      year: 'numeric'
+                    })}
+                  </span>
                   <h3 className="text-lg font-bold text-right">{episode.title}</h3>
                 </div>
 
