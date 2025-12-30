@@ -1,7 +1,7 @@
 # API Contract
 
-**Last Updated:** 2025-12-26
-**Status:** Core endpoints (2) + PULP endpoints (7) implemented
+**Last Updated:** 2025-12-30
+**Status:** Core endpoints (2) + PULP endpoints (7) + Betting Timer System implemented
 
 ---
 
@@ -9,7 +9,7 @@
 
 ### POST /api/processScorecard
 
-Process scorecards from Gmail. Executes 12-step workflow: email polling → image extraction → Claude Vision → validation → event assignment → scoring → player validation → config loading → points calculation → database storage → notifications.
+Process scorecards from Gmail. Executes 14-step workflow: email polling → image extraction → Claude Vision → validation → event assignment → scoring → player validation → config loading → points calculation → database storage → notifications → PULP processing → bet/challenge resolution → **betting lock auto-reset**.
 
 **Request:**
 ```json
@@ -313,6 +313,8 @@ Purchase advantage from catalog. Expires in 24 hours. One per type limit.
 
 Admin endpoint to lock betting for an event. Prevents new bets, finalizes pending bets.
 
+**Note:** Betting lock is primarily managed via the **Betting Controls UI** (Admin dropdown → Betting Controls), which provides timer preview, extend, and cancel functionality. This API endpoint is available but rarely used directly.
+
 **Authentication:** Required (admin access - currently all authenticated users)
 
 **Request:**
@@ -340,6 +342,10 @@ Admin endpoint to lock betting for an event. Prevents new bets, finalizes pendin
 - Sets `events.betting_lock_time` to current timestamp
 - Updates all pending bets for event to status='locked'
 - Prevents new bets from being placed
+- **UI Features:**
+  - Betting Controls page: Set round time → auto-calculates lock time (round + 15 min) → Lock/Extend/Cancel buttons
+  - Betting page: Animated countdown timer showing time until lock → Pulsating "Locked" state after lock time
+  - Auto-reset: Lock clears when scorecard is processed for locked round (Step 14 of processScorecard workflow)
 
 ---
 

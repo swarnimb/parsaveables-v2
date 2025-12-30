@@ -1200,7 +1200,10 @@ parsaveables-v2/
 **Betting Window:**
 - Opens: Days before round (when round is created)
 - Closes: 15 minutes after scheduled round start time
-- Admin can delay closing time if round delayed
+- **Timer Display:** Animated countdown showing hours/minutes until lock on Betting page
+- **Locked State:** Pulsating "Betting Locked / Round in progress" message after lock time
+- **Admin Controls:** Set, extend (15 min), or cancel lock via Betting Controls page
+- **Auto-Reset:** Lock automatically clears when scorecard is processed for locked round
 
 **Payouts (Non-Zero-Sum):**
 | Outcome | Payout | Notes |

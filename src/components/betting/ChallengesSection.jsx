@@ -39,8 +39,9 @@ export default function ChallengesSection({ playerId, pulpBalance, onChallengeAc
         const { data: activeEvent } = await supabase
           .from('events')
           .select('id')
-          .eq('active', true)
+          .eq('is_active', true)
           .eq('type', 'season')
+          .limit(1)
           .single()
 
         if (!activeEvent) {

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Coins, Target, Swords, ShoppingCart, TrendingUp, Award, ChevronDown, ChevronUp, DollarSign, XCircle, Ban, Trophy, Gift } from 'lucide-react'
+import { Coins, Target, Swords, ShoppingCart, TrendingUp, Award, ChevronDown, ChevronUp, DollarSign, XCircle, Ban, Trophy, Gift, Lock, Clock } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/services/supabase'
 import {
@@ -22,6 +22,8 @@ export default function Betting() {
   const [transactions, setTransactions] = useState([])
   const [balanceExpanded, setBalanceExpanded] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [bettingLockTime, setBettingLockTime] = useState(null)
+  const [timeRemaining, setTimeRemaining] = useState(null)
 
   // Fetch PULP balance
   useEffect(() => {
@@ -70,6 +72,67 @@ export default function Betting() {
     fetchTransactions()
   }, [balanceExpanded, player])
 
+  // Fetch betting lock time from active event
+  useEffect(() => {
+    async function fetchBettingLockTime() {
+      try {
+        const { data, error } = await supabase
+          .from('events')
+          .select('betting_lock_time')
+          .eq('is_active', true)
+          .limit(1)
+          .single()
+
+        if (error) {
+          // If no active event, that's ok
+          if (error.code === 'PGRST116') {
+            setBettingLockTime(null)
+            return
+          }
+          throw error
+        }
+
+        console.log('Fetched betting lock time:', data?.betting_lock_time)
+        setBettingLockTime(data?.betting_lock_time || null)
+      } catch (err) {
+        console.error('Error fetching betting lock time:', err)
+        setBettingLockTime(null)
+      }
+    }
+
+    fetchBettingLockTime()
+
+    // Refresh every 30 seconds to detect when lock is cleared
+    const interval = setInterval(fetchBettingLockTime, 30000)
+    return () => clearInterval(interval)
+  }, [])
+
+  // Update countdown timer every second
+  useEffect(() => {
+    if (!bettingLockTime) {
+      setTimeRemaining(null)
+      return
+    }
+
+    const updateTimer = () => {
+      const now = new Date()
+      const lockTime = new Date(bettingLockTime)
+      const diff = lockTime - now
+
+      if (diff <= 0) {
+        setTimeRemaining('locked')
+      } else {
+        const hours = Math.floor(diff / (1000 * 60 * 60))
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+        setTimeRemaining({ hours, minutes })
+      }
+    }
+
+    updateTimer()
+    const interval = setInterval(updateTimer, 1000)
+    return () => clearInterval(interval)
+  }, [bettingLockTime])
+
   const getTransactionIcon = (type) => {
     const iconMap = {
       'achievement_unlock': <Trophy className="h-4 w-4 text-yellow-600" />,
@@ -116,8 +179,8 @@ export default function Betting() {
             <div>
               <motion.p
                 key={pulpBalance}
-                initial={{ scale: 1.2, color: '#10b981' }}
-                animate={{ scale: 1, color: 'inherit' }}
+                initial={{ scale: 1.2 }}
+                animate={{ scale: 1 }}
                 className="text-4xl font-bold tracking-tight"
               >
                 {loading ? '...' : pulpBalance?.toLocaleString() || '0'}
@@ -180,6 +243,72 @@ export default function Betting() {
           )}
         </AnimatePresence>
       </motion.div>
+
+      {/* Betting Timer/Lock Status */}
+      <AnimatePresence>
+        {timeRemaining && (
+          <motion.div
+            initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+            animate={{ opacity: 1, height: 'auto', marginBottom: 32 }}
+            exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+            transition={{ duration: 0.3 }}
+            className="overflow-hidden"
+          >
+            {timeRemaining === 'locked' ? (
+              /* Locked State - Pulsating Lock Icon */
+              <div className="relative overflow-hidden rounded-xl border-2 border-red-500/30 bg-gradient-to-br from-red-500/10 via-background to-red-500/5 shadow-lg p-6">
+                <div className="absolute inset-0 bg-gradient-to-r from-red-500/10 to-transparent opacity-50"></div>
+                <div className="relative z-10 flex items-center gap-4">
+                  <motion.div
+                    animate={{
+                      scale: [1, 1.2, 1],
+                      opacity: [0.7, 1, 0.7]
+                    }}
+                    transition={{
+                      repeat: Infinity,
+                      duration: 2,
+                      ease: "easeInOut"
+                    }}
+                    className="h-16 w-16 rounded-full bg-red-500/20 flex items-center justify-center"
+                  >
+                    <Lock className="h-8 w-8 text-red-600" />
+                  </motion.div>
+                  <div>
+                    <p className="text-xl font-bold text-red-600">Betting Locked</p>
+                    <p className="text-sm text-muted-foreground">Round in progress</p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              /* Countdown Timer */
+              <div className="relative overflow-hidden rounded-xl border-2 border-primary/30 bg-gradient-to-br from-primary/10 via-background to-primary/5 shadow-lg p-6">
+                <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent opacity-50"></div>
+                <div className="relative z-10 flex items-center gap-4">
+                  <motion.div
+                    animate={{
+                      rotate: [0, 360]
+                    }}
+                    transition={{
+                      repeat: Infinity,
+                      duration: 60,
+                      ease: "linear"
+                    }}
+                    className="h-16 w-16 rounded-full bg-primary/20 flex items-center justify-center"
+                  >
+                    <Clock className="h-8 w-8 text-primary" />
+                  </motion.div>
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Betting locks in</p>
+                    <p className="text-3xl font-bold text-primary">
+                      {timeRemaining.hours}h {timeRemaining.minutes}m
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Betting Sections */}
       <div className="space-y-4">

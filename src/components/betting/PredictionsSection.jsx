@@ -29,7 +29,8 @@ export default function PredictionsSection({ playerId, pulpBalance, onBetPlaced 
         const { data, error } = await supabase
           .from('events')
           .select('id, name, betting_lock_time')
-          .eq('active', true)
+          .eq('is_active', true)
+          .limit(1)
           .single()
 
         if (error) throw error

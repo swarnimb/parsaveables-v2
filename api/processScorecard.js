@@ -392,6 +392,48 @@ async function processSingleEmail(email, options = {}) {
     }
   }
 
+  // Step 14: Reset betting lock if round date >= lock time
+  logger.info('Step 14: Checking if betting lock should be reset');
+  try {
+    // Construct full datetime from round date and time
+    const roundDateTime = round.time
+      ? new Date(`${round.date}T${round.time}`)
+      : new Date(`${round.date}T00:00:00`);
+
+    logger.info('Round datetime', {
+      roundDate: round.date,
+      roundTime: round.time,
+      roundDateTime: roundDateTime.toISOString()
+    });
+
+    // Check if event has a betting lock time set
+    if (event.betting_lock_time) {
+      const lockTime = new Date(event.betting_lock_time);
+
+      logger.info('Comparing round time with lock time', {
+        roundDateTime: roundDateTime.toISOString(),
+        lockTime: lockTime.toISOString(),
+        shouldReset: roundDateTime >= lockTime
+      });
+
+      // If round date/time is >= lock time, reset the lock
+      if (roundDateTime >= lockTime) {
+        await db.updateEvent(event.id, { betting_lock_time: null });
+        logger.info('Betting lock reset - round processed after lock time', {
+          eventId: event.id,
+          roundId: round.id,
+          previousLockTime: event.betting_lock_time
+        });
+      }
+    }
+  } catch (error) {
+    logger.error('Failed to reset betting lock (non-fatal)', {
+      error: error.message,
+      roundId: round.id
+    });
+    // Don't throw - lock reset failure shouldn't break the flow
+  }
+
   logger.info('Single email processing complete', {
     emailId: email.id,
     roundId: round.id,

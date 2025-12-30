@@ -35,11 +35,97 @@
 | 💸 PULP Transaction Tests | ✅ Complete (Advantages, Betting, Challenges - 16 tests) |
 | 👤 Guest Login System | ✅ Complete (Read-only access, disabled features, tooltips) |
 | 🔧 Admin Control Center | ✅ Complete (Password-protected CRUD for 5 management areas) |
+| ⏱️ Betting Timer & Lock System | ✅ Complete (Countdown timer, auto-reset, cancel/extend) |
 | ⏳ Git & Deployment | **NEXT** (Vercel deployment, environment variables) |
 
 ---
 
 ## This Session Summary (2025-12-30 - Latest)
+
+### Betting Timer & Lock Management System - COMPLETED ✅
+
+**Work Completed:**
+- ✅ **Betting Timer Display on Betting Page**
+  - Animated countdown timer showing hours and minutes until betting locks
+  - Displays between PULP balance card and betting sections
+  - Pulsating "Betting Locked / Round in progress" state when locked
+  - Automatically hides when no lock time is set
+  - Real-time countdown updates every second
+  - Rotating clock icon animation (360° every 60 seconds)
+  - Polls for lock time changes every 30 seconds
+
+- ✅ **Enhanced Betting Controls Admin Page**
+  - Shows current locked state prominently in red-bordered card
+  - Displays both round time and lock time when betting is locked
+  - "Cancel Lock" button to clear betting_lock_time
+  - "Extend 15 mins" button to extend current lock
+  - Prevents creating new rounds while lock is active
+  - Auto-refreshes every 30 seconds to detect scorecard processing reset
+  - Creates lock for all active events simultaneously
+
+- ✅ **Auto-Reset After Scorecard Processing**
+  - Added Step 14 to processScorecard.js workflow
+  - Automatically clears betting_lock_time when round is processed
+  - Compares round date/time with lock time to determine reset
+  - Non-fatal error handling (doesn't break scorecard processing)
+  - Timer disappears from Betting page after reset
+
+- ✅ **Database Service Enhancement**
+  - Added updateEvent() function to databaseService.js
+  - Supports updating any event fields with proper error handling
+  - Used for both betting lock operations and reset
+
+**Files Modified (7 files):**
+- src/pages/admin/BettingControls.jsx (added locked state display, Cancel/Extend buttons, polling)
+- src/pages/Betting.jsx (added countdown timer, pulsating locked state, AnimatePresence transitions)
+- api/processScorecard.js (added Step 14 for auto-reset logic)
+- src/services/core/databaseService.js (added updateEvent function)
+- src/components/betting/PredictionsSection.jsx (fixed `active` → `is_active`, added `.limit(1)`)
+- src/components/betting/ChallengesSection.jsx (fixed `active` → `is_active`, added `.limit(1)`)
+- src/components/leaderboard/LeaderboardTable.jsx (fixed React key warning with Fragment)
+- src/components/layout/NotificationBell.jsx (fixed UUID vs INTEGER type mismatch)
+
+**Technical Implementation:**
+- Timer uses setInterval for real-time second-by-second countdown
+- Lock state polling uses 30-second intervals to detect database changes
+- Framer Motion AnimatePresence for smooth show/hide transitions
+- Scale animation for PULP balance (removed problematic color animation to "inherit")
+- Multiple active events handled with `.limit(1)` to prevent PGRST116 errors
+- Error handling for PGRST116 (multiple rows) gracefully handles edge cases
+
+**Issues Resolved:**
+- Fixed database field name inconsistency (`active` vs `is_active`) across 4 files
+- Fixed Framer Motion color animation error (removed animation to "inherit")
+- Fixed React key prop warning in LeaderboardTable (used Fragment with key)
+- Fixed NotificationBell UUID vs INTEGER player_id type mismatch
+- Fixed multiple active events query error (PGRST116) with `.limit(1)`
+- Resolved Vercel dev server issues (kept plain Vite for local, Vercel for production)
+
+**Design Decisions:**
+- Timer shows on Betting page (not in admin controls) for player visibility
+- Locked state uses pulsating red animation for urgency
+- Cancel/Extend buttons side-by-side for easy access
+- Auto-reset based on round date/time >= lock time logic
+- Non-blocking polling pattern to avoid UI freezes
+- 30-second refresh interval balances responsiveness with server load
+
+**Workflow:**
+1. Admin sets round date/time in Betting Controls
+2. Admin locks betting (sets betting_lock_time for all active events)
+3. Players see countdown timer on Betting page
+4. Timer counts down in real-time until lock time
+5. After lock time, shows "Betting Locked / Round in progress"
+6. Admin processes scorecard (or automatic email processing)
+7. System detects round date/time >= lock time and clears lock
+8. Timer disappears, ready for next round
+
+**Next Steps:**
+- Full end-to-end testing of betting timer workflow
+- Test auto-reset with actual scorecard processing
+- Verify timer displays correctly across different screen sizes
+- Production deployment with environment variables
+
+---
 
 ### Guest Login & Admin Control Center - COMPLETED ✅
 
