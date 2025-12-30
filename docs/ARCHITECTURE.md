@@ -1,8 +1,8 @@
 # ParSaveables 2.0 - System Architecture
 
-**Last Updated:** 2025-12-26
+**Last Updated:** 2025-12-30
 **Version:** 2.0 (PULP Economy Edition)
-**Status:** Backend & Frontend Complete - Season Aware - Testing Phase
+**Status:** Backend & Frontend Complete - Season Aware - Guest Login - Admin Control Center - Testing Phase
 
 ---
 
@@ -45,6 +45,8 @@ ParSaveables 2.0 is a disc golf tournament tracking platform for small friend gr
 6. **Advantages Shop**: Mulligans, Anti-Mulligans, Cancel, Bag Trump, Shotgun Buddy
 7. **Automated Monthly Podcast**: AI-generated recap of highlights and rivalries
 8. **Group Activity Feed**: Real-time notifications for rounds, challenges, betting results
+9. **Guest Login**: Anonymous users can browse leaderboards, rounds, podcast, and community activity (read-only)
+10. **Admin Control Center**: Password-protected CRUD interface for managing tournaments, players, courses, events, and scoring rules
 
 ---
 
@@ -103,6 +105,7 @@ ParSaveables 2.0 is a disc golf tournament tracking platform for small friend gr
 │  │                                                        │  │
 │  │  Public:                                              │  │
 │  │  9. Login       - Email/password auth + signup        │  │
+│  │                   + "Continue as Guest" button        │  │
 │  │  (404 NotFound page as catch-all route)               │  │
 │  └──────────────────────────────────────────────────────┘  │
 │                                                              │
@@ -260,6 +263,41 @@ ParSaveables 2.0 is a disc golf tournament tracking platform for small friend gr
 
 ---
 
+### Guest Login System
+
+**Purpose**: Allow anonymous users to browse app content without creating an account
+
+**Access:**
+- Login page features "Continue as Guest" button below email/password form
+- Session-based guest mode using sessionStorage ('guestMode' flag)
+- No Supabase authentication required
+
+**Guest Capabilities:**
+- ✅ View Leaderboard (all events, expandable rows)
+- ✅ View Rounds (scorecard viewer, player stats)
+- ✅ Listen to Podcast
+- ✅ View Community Activity feed
+
+**Guest Restrictions:**
+- ❌ Top nav: ProfileDropdown, NotificationBell, AdminDropdown completely hidden
+- ❌ Bottom nav: Betting tab grayed out (opacity-50 + pointer-events-none)
+- ❌ Activity page: "Your Activity" tab disabled (only Community tab accessible)
+- ❌ Blocked routes: /betting, /admin/*, /dashboard (auto-redirects to /leaderboard)
+
+**Guest UI:**
+- Shows "Guest" badge in header
+- "Login" button next to Guest badge for conversion to registered player
+- Disabled features show tooltips on hover explaining login requirement
+- Route protection via useEffect in AppLayout component
+
+**Technical Implementation:**
+- sessionStorage used for guest state (not Supabase)
+- `useAuth` hook exposes `isGuest` boolean
+- `continueAsGuest()` function sets guest mode
+- `signOut()` function clears guest mode when converting to registered player
+
+---
+
 ### Header (Sticky, Always Visible)
 
 **Left Side:**
@@ -275,7 +313,13 @@ ParSaveables 2.0 is a disc golf tournament tracking platform for small friend gr
 - Badge shows unread count
 
 **2. 🔧 Admin** (visible to all users, access control on click)
-- **Control Center** (page): CRUD operations - password-protected on access
+- **Control Center** (page): Password-protected CRUD interface with 5 tabs:
+  - **Tournaments**: Create/edit/delete seasons and tournaments
+  - **Players**: Add/modify players, soft delete (set inactive)
+  - **Courses**: Manage courses with tier/multiplier system
+  - **Events**: Add/remove players from tournaments and seasons
+  - **Rules**: Configure scoring rules, bonuses, and point systems
+  - Password stored in VITE_CONTROL_CENTER_PASSWORD environment variable
 - **Betting Controls** (modal): Set betting_lock_time, delay, cancel betting window
 - **Process Scorecards** (modal): One-click trigger to process all unprocessed scorecards
 
@@ -313,13 +357,53 @@ ParSaveables 2.0 is a disc golf tournament tracking platform for small friend gr
 
 **8. Admin Control Center** (accessed via Admin dropdown → Control Center)
 - **Purpose**: Full CRUD operations for system configuration
-- **Access Control**: Password-protected on click (not visible-only to admins)
-- **Content**:
-  - Courses management (add, edit, delete courses)
-  - Players management (add, edit, delete players)
-  - Seasons management (create, edit, close seasons)
-  - Points systems management (configure points rules)
-  - Events management (create tournaments, set dates)
+- **Access Control**: Password-protected modal on page load (password: VITE_CONTROL_CENTER_PASSWORD)
+- **Session Auth**: Uses sessionStorage ('controlCenterAuth') - persists across page refreshes
+- **Layout**: Single page with 5 tabs
+
+**Tab 1: Tournaments**
+- View all seasons/tournaments with status and type badges
+- Create new tournaments (name, start/end dates, type: season/tournament, status: upcoming/active/completed)
+- Edit existing tournaments
+- Delete tournaments (with confirmation dialog)
+- Uses `events` table
+
+**Tab 2: Players**
+- View all registered players with PULP balances and join dates
+- Add new players (name, email, optional user_id link for auth integration)
+- Edit player details (name, email)
+- Soft delete (sets status='inactive', preserves historical data)
+- Uses `registered_players` table
+
+**Tab 3: Courses**
+- Manage disc golf courses with difficulty tiers (1: Beginner, 2: Intermediate, 3: Advanced)
+- Auto-sets multipliers based on tier (1.0x, 1.5x, 2.0x)
+- Active/inactive status (inactive courses don't appear in dropdowns)
+- Prevents deletion of courses referenced by existing rounds
+- Uses `courses` table
+
+**Tab 4: Events**
+- Select any event/tournament to manage participants
+- Add players to events via dropdown (filtered to show only non-participants)
+- Remove players from events
+- Shows participant count, join dates, and PULP balances
+- Uses `event_players` table
+
+**Tab 5: Rules & Points System**
+- Select points system to configure (Season 2025, Portlandia 2025, etc.)
+- Edit placement points (1st, 2nd, 3rd, default) with add/remove rank buttons
+- Set performance bonuses (birdie, eagle, ace points)
+- Configure tie-breaking rules (enabled/disabled, method: average/split)
+- Toggle course difficulty multipliers (enabled/disabled, source: course_tier/manual)
+- Save changes with success/error feedback
+- Uses `points_systems` table (config JSONB field)
+
+**Technical Implementation:**
+- All CRUD operations use Supabase directly (no separate API layer)
+- Comprehensive validation and error handling
+- Consistent UI patterns (Dialog, Tabs, Select, Input, Badge, Card from Shadcn/ui)
+- Real-time updates after each operation
+- 1,750+ lines of production code across 6 files
 
 ---
 

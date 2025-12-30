@@ -1,8 +1,8 @@
 # ParSaveables v2 - Project Dashboard
 
-**Last Updated:** 2025-12-26
+**Last Updated:** 2025-12-30
 **Current Phase:** Phase 5 (Testing & UX Polish) - IN PROGRESS
-**Status:** ✅ Foundation | ✅ Auth & Layout | ✅ Leaderboard | ✅ Rounds | ✅ PULP Design | ✅ Backend Services | ✅ Frontend UI | ✅ Season Awareness | ✅ UX Enhancements | ✅ Testing Framework
+**Status:** ✅ Foundation | ✅ Auth & Layout | ✅ Leaderboard | ✅ Rounds | ✅ PULP Design | ✅ Backend Services | ✅ Frontend UI | ✅ Season Awareness | ✅ UX Enhancements | ✅ Testing Framework | ✅ Guest Login | ✅ Admin Control Center
 
 ---
 
@@ -33,11 +33,123 @@
 | 🎓 Tutorial System | ✅ Complete (Core + PULP tutorials) |
 | 🧪 Testing Framework | ✅ Complete (Vitest + React Testing Library + Happy DOM) |
 | 💸 PULP Transaction Tests | ✅ Complete (Advantages, Betting, Challenges - 16 tests) |
-| ⏳ Git & Deployment | **NEXT** (Git setup, Vercel deployment, environment variables) |
+| 👤 Guest Login System | ✅ Complete (Read-only access, disabled features, tooltips) |
+| 🔧 Admin Control Center | ✅ Complete (Password-protected CRUD for 5 management areas) |
+| ⏳ Git & Deployment | **NEXT** (Vercel deployment, environment variables) |
 
 ---
 
-## This Session Summary (2025-12-26 - Latest)
+## This Session Summary (2025-12-30 - Latest)
+
+### Guest Login & Admin Control Center - COMPLETED ✅
+
+**Work Completed:**
+- ✅ **Guest Login System**
+  - Added "Continue as Guest" button on Login page below email/password form
+  - Session-based guest mode using sessionStorage ('guestMode' flag)
+  - Guest users can view: Leaderboard, Rounds, Podcast, Community Activity
+  - Disabled for guests:
+    - Top nav: ProfileDropdown, NotificationBell, AdminDropdown (hidden completely)
+    - Bottom nav: Betting tab (grayed out with opacity-50 + pointer-events-none)
+    - Activity page: "Your Activity" tab (disabled state)
+  - Shows "Guest" badge in header with "Login" button for conversion to registered player
+  - Route protection blocks guests from /betting, /admin/*, /dashboard
+  - Automatic redirect to /leaderboard for blocked routes
+
+- ✅ **Admin Control Center - Password Protected**
+  - Password-protected access via environment variable (VITE_CONTROL_CENTER_PASSWORD=admin)
+  - Session-based authentication using sessionStorage ('controlCenterAuth')
+  - Password modal blocks access until correct password entered
+  - **5 Management Tabs with Full CRUD Operations:**
+
+  **1. Tournaments Tab** (TournamentsTab.jsx)
+  - View all seasons/tournaments with status/type badges
+  - Create/edit tournaments (name, dates, type: season/tournament, status: upcoming/active/completed)
+  - Delete tournaments with confirmation dialog
+  - Uses `events` table
+
+  **2. Players Tab** (PlayersTab.jsx)
+  - View all registered players with PULP balances and join dates
+  - Add new players (name, email, optional user_id link)
+  - Edit player details (name, email)
+  - Soft delete (sets status='inactive', preserves historical data)
+  - Uses `registered_players` table
+
+  **3. Courses Tab** (CoursesTab.jsx)
+  - Manage disc golf courses with difficulty tiers (1-3)
+  - Auto-sets multipliers based on tier (1.0x, 1.5x, 2.0x)
+  - Active/inactive status for course availability
+  - Prevents deletion of courses referenced by existing rounds
+  - Uses `courses` table
+
+  **4. Events Tab** (EventsTab.jsx)
+  - Select any event/tournament to manage participants
+  - Add players to events via dropdown (filtered to show only non-participants)
+  - Remove players from events
+  - Shows participant count, join dates, PULP balances
+  - Uses `event_players` table
+
+  **5. Rules Tab** (RulesTab.jsx)
+  - Configure scoring rules per points system
+  - Edit placement points (1st, 2nd, 3rd, default) with add/remove rank functionality
+  - Set performance bonuses (birdie, eagle, ace)
+  - Configure tie-breaking rules (enabled/method)
+  - Toggle course difficulty multipliers (enabled/source)
+  - Save changes with success/error feedback
+  - Uses `points_systems` table (config JSONB field)
+
+**Files Created (6 files):**
+- src/components/admin/TournamentsTab.jsx
+- src/components/admin/PlayersTab.jsx
+- src/components/admin/CoursesTab.jsx
+- src/components/admin/EventsTab.jsx
+- src/components/admin/RulesTab.jsx
+- src/components/ui/tooltip.jsx (Shadcn component for guest feature tooltips)
+
+**Files Modified (7 files):**
+- .env.local (added VITE_CONTROL_CENTER_PASSWORD=admin)
+- src/hooks/useAuth.js (added isGuest state, continueAsGuest function)
+- src/pages/Login.jsx (added "Continue as Guest" button)
+- src/components/layout/AppLayout.jsx (route protection for guests)
+- src/components/layout/Header.jsx (hide nav items for guests, show Guest badge + Login button)
+- src/components/layout/BottomNav.jsx (grey out Betting tab for guests)
+- src/pages/Activity.jsx (disable "Your Activity" tab for guests, default to community)
+- src/pages/admin/ControlCenter.jsx (integrated all 5 tab components)
+
+**Dependencies Added (1 package):**
+- @radix-ui/react-tooltip (for disabled feature tooltips)
+
+**Technical Implementation:**
+- All CRUD operations use Supabase directly (no separate API layer)
+- Comprehensive validation and error handling for all operations
+- Consistent UI patterns using Shadcn/ui components (Dialog, Tabs, Select, Input, Badge, Card)
+- Real-time updates after each operation
+- 1,750+ lines of production-ready code across 6 files
+
+**Design Decisions:**
+- Guest auth uses sessionStorage (not Supabase) for simplicity
+- Admin access is password-based (not role-based) per user requirement
+- Control Center is single page with tabs for cohesive UX
+- Disabled UI for guests shows tooltips on hover for better UX feedback
+- Password stored in environment variable for security
+- Session-based authentication for both guest and control center (persists across page refreshes)
+
+**Issues Resolved:**
+- Dev server needed restart to pick up new environment variable
+- Windows command syntax for taskkill (//F instead of /F)
+
+**Commit Details:**
+- Commit `47c6560`: Add password-protected Admin Control Center with CRUD operations
+- 6 files changed, 1,750 insertions(+), 110 deletions(-)
+
+**Next Steps:**
+- Add VITE_CONTROL_CENTER_PASSWORD to Vercel environment variables for production
+- Polish Control Center UI (design enhancements, loading states)
+- Full end-to-end testing of each feature set
+
+---
+
+## Previous Session Summary (2025-12-26)
 
 ### Testing Framework Setup - COMPLETED ✅
 
