@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { Play, Pause } from 'lucide-react'
+import { Play, Pause, Square } from 'lucide-react'
 import PageContainer from '@/components/layout/PageContainer'
 import { Card } from '@/components/ui/card'
 import { motion } from 'framer-motion'
@@ -44,6 +44,16 @@ export default function Podcast() {
       audio.play()
       setPlayingEpisodeId(episodeId)
     }
+  }
+
+  const handleStop = (episodeId) => {
+    const audio = audioRefs.current[episodeId]
+    if (!audio) return
+
+    audio.pause()
+    audio.currentTime = 0
+    setPlayingEpisodeId(null)
+    setCurrentTimes(prev => ({ ...prev, [episodeId]: 0 }))
   }
 
   const handleTimeUpdate = (episodeId) => {
@@ -115,25 +125,43 @@ export default function Podcast() {
 
                 {/* Play Controls */}
                 <div className="space-y-3">
-                  {/* Play/Pause Button and Slider */}
-                  <div className="flex items-center gap-4">
-                    <motion.button
-                      whileHover={episode.audioUrl ? { scale: 1.05 } : {}}
-                      whileTap={episode.audioUrl ? { scale: 0.95 } : {}}
-                      onClick={() => episode.audioUrl && togglePlay(episode.id)}
-                      disabled={!episode.audioUrl}
-                      className={`h-12 w-12 rounded-full flex items-center justify-center shadow-md transition-colors flex-shrink-0 ${
-                        episode.audioUrl
-                          ? 'bg-primary hover:bg-primary/90 cursor-pointer'
-                          : 'bg-muted cursor-not-allowed'
-                      }`}
-                    >
-                      {isPlaying ? (
-                        <Pause className={`h-6 w-6 ${episode.audioUrl ? 'text-primary-foreground' : 'text-muted-foreground'}`} />
-                      ) : (
-                        <Play className={`h-6 w-6 ml-0.5 ${episode.audioUrl ? 'text-primary-foreground' : 'text-muted-foreground'}`} />
-                      )}
-                    </motion.button>
+                  {/* Play/Pause/Stop Buttons and Slider */}
+                  <div className="flex items-center gap-3">
+                    <div className="flex gap-2">
+                      {/* Play/Pause Button */}
+                      <motion.button
+                        whileHover={episode.audioUrl ? { scale: 1.05 } : {}}
+                        whileTap={episode.audioUrl ? { scale: 0.95 } : {}}
+                        onClick={() => episode.audioUrl && togglePlay(episode.id)}
+                        disabled={!episode.audioUrl}
+                        className={`h-9 w-9 rounded-full flex items-center justify-center shadow-md transition-colors flex-shrink-0 ${
+                          episode.audioUrl
+                            ? 'bg-primary hover:bg-primary/90 cursor-pointer'
+                            : 'bg-muted cursor-not-allowed'
+                        }`}
+                      >
+                        {isPlaying ? (
+                          <Pause className={`h-4 w-4 ${episode.audioUrl ? 'text-primary-foreground' : 'text-muted-foreground'}`} />
+                        ) : (
+                          <Play className={`h-4 w-4 ml-0.5 ${episode.audioUrl ? 'text-primary-foreground' : 'text-muted-foreground'}`} />
+                        )}
+                      </motion.button>
+
+                      {/* Stop Button */}
+                      <motion.button
+                        whileHover={episode.audioUrl ? { scale: 1.05 } : {}}
+                        whileTap={episode.audioUrl ? { scale: 0.95 } : {}}
+                        onClick={() => episode.audioUrl && handleStop(episode.id)}
+                        disabled={!episode.audioUrl}
+                        className={`h-9 w-9 rounded-full flex items-center justify-center shadow-md transition-colors flex-shrink-0 ${
+                          episode.audioUrl
+                            ? 'bg-primary hover:bg-primary/90 cursor-pointer'
+                            : 'bg-muted cursor-not-allowed'
+                        }`}
+                      >
+                        <Square className={`h-4 w-4 ${episode.audioUrl ? 'text-primary-foreground' : 'text-muted-foreground'}`} fill="currentColor" />
+                      </motion.button>
+                    </div>
 
                     {/* Progress Slider */}
                     <div className="flex-1 space-y-1">
@@ -144,7 +172,7 @@ export default function Podcast() {
                         value={progress}
                         onChange={(e) => episode.audioUrl && handleSeek(episode.id, e.target.value)}
                         disabled={!episode.audioUrl}
-                        className={`w-full h-2 rounded-lg appearance-none ${episode.audioUrl ? 'cursor-pointer' : 'cursor-not-allowed'} bg-muted`}
+                        className={`w-full h-1 rounded-lg appearance-none ${episode.audioUrl ? 'cursor-pointer' : 'cursor-not-allowed'} bg-muted`}
                         style={{
                           background: episode.audioUrl
                             ? `linear-gradient(to right, hsl(var(--primary)) ${progress}%, hsl(var(--muted)) ${progress}%)`

@@ -30,7 +30,7 @@ export default function BottomNav() {
             onClick={handleTap}
             className={({ isActive }) =>
               cn(
-                'relative flex flex-col items-center justify-center flex-1 gap-1 transition-all duration-200',
+                'flex flex-col items-center justify-center flex-1 gap-1 transition-all duration-200',
                 'min-h-[60px] py-2',
                 isActive
                   ? 'text-primary'
@@ -40,15 +40,6 @@ export default function BottomNav() {
           >
             {({ isActive }) => (
               <>
-                {/* Active Indicator */}
-                {isActive && (
-                  <motion.div
-                    layoutId="activeTab"
-                    className="absolute top-0 left-1/2 -translate-x-1/2 w-12 h-1 bg-primary rounded-full"
-                    transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                  />
-                )}
-
                 {/* Icon with press animation */}
                 <motion.div
                   whileTap={{ scale: 0.85 }}
@@ -57,6 +48,15 @@ export default function BottomNav() {
                     isActive && 'bg-primary/10'
                   )}
                 >
+                  {/* Active Indicator - positioned relative to icon */}
+                  {isActive && (
+                    <motion.div
+                      layoutId="activeTab"
+                      className="absolute -top-2 left-1/2 -translate-x-1/2 w-12 h-1 bg-primary rounded-full"
+                      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                    />
+                  )}
+
                   <Icon className={cn(
                     'h-5 w-5 transition-transform duration-200',
                     isActive && 'scale-110'
