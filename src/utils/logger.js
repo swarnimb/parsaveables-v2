@@ -41,8 +41,11 @@ export function createLogger(context) {
     ]
   });
 
-  // Add file transports in production
-  if (process.env.NODE_ENV === 'production') {
+  // Add file transports in production (but not in serverless environments)
+  // Vercel serverless functions have read-only filesystem, so we skip file logging
+  const isServerless = process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME;
+
+  if (process.env.NODE_ENV === 'production' && !isServerless) {
     logger.add(new winston.transports.File({
       filename: 'logs/error.log',
       level: 'error',
