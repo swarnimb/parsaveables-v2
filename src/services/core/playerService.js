@@ -1,5 +1,5 @@
 import * as db from './databaseService.js';
-import { createLogger } from '../utils/logger.js';
+import { createLogger } from '../../utils/logger.js';
 
 const logger = createLogger('PlayerService');
 

@@ -1,7 +1,7 @@
 import * as db from './databaseService.js';
-import { createLogger } from '../utils/logger.js';
-import { validateISODate } from '../utils/validation.js';
-import { BusinessLogicError } from '../utils/errors.js';
+import { createLogger } from '../../utils/logger.js';
+import { validateISODate } from '../../utils/validation.js';
+import { BusinessLogicError } from '../../utils/errors.js';
 
 const logger = createLogger('EventService');
 
