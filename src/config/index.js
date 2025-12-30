@@ -59,7 +59,7 @@ export const config = {
   // Anthropic API configuration (for Claude Vision scorecard extraction)
   anthropic: {
     apiKey: requireEnv('ANTHROPIC_API_KEY', 'Anthropic API key for Claude Vision'),
-    model: getEnv('ANTHROPIC_MODEL', 'claude-3-5-sonnet-20241022') // Default to Sonnet 3.5
+    model: getEnv('ANTHROPIC_MODEL', 'claude-3-5-sonnet-20240620') // Default to Sonnet 3.5 (June 2024 - stable)
   },
 
   // Supabase configuration (for database and auth)
