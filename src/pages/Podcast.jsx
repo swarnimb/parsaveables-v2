@@ -17,21 +17,9 @@ export default function Podcast() {
     const mockEpisodes = [
       {
         id: 1,
-        title: 'The Season Kickoff',
+        title: 'The Ruckus so far',
         date: '2025-01-01',
         audioUrl: 'https://bcovevbtcdsgzbrieiin.supabase.co/storage/v1/object/public/podcast-episodes/ParSaveables-EP01.mp3',
-      },
-      {
-        id: 2,
-        title: 'The Winter Championships',
-        date: '2024-12-01',
-        audioUrl: null,
-      },
-      {
-        id: 3,
-        title: 'The Great PULP Heist',
-        date: '2024-11-01',
-        audioUrl: null,
       }
     ]
     setEpisodes(mockEpisodes)
