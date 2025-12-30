@@ -1,5 +1,5 @@
 import { google } from 'googleapis';
-import config from '../config/index.js';
+import config from '../../config/index.js';
 import { createLogger } from '../utils/logger.js';
 
 const logger = createLogger('EmailService');

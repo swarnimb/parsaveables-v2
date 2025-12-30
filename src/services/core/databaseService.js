@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { config } from '../config/index.js';
+import { config } from '../../config/index.js';
 import { createLogger } from '../utils/logger.js';
 import { executeQuery, executeQueryOptional, executeQuerySingle } from '../utils/databaseHelpers.js';
 

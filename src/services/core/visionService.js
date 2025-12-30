@@ -1,5 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { config } from '../config/index.js';
+import { config } from '../../config/index.js';
 import { createLogger } from '../utils/logger.js';
 import { retryWithBackoff, isRetryableError } from '../utils/retry.js';
 import { ExternalAPIError, ValidationError } from '../utils/errors.js';
