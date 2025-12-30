@@ -22,18 +22,83 @@ export default function ChallengesSection({ playerId, pulpBalance, onChallengeAc
   const [error, setError] = useState(null)
   const [success, setSuccess] = useState(null)
 
-  // Fetch players
+  // Fetch players - only higher ranked
   useEffect(() => {
     async function fetchPlayers() {
       try {
-        const { data, error } = await supabase
+        // Get current player's name
+        const { data: currentPlayer } = await supabase
+          .from('registered_players')
+          .select('player_name')
+          .eq('id', playerId)
+          .single()
+
+        if (!currentPlayer) return
+
+        // Get active season event
+        const { data: activeEvent } = await supabase
+          .from('events')
+          .select('id')
+          .eq('active', true)
+          .eq('type', 'season')
+          .single()
+
+        if (!activeEvent) {
+          // No active season, show all players
+          const { data, error } = await supabase
+            .from('registered_players')
+            .select('id, player_name')
+            .neq('id', playerId)
+            .order('player_name')
+
+          if (error) throw error
+          setPlayers(data || [])
+          return
+        }
+
+        // Get leaderboard for current season
+        const { data: leaderboard, error: leaderboardError } = await supabase
+          .from('player_rounds')
+          .select('player_name, final_total')
+          .eq('event_id', activeEvent.id)
+
+        if (leaderboardError) throw leaderboardError
+
+        // Calculate total points and rank for each player
+        const playerScores = {}
+        leaderboard.forEach(round => {
+          if (!playerScores[round.player_name]) {
+            playerScores[round.player_name] = []
+          }
+          playerScores[round.player_name].push(Number(round.final_total) || 0)
+        })
+
+        const rankings = Object.entries(playerScores).map(([name, scores]) => {
+          const top10 = scores.sort((a, b) => b - a).slice(0, 10)
+          const totalPoints = top10.reduce((sum, score) => sum + score, 0)
+          return { player_name: name, totalPoints }
+        })
+
+        // Sort by points descending (higher points = better rank)
+        rankings.sort((a, b) => b.totalPoints - a.totalPoints)
+
+        // Find current player's rank
+        const currentPlayerRank = rankings.findIndex(p => p.player_name === currentPlayer.player_name)
+
+        // Get players ranked higher (lower index = better rank)
+        const higherRankedPlayers = rankings
+          .slice(0, currentPlayerRank)
+          .map(p => p.player_name)
+
+        // Fetch player IDs for higher ranked players
+        const { data: playerData, error } = await supabase
           .from('registered_players')
           .select('id, player_name')
-          .neq('id', playerId) // Exclude self
+          .in('player_name', higherRankedPlayers)
           .order('player_name')
 
         if (error) throw error
-        setPlayers(data || [])
+        setPlayers(playerData || [])
       } catch (err) {
         console.error('Error fetching players:', err)
       }
@@ -168,21 +233,21 @@ export default function ChallengesSection({ playerId, pulpBalance, onChallengeAc
 
       {/* Issue Challenge Tab */}
       <TabsContent value="issue" className="space-y-6 mt-4">
-        <div className="bg-muted/50 border border-border rounded-lg p-4">
-          <h3 className="font-semibold mb-2">Challenge Rules</h3>
-          <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-            <li>Winner = lowest score in round</li>
-            <li>Winner gets 2x wager</li>
-            <li>Reject = 50% cowardice tax</li>
-            <li>Tie = both get wager back</li>
+        <div className="bg-muted/50 border border-border rounded-lg p-3">
+          <h3 className="text-sm font-semibold mb-2">Challenge Rules</h3>
+          <ul className="text-xs text-muted-foreground space-y-1 list-disc list-inside">
+            <li>Lowest score wins 2x</li>
+            <li>Reject = 50% tax</li>
+            <li>Tie = refund</li>
+            <li>Min: 20 PULPs</li>
           </ul>
         </div>
 
         {/* Next Round Info */}
-        <div className="bg-muted/50 border border-border rounded-lg p-4">
-          <p className="font-semibold mb-1">Challenging for: Next Round</p>
-          <p className="text-sm text-muted-foreground">
-            Your challenge will apply to the next round that both players participate in.
+        <div className="bg-muted/50 border border-border rounded-lg p-3">
+          <p className="text-xs font-semibold mb-1">Challenging for: Next Round</p>
+          <p className="text-xs text-muted-foreground">
+            Challenge applies to next round both players join.
           </p>
         </div>
 

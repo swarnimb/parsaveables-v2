@@ -1,22 +1,28 @@
 import { createClient } from '@supabase/supabase-js';
-import * as challengeService from '../../services/gamification/challengeService.js';
-import * as gamificationService from '../../services/gamification/index.js';
-import { createLogger } from '../../utils/logger.js';
-import { BusinessLogicError } from '../../utils/errors.js';
+import * as bettingService from '../../src/services/gamification/bettingService.js';
+import * as gamificationService from '../../src/services/gamification/index.js';
+import { createLogger } from '../../src/utils/logger.js';
+import { BusinessLogicError } from '../../src/utils/errors.js';
 
-const logger = createLogger('API:RespondToChallenge');
+const logger = createLogger('API:PlaceBet');
 
 /**
- * API Endpoint: Respond to a challenge (accept or reject)
- * POST /api/pulp/respondToChallenge
+ * API Endpoint: Place a bet on round outcome
+ * POST /api/pulp/placeBet
  *
  * Request body:
  * {
- *   challengeId: string,  // Challenge UUID
- *   accept: boolean       // true to accept, false to reject
+ *   roundId: string,
+ *   eventId: number,
+ *   predictions: {
+ *     first: string,
+ *     second: string,
+ *     third: string
+ *   },
+ *   wagerAmount: number
  * }
  *
- * Returns: Updated challenge record
+ * Returns: Created bet record
  */
 export default async function handler(req, res) {
   // CORS headers
@@ -59,7 +65,7 @@ export default async function handler(req, res) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    // Get player ID from user (challenged player)
+    // Get player ID from user
     const { data: player, error: playerError } = await supabase
       .from('registered_players')
       .select('id')
@@ -71,40 +77,46 @@ export default async function handler(req, res) {
       return res.status(404).json({ error: 'Player not found' });
     }
 
-    const challengedId = player.id;
+    const playerId = player.id;
 
     // Validate request body
-    const { challengeId, accept } = req.body;
+    const { roundId, eventId, predictions, wagerAmount } = req.body;
 
-    if (!challengeId || typeof accept !== 'boolean') {
-      return res.status(400).json({ error: 'Missing required fields (challengeId, accept)' });
+    if (!roundId || !eventId || !predictions || !wagerAmount) {
+      return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    logger.info('Responding to challenge', { challengedId, challengeId, accept });
+    if (!predictions.first || !predictions.second || !predictions.third) {
+      return res.status(400).json({ error: 'Missing prediction fields (first, second, third)' });
+    }
 
-    // Respond to challenge
-    const challenge = await challengeService.respondToChallenge(
-      challengeId,
-      challengedId,
-      accept
+    logger.info('Placing bet', { playerId, roundId, eventId, wagerAmount });
+
+    // Place bet
+    const bet = await bettingService.placeBet(
+      playerId,
+      roundId,
+      eventId,
+      predictions,
+      wagerAmount
     );
 
     // Award weekly interaction bonus (non-blocking)
     try {
-      const bonusAwarded = await gamificationService.awardWeeklyInteractionBonus(challengedId);
+      const bonusAwarded = await gamificationService.awardWeeklyInteractionBonus(playerId);
       if (bonusAwarded) {
-        logger.info('Weekly interaction bonus awarded', { playerId: challengedId });
+        logger.info('Weekly interaction bonus awarded', { playerId });
       }
     } catch (error) {
       logger.error('Failed to award weekly interaction bonus', { error: error.message });
-      // Don't block response if bonus fails
+      // Don't block bet placement if bonus fails
     }
 
-    logger.info('Challenge response recorded', { challengeId, challengedId, accept });
+    logger.info('Bet placed successfully', { betId: bet.id, playerId });
 
     return res.status(200).json({
       success: true,
-      challenge
+      bet
     });
 
   } catch (error) {
@@ -113,7 +125,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: error.message });
     }
 
-    logger.error('Failed to respond to challenge', { error: error.message, stack: error.stack });
+    logger.error('Failed to place bet', { error: error.message, stack: error.stack });
     return res.status(500).json({ error: 'Internal server error' });
   }
 }

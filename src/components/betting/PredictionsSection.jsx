@@ -132,21 +132,21 @@ export default function PredictionsSection({ playerId, pulpBalance, onBetPlaced 
   return (
     <div className="space-y-6">
       {/* Instructions */}
-      <div className="bg-muted/50 border border-border rounded-lg p-4">
-        <h3 className="font-semibold mb-2">How to Play</h3>
-        <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-          <li>Perfect match (all 3 in order) = 2x payout</li>
-          <li>Partial match (right 3, wrong order) = 1x payout</li>
+      <div className="bg-muted/50 border border-border rounded-lg p-3">
+        <h3 className="text-sm font-semibold mb-2">How to Play</h3>
+        <ul className="text-xs text-muted-foreground space-y-1 list-disc list-inside">
+          <li>Exact order = 2x</li>
+          <li>Right 3, wrong order = 1x</li>
           <li>No match = lose wager</li>
-          <li>Minimum wager: 20 PULPs</li>
+          <li>Min: 20 PULPs</li>
         </ul>
       </div>
 
       {/* Next Round Info */}
-      <div className="bg-muted/50 border border-border rounded-lg p-4">
-        <p className="font-semibold mb-1">Betting on: Next Round</p>
-        <p className="text-sm text-muted-foreground">
-          Your predictions will apply to the next round that gets played and processed.
+      <div className="bg-muted/50 border border-border rounded-lg p-3">
+        <p className="text-xs font-semibold mb-1">Betting on: Next Round</p>
+        <p className="text-xs text-muted-foreground">
+          Your predictions apply to the next round played.
         </p>
         {isBettingLocked && (
           <p className="text-sm text-destructive mt-2 flex items-center gap-2">

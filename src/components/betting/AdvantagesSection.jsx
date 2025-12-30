@@ -142,13 +142,13 @@ export default function AdvantagesSection({ playerId, pulpBalance, onPurchase })
       )}
 
       {/* Info */}
-      <div className="bg-muted/50 border border-border rounded-lg p-4">
-        <h3 className="font-semibold mb-2">Advantage Rules</h3>
-        <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-          <li>Advantages expire in 24 hours</li>
-          <li>One advantage per type (no stacking)</li>
-          <li>Can be used during any round</li>
-          <li>Unused advantages are lost on expiry</li>
+      <div className="bg-muted/50 border border-border rounded-lg p-3">
+        <h3 className="text-sm font-semibold mb-2">Advantage Rules</h3>
+        <ul className="text-xs text-muted-foreground space-y-1 list-disc list-inside">
+          <li>24hr expiry</li>
+          <li>One per type</li>
+          <li>Use any round</li>
+          <li>Unused = lost on expiry</li>
         </ul>
       </div>
 

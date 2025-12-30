@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Coins, Target, Swords, ShoppingCart, TrendingUp, Award } from 'lucide-react'
+import { Coins, Target, Swords, ShoppingCart, TrendingUp, Award, ChevronDown, ChevronUp, DollarSign, XCircle, Ban, Trophy, Gift } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/services/supabase'
 import {
@@ -8,16 +8,19 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion'
+import { Badge } from '@/components/ui/badge'
 import PredictionsSection from '@/components/betting/PredictionsSection'
 import ChallengesSection from '@/components/betting/ChallengesSection'
 import AdvantagesSection from '@/components/betting/AdvantagesSection'
 import PageContainer from '@/components/layout/PageContainer'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { scaleIn, pulse } from '@/utils/animations'
 
 export default function Betting() {
   const { player } = useAuth()
   const [pulpBalance, setPulpBalance] = useState(null)
+  const [transactions, setTransactions] = useState([])
+  const [balanceExpanded, setBalanceExpanded] = useState(false)
   const [loading, setLoading] = useState(true)
 
   // Fetch PULP balance
@@ -44,26 +47,64 @@ export default function Betting() {
     fetchBalance()
   }, [player])
 
+  // Fetch transactions when balance is expanded
+  useEffect(() => {
+    async function fetchTransactions() {
+      if (!balanceExpanded || !player?.id) return
+
+      try {
+        const { data, error } = await supabase
+          .from('pulp_transactions')
+          .select('*')
+          .eq('player_id', player.id)
+          .order('created_at', { ascending: false })
+          .limit(10)
+
+        if (error) throw error
+        setTransactions(data || [])
+      } catch (err) {
+        console.error('Error fetching transactions:', err)
+      }
+    }
+
+    fetchTransactions()
+  }, [balanceExpanded, player])
+
+  const getTransactionIcon = (type) => {
+    const iconMap = {
+      'achievement_unlock': <Trophy className="h-4 w-4 text-yellow-600" />,
+      'round_placement': <TrendingUp className="h-4 w-4 text-blue-600" />,
+      'bet_win': <Coins className="h-4 w-4 text-green-600" />,
+      'bet_win_perfect': <Award className="h-4 w-4 text-green-600" />,
+      'bet_loss': <XCircle className="h-4 w-4 text-red-600" />,
+      'challenge_win': <Swords className="h-4 w-4 text-green-600" />,
+      'challenge_loss': <TrendingUp className="h-4 w-4 text-red-600" />,
+      'challenge_reject': <Ban className="h-4 w-4 text-orange-600" />,
+      'challenge_rejected_penalty': <Ban className="h-4 w-4 text-orange-600" />,
+      'advantage_purchase': <ShoppingCart className="h-4 w-4 text-purple-600" />,
+      'weekly_bonus': <Gift className="h-4 w-4 text-blue-600" />
+    }
+    return iconMap[type] || <DollarSign className="h-4 w-4 text-muted-foreground" />
+  }
+
   return (
     <PageContainer className="container mx-auto px-4 py-6 max-w-4xl">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-2">Betting & PULP Shop</h1>
-        <p className="text-muted-foreground">Place bets, challenge rivals, and buy power-ups</p>
-      </div>
-
-      {/* Premium PULP Balance Card */}
+      {/* Premium PULP Balance Card - Expandable */}
       <motion.div
         variants={scaleIn}
         initial="initial"
         animate="animate"
-        className="mb-8 relative overflow-hidden rounded-xl border-2 border-primary/20 bg-gradient-to-br from-primary/5 via-background to-primary/10 p-6 shadow-lg"
+        className="mb-8 relative overflow-hidden rounded-xl border-2 border-primary/20 bg-gradient-to-br from-primary/5 via-background to-primary/10 shadow-lg"
       >
         {/* Gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent opacity-50"></div>
 
-        <div className="relative z-10 flex items-center justify-between">
-          <div className="flex items-center gap-4">
+        {/* Clickable Balance Header */}
+        <div
+          onClick={() => setBalanceExpanded(!balanceExpanded)}
+          className="relative z-10 p-6 cursor-pointer hover:bg-primary/5 transition-colors"
+        >
+          <div className="flex items-center gap-4 mb-2">
             <motion.div
               variants={pulse}
               animate="animate"
@@ -73,7 +114,6 @@ export default function Betting() {
               <Coins className="h-8 w-8 text-primary relative z-10" />
             </motion.div>
             <div>
-              <p className="text-sm font-medium text-muted-foreground mb-1">Your PULP Balance</p>
               <motion.p
                 key={pulpBalance}
                 initial={{ scale: 1.2, color: '#10b981' }}
@@ -85,14 +125,60 @@ export default function Betting() {
               </motion.p>
             </div>
           </div>
-          <a
-            href="/dashboard"
-            className="flex items-center gap-2 text-sm font-medium text-primary hover:underline"
-          >
-            <TrendingUp className="h-4 w-4" />
+          <div className="flex justify-end items-center gap-1 text-xs text-primary">
             View History
-          </a>
+            {balanceExpanded ? (
+              <ChevronUp className="h-3 w-3" />
+            ) : (
+              <ChevronDown className="h-3 w-3" />
+            )}
+          </div>
         </div>
+
+        {/* Expanded Transaction History */}
+        <AnimatePresence>
+          {balanceExpanded && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="relative z-10 overflow-hidden border-t border-primary/20"
+            >
+              <div className="p-4 max-h-80 overflow-y-auto space-y-2">
+                {transactions.length === 0 ? (
+                  <div className="text-center text-muted-foreground py-4">
+                    <p className="text-sm">No transactions yet</p>
+                  </div>
+                ) : (
+                  transactions.slice(0, 6).map((txn) => (
+                    <div
+                      key={txn.id}
+                      className="flex items-center justify-between p-3 rounded-lg bg-background/50 border border-border"
+                    >
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <div className={`h-8 w-8 rounded-full flex items-center justify-center ${
+                          txn.amount > 0 ? 'bg-green-500/10' : 'bg-red-500/10'
+                        }`}>
+                          {getTransactionIcon(txn.transaction_type)}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm truncate">{txn.description}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {new Date(txn.created_at).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                      <Badge variant={txn.amount > 0 ? 'default' : 'secondary'} className={txn.amount > 0 ? 'text-green-600' : 'text-red-600'}>
+                        {txn.amount > 0 ? '+' : ''}{txn.amount}
+                      </Badge>
+                    </div>
+                  ))
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.div>
 
       {/* Betting Sections */}
@@ -112,7 +198,7 @@ export default function Betting() {
                   </div>
                   <div className="flex-1 text-left">
                     <h3 className="text-lg font-bold">Predictions</h3>
-                    <p className="text-sm text-muted-foreground">Bet on top 3 finishers • 2x payout for perfect match</p>
+                    <p className="text-sm text-muted-foreground">Win 2x for perfect podium prediction</p>
                   </div>
                   <Award className="h-5 w-5 text-blue-600 opacity-50" />
                 </div>
@@ -144,8 +230,8 @@ export default function Betting() {
                     <Swords className="h-6 w-6 text-red-600" />
                   </div>
                   <div className="flex-1 text-left">
-                    <h3 className="text-lg font-bold">Head-to-Head Challenges</h3>
-                    <p className="text-sm text-muted-foreground">Battle rivals • Winner takes all • 50% cowardice tax</p>
+                    <h3 className="text-lg font-bold">Challenge Your Rivals</h3>
+                    <p className="text-sm text-muted-foreground">Challenge a higher ranked player, winner takes all</p>
                   </div>
                   <Award className="h-5 w-5 text-red-600 opacity-50" />
                 </div>
@@ -176,7 +262,7 @@ export default function Betting() {
                   </div>
                   <div className="flex-1 text-left">
                     <h3 className="text-lg font-bold">Buy Advantages</h3>
-                    <p className="text-sm text-muted-foreground">Power-ups for rounds • 24hr expiration • One per type</p>
+                    <p className="text-sm text-muted-foreground">Enhance your performance for 24 hours</p>
                   </div>
                   <Award className="h-5 w-5 text-amber-600 opacity-50" />
                 </div>

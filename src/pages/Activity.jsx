@@ -408,12 +408,6 @@ export default function Activity() {
   if (loading) {
     return (
       <PageContainer className="container mx-auto px-4 py-6 max-w-4xl">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold mb-2">Activity Feed</h1>
-          <p className="text-muted-foreground">
-            Stay updated on your progress and group activity
-          </p>
-        </div>
         <div className="space-y-3">
           {Array.from({ length: 8 }).map((_, i) => (
             <SkeletonCard key={i} className="h-24" />
@@ -425,13 +419,6 @@ export default function Activity() {
 
   return (
     <PageContainer className="container mx-auto px-4 py-6 max-w-4xl">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold mb-2">Activity Feed</h1>
-        <p className="text-muted-foreground">
-          Stay updated on your progress and group activity
-        </p>
-      </div>
-
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="grid w-full grid-cols-2 max-w-md">
           <TabsTrigger value="player" className="flex items-center gap-2">

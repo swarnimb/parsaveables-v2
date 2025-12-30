@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
-import * as bettingService from '../../services/gamification/bettingService.js';
-import { createLogger } from '../../utils/logger.js';
-import { BusinessLogicError } from '../../utils/errors.js';
+import * as bettingService from '../../src/services/gamification/bettingService.js';
+import { createLogger } from '../../src/utils/logger.js';
+import { BusinessLogicError } from '../../src/utils/errors.js';
 
 const logger = createLogger('API:LockBetting');
 

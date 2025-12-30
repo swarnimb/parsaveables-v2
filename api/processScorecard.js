@@ -1,14 +1,14 @@
-import * as emailService from '../services/core/emailService.js';
-import * as visionService from '../services/core/visionService.js';
-import * as eventService from '../services/core/eventService.js';
-import * as scoringService from '../services/core/scoringService.js';
-import * as playerService from '../services/core/playerService.js';
-import * as configService from '../services/core/configService.js';
-import * as pointsService from '../services/core/pointsService.js';
-import * as db from '../services/core/databaseService.js';
-import * as storageService from '../services/core/storageService.js';
-import * as gamificationService from '../services/gamification/index.js';
-import { createLogger } from '../utils/logger.js';
+import * as emailService from '../src/services/core/emailService.js';
+import * as visionService from '../src/services/core/visionService.js';
+import * as eventService from '../src/services/core/eventService.js';
+import * as scoringService from '../src/services/core/scoringService.js';
+import * as playerService from '../src/services/core/playerService.js';
+import * as configService from '../src/services/core/configService.js';
+import * as pointsService from '../src/services/core/pointsService.js';
+import * as db from '../src/services/core/databaseService.js';
+import * as storageService from '../src/services/core/storageService.js';
+import * as gamificationService from '../src/services/gamification/index.js';
+import { createLogger } from '../src/utils/logger.js';
 
 const logger = createLogger('ProcessScorecard');
 

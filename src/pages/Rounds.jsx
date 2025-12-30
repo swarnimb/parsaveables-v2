@@ -29,7 +29,6 @@ export default function Rounds() {
   if (loading) {
     return (
       <PageContainer className="container mx-auto px-4 py-6 max-w-4xl">
-        <h1 className="text-2xl font-bold mb-6">Rounds</h1>
         <div className="space-y-2">
           {Array.from({ length: 5 }).map((_, i) => (
             <SkeletonCard key={i} className="h-20" />

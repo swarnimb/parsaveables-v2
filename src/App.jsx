@@ -20,6 +20,7 @@ const ProcessScorecards = lazy(() => import('@/pages/admin/ProcessScorecards'))
 
 // Layout wrapper for authenticated pages
 import AppLayout from '@/components/layout/AppLayout'
+import SplashScreen from '@/components/layout/SplashScreen'
 
 // Loading fallback component
 function PageLoader() {
@@ -70,6 +71,7 @@ function AnimatedRoutes() {
 function App() {
   return (
     <BrowserRouter>
+      <SplashScreen />
       <AnimatedRoutes />
     </BrowserRouter>
   )

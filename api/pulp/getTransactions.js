@@ -1,17 +1,18 @@
 import { createClient } from '@supabase/supabase-js';
-import * as pulpService from '../../services/gamification/pulpService.js';
-import { createLogger } from '../../utils/logger.js';
+import * as pulpService from '../../src/services/gamification/pulpService.js';
+import { createLogger } from '../../src/utils/logger.js';
 
-const logger = createLogger('API:GetBalance');
+const logger = createLogger('API:GetTransactions');
 
 /**
- * API Endpoint: Get player's PULP balance
- * GET /api/pulp/getBalance
+ * API Endpoint: Get player's PULP transaction history
+ * GET /api/pulp/getTransactions
  *
  * Query params:
- * - playerId (optional): Get balance for specific player (defaults to current user)
+ * - limit (optional): Max transactions to return (default: 50, max: 100)
+ * - offset (optional): Pagination offset (default: 0)
  *
- * Returns: PULP balance and player info
+ * Returns: Transaction history
  */
 export default async function handler(req, res) {
   // CORS headers
@@ -57,7 +58,7 @@ export default async function handler(req, res) {
     // Get player ID from user
     const { data: player, error: playerError } = await supabase
       .from('registered_players')
-      .select('id, player_name, pulp_balance')
+      .select('id, player_name')
       .eq('user_id', user.id)
       .single();
 
@@ -68,29 +69,28 @@ export default async function handler(req, res) {
 
     const playerId = player.id;
 
-    // Check if requesting specific player's balance (optional)
-    const requestedPlayerId = req.query.playerId ? parseInt(req.query.playerId) : playerId;
+    // Parse query params
+    const limit = Math.min(parseInt(req.query.limit) || 50, 100); // Max 100
+    const offset = parseInt(req.query.offset) || 0;
 
-    logger.info('Getting PULP balance', { playerId: requestedPlayerId });
+    logger.info('Getting transaction history', { playerId, limit, offset });
 
-    // Get balance
-    const balance = await pulpService.getBalance(requestedPlayerId);
+    // Get transactions
+    const transactions = await pulpService.getTransactionHistory(playerId, { limit, offset });
 
-    // Get player stats
-    const stats = await pulpService.getPlayerStats(requestedPlayerId);
-
-    logger.info('Balance retrieved', { playerId: requestedPlayerId, balance });
+    logger.info('Transactions retrieved', { playerId, count: transactions.length });
 
     return res.status(200).json({
       success: true,
-      playerId: requestedPlayerId,
+      playerId,
       playerName: player.player_name,
-      balance,
-      stats
+      transactions,
+      limit,
+      offset
     });
 
   } catch (error) {
-    logger.error('Failed to get balance', { error: error.message, stack: error.stack });
+    logger.error('Failed to get transactions', { error: error.message, stack: error.stack });
     return res.status(500).json({ error: 'Internal server error' });
   }
 }

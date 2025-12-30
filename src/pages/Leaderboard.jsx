@@ -67,9 +67,6 @@ export default function Leaderboard() {
   if (loading) {
     return (
       <PageContainer className="container mx-auto px-4 sm:px-6 py-8 max-w-6xl">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">Leaderboard</h1>
-        </div>
         <SkeletonPodium />
         <SkeletonTable rows={7} />
       </PageContainer>
@@ -89,13 +86,13 @@ export default function Leaderboard() {
   const topThree = players.slice(0, 3)
   const selectedEvent = events.find(e => e.id === selectedEventId)
 
+  const seasons = events.filter(e => e.type === 'season')
+  const tournaments = events.filter(e => e.type === 'tournament')
+
   return (
     <PageContainer className="container mx-auto px-4 sm:px-6 py-8 max-w-6xl">
-      {/* Header with Event Selector */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">Leaderboard</h1>
-
-        {/* Event Selector */}
+      {/* Event Selector */}
+      <div className="flex justify-end mb-8">
         {events.length > 0 && (
           <div className="flex items-center gap-3">
             <label htmlFor="event-select" className="text-sm font-medium whitespace-nowrap">
@@ -105,13 +102,26 @@ export default function Leaderboard() {
               id="event-select"
               value={selectedEventId || ''}
               onChange={(e) => setSelectedEventId(Number(e.target.value))}
-              className="px-3 py-2 border border-input rounded-md bg-background text-sm min-w-[200px]"
+              className="px-3 py-2 border border-input rounded-md bg-background text-xs min-w-[200px]"
             >
-              {events.map(event => (
-                <option key={event.id} value={event.id}>
-                  {event.name}
-                </option>
-              ))}
+              {seasons.length > 0 && (
+                <optgroup label="Seasons">
+                  {seasons.map(event => (
+                    <option key={event.id} value={event.id}>
+                      {event.name}
+                    </option>
+                  ))}
+                </optgroup>
+              )}
+              {tournaments.length > 0 && (
+                <optgroup label="Tournaments">
+                  {tournaments.map(event => (
+                    <option key={event.id} value={event.id}>
+                      {event.name}
+                    </option>
+                  ))}
+                </optgroup>
+              )}
             </select>
           </div>
         )}

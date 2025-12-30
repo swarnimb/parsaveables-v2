@@ -1,23 +1,22 @@
 import { createClient } from '@supabase/supabase-js';
-import * as challengeService from '../../services/gamification/challengeService.js';
-import * as gamificationService from '../../services/gamification/index.js';
-import { createLogger } from '../../utils/logger.js';
-import { BusinessLogicError } from '../../utils/errors.js';
+import * as challengeService from '../../src/services/gamification/challengeService.js';
+import * as gamificationService from '../../src/services/gamification/index.js';
+import { createLogger } from '../../src/utils/logger.js';
+import { BusinessLogicError } from '../../src/utils/errors.js';
 
-const logger = createLogger('API:IssueChallenge');
+const logger = createLogger('API:RespondToChallenge');
 
 /**
- * API Endpoint: Issue a head-to-head challenge
- * POST /api/pulp/issueChallenge
+ * API Endpoint: Respond to a challenge (accept or reject)
+ * POST /api/pulp/respondToChallenge
  *
  * Request body:
  * {
- *   challengedId: number,  // Player ID being challenged
- *   roundId: string,       // Round UUID
- *   wagerAmount: number    // PULPs to wager (min 20)
+ *   challengeId: string,  // Challenge UUID
+ *   accept: boolean       // true to accept, false to reject
  * }
  *
- * Returns: Created challenge record
+ * Returns: Updated challenge record
  */
 export default async function handler(req, res) {
   // CORS headers
@@ -60,7 +59,7 @@ export default async function handler(req, res) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    // Get player ID from user (challenger)
+    // Get player ID from user (challenged player)
     const { data: player, error: playerError } = await supabase
       .from('registered_players')
       .select('id')
@@ -72,37 +71,36 @@ export default async function handler(req, res) {
       return res.status(404).json({ error: 'Player not found' });
     }
 
-    const challengerId = player.id;
+    const challengedId = player.id;
 
     // Validate request body
-    const { challengedId, roundId, wagerAmount } = req.body;
+    const { challengeId, accept } = req.body;
 
-    if (!challengedId || !roundId || !wagerAmount) {
-      return res.status(400).json({ error: 'Missing required fields' });
+    if (!challengeId || typeof accept !== 'boolean') {
+      return res.status(400).json({ error: 'Missing required fields (challengeId, accept)' });
     }
 
-    logger.info('Issuing challenge', { challengerId, challengedId, roundId, wagerAmount });
+    logger.info('Responding to challenge', { challengedId, challengeId, accept });
 
-    // Issue challenge
-    const challenge = await challengeService.issueChallenge(
-      challengerId,
+    // Respond to challenge
+    const challenge = await challengeService.respondToChallenge(
+      challengeId,
       challengedId,
-      roundId,
-      wagerAmount
+      accept
     );
 
     // Award weekly interaction bonus (non-blocking)
     try {
-      const bonusAwarded = await gamificationService.awardWeeklyInteractionBonus(challengerId);
+      const bonusAwarded = await gamificationService.awardWeeklyInteractionBonus(challengedId);
       if (bonusAwarded) {
-        logger.info('Weekly interaction bonus awarded', { playerId: challengerId });
+        logger.info('Weekly interaction bonus awarded', { playerId: challengedId });
       }
     } catch (error) {
       logger.error('Failed to award weekly interaction bonus', { error: error.message });
-      // Don't block challenge if bonus fails
+      // Don't block response if bonus fails
     }
 
-    logger.info('Challenge issued successfully', { challengeId: challenge.id, challengerId });
+    logger.info('Challenge response recorded', { challengeId, challengedId, accept });
 
     return res.status(200).json({
       success: true,
@@ -115,7 +113,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: error.message });
     }
 
-    logger.error('Failed to issue challenge', { error: error.message, stack: error.stack });
+    logger.error('Failed to respond to challenge', { error: error.message, stack: error.stack });
     return res.status(500).json({ error: 'Internal server error' });
   }
 }
