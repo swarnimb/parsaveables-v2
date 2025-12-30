@@ -1,12 +1,20 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { LogIn } from 'lucide-react'
 import NotificationBell from './NotificationBell'
 import AdminDropdown from './AdminDropdown'
 import ProfileDropdown from './ProfileDropdown'
 
 export default function Header() {
-  const { isGuest } = useAuth()
+  const { isGuest, signOut } = useAuth()
+  const navigate = useNavigate()
+
+  const handleLoginClick = () => {
+    signOut() // Clear guest mode
+    navigate('/login')
+  }
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background border-b border-border backdrop-blur-sm bg-opacity-95">
@@ -19,10 +27,20 @@ export default function Header() {
         {/* Right side actions */}
         <div className="flex items-center gap-3">
           {isGuest ? (
-            /* Guest Badge */
-            <Badge variant="outline" className="text-muted-foreground">
-              Guest
-            </Badge>
+            <>
+              <Badge variant="outline" className="text-muted-foreground">
+                Guest
+              </Badge>
+              <Button
+                variant="default"
+                size="sm"
+                onClick={handleLoginClick}
+                className="flex items-center gap-2"
+              >
+                <LogIn className="h-4 w-4" />
+                Login
+              </Button>
+            </>
           ) : (
             <>
               {/* Notifications */}
