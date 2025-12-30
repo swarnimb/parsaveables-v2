@@ -24,7 +24,7 @@ export default function NotificationBell() {
 
         // Fetch recent activities for the logged-in player
         const { data, error } = await supabase
-          .from('activities')
+          .from('activity_feed')
           .select('*')
           .eq('player_id', user.id)
           .order('created_at', { ascending: false })
