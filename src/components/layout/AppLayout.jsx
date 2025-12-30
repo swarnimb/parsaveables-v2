@@ -1,19 +1,34 @@
 import { useEffect } from 'react'
-import { Outlet, useNavigate } from 'react-router-dom'
+import { Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import Header from './Header'
 import BottomNav from './BottomNav'
 
 export default function AppLayout() {
-  const { isAuthenticated, loading } = useAuth()
+  const { isAuthenticated, isGuest, loading } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
 
-  // Redirect to login if not authenticated
+  // Redirect to login if not authenticated and not guest
   useEffect(() => {
-    if (!loading && !isAuthenticated) {
+    if (!loading && !isAuthenticated && !isGuest) {
       navigate('/login')
     }
-  }, [isAuthenticated, loading, navigate])
+  }, [isAuthenticated, isGuest, loading, navigate])
+
+  // Block guests from restricted routes
+  useEffect(() => {
+    if (!loading && isGuest) {
+      const guestBlockedRoutes = ['/betting', '/admin', '/dashboard']
+      const isBlocked = guestBlockedRoutes.some(route =>
+        location.pathname.startsWith(route)
+      )
+
+      if (isBlocked) {
+        navigate('/leaderboard', { replace: true })
+      }
+    }
+  }, [isGuest, loading, location.pathname, navigate])
 
   // Show loading state while checking authentication
   if (loading) {
@@ -24,8 +39,8 @@ export default function AppLayout() {
     )
   }
 
-  // Don't render protected content if not authenticated
-  if (!isAuthenticated) {
+  // Don't render protected content if not authenticated and not guest
+  if (!isAuthenticated && !isGuest) {
     return null
   }
 

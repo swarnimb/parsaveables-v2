@@ -12,7 +12,7 @@ export default function Login() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
 
-  const { signIn, signUp, isAuthenticated, loading } = useAuth()
+  const { signIn, signUp, continueAsGuest, isAuthenticated, isGuest, loading } = useAuth()
   const navigate = useNavigate()
 
   // Fetch unclaimed players when switching to signup mode
@@ -28,12 +28,12 @@ export default function Login() {
     }
   }, [mode])
 
-  // Redirect if already authenticated
+  // Redirect if already authenticated or in guest mode
   useEffect(() => {
-    if (isAuthenticated && !loading) {
+    if ((isAuthenticated || isGuest) && !loading) {
       navigate('/leaderboard')
     }
-  }, [isAuthenticated, loading, navigate])
+  }, [isAuthenticated, isGuest, loading, navigate])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -194,6 +194,32 @@ export default function Login() {
               Select your name from existing players to create your account
             </p>
           )}
+        </div>
+
+        {/* Guest Access */}
+        <div className="mt-6 text-center">
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-border"></div>
+            </div>
+            <div className="relative flex justify-center text-xs">
+              <span className="px-2 bg-background text-muted-foreground">OR</span>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              continueAsGuest()
+              navigate('/leaderboard')
+            }}
+            className="mt-4 w-full py-2 px-4 border border-border rounded-md font-medium text-foreground hover:bg-accent transition-colors"
+          >
+            Continue as Guest
+          </button>
+          <p className="mt-2 text-xs text-muted-foreground">
+            Browse and view content without creating an account
+          </p>
         </div>
       </div>
     </div>

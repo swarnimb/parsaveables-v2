@@ -2,6 +2,7 @@ import { NavLink, useLocation } from 'react-router-dom'
 import { Trophy, History, Mic2, Bell, Coins } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
+import { useAuth } from '@/hooks/useAuth'
 
 const navItems = [
   { path: '/leaderboard', icon: Trophy, label: 'Leaderboard' },
@@ -13,6 +14,7 @@ const navItems = [
 
 export default function BottomNav() {
   const location = useLocation()
+  const { isGuest } = useAuth()
 
   // Find the index of the active tab
   const activeIndex = navItems.findIndex(item => item.path === location.pathname)
@@ -45,18 +47,29 @@ export default function BottomNav() {
           }}
         />
 
-        {navItems.map(({ path, icon: Icon, label }) => (
+        {navItems.map(({ path, icon: Icon, label }) => {
+          const isBettingTab = path === '/betting'
+          const isDisabled = isGuest && isBettingTab
+
+          return (
           <NavLink
             key={path}
             to={path}
-            onClick={handleTap}
+            onClick={(e) => {
+              if (isDisabled) {
+                e.preventDefault()
+                return
+              }
+              handleTap()
+            }}
             className={({ isActive }) =>
               cn(
                 'flex flex-col items-center justify-center flex-1 gap-1 transition-all duration-200',
                 'min-h-[60px] py-2',
                 isActive
                   ? 'text-primary'
-                  : 'text-muted-foreground active:text-foreground'
+                  : 'text-muted-foreground active:text-foreground',
+                isDisabled && 'opacity-50 pointer-events-none'
               )
             }
           >
@@ -91,7 +104,8 @@ export default function BottomNav() {
               </>
             )}
           </NavLink>
-        ))}
+          )
+        })}
       </div>
     </nav>
   )

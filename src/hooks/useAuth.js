@@ -7,11 +7,20 @@ import { authAPI, playerAPI } from '@/services/api'
 export function useAuth() {
   const [user, setUser] = useState(null)
   const [player, setPlayer] = useState(null)
+  const [isGuest, setIsGuest] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
   // Initialize auth state on mount
   useEffect(() => {
+    // Check for guest mode first
+    const guestFlag = sessionStorage.getItem('guestMode')
+    if (guestFlag === 'true') {
+      setIsGuest(true)
+      setLoading(false)
+      return
+    }
+
     // Check for existing session
     authAPI.getSession().then((session) => {
       if (session?.user) {
@@ -93,6 +102,14 @@ export function useAuth() {
   const signOut = async () => {
     try {
       setError(null)
+
+      // Clear guest mode if active
+      if (isGuest) {
+        sessionStorage.removeItem('guestMode')
+        setIsGuest(false)
+        return
+      }
+
       await authAPI.signOut()
       setUser(null)
       setPlayer(null)
@@ -102,14 +119,27 @@ export function useAuth() {
     }
   }
 
+  /**
+   * Continue as guest (no authentication)
+   */
+  const continueAsGuest = () => {
+    sessionStorage.setItem('guestMode', 'true')
+    setIsGuest(true)
+    setUser(null)
+    setPlayer(null)
+  }
+
   return {
     user,
     player,
+    isGuest,
     loading,
     error,
     signIn,
     signUp,
     signOut,
+    continueAsGuest,
     isAuthenticated: !!user,
+    isPlayer: !!player,
   }
 }

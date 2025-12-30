@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { User, Users, Trophy, Swords, Coins, Target, Calendar, Mic2, TrendingUp, TrendingDown, ShoppingCart, Gift, DollarSign, Award, XCircle, Ban } from 'lucide-react'
 import { supabase } from '@/services/supabase'
+import { useAuth } from '@/hooks/useAuth'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -10,7 +11,8 @@ import { staggerContainer, staggerItem, cardHover } from '@/utils/animations'
 import { SkeletonCard } from '@/components/ui/skeleton'
 
 export default function Activity() {
-  const [activeTab, setActiveTab] = useState('player')
+  const { isGuest } = useAuth()
+  const [activeTab, setActiveTab] = useState(isGuest ? 'community' : 'player')
   const [player, setPlayer] = useState(null)
   const [playerFeed, setPlayerFeed] = useState([])
   const [communityFeed, setCommunityFeed] = useState([])
@@ -421,7 +423,11 @@ export default function Activity() {
     <PageContainer className="container mx-auto px-4 py-6 max-w-4xl">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="grid w-full grid-cols-2 max-w-md">
-          <TabsTrigger value="player" className="flex items-center gap-2">
+          <TabsTrigger
+            value="player"
+            className="flex items-center gap-2"
+            disabled={isGuest}
+          >
             <User className="h-4 w-4" />
             Your Activity
           </TabsTrigger>
