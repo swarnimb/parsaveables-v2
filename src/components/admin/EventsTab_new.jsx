@@ -192,13 +192,20 @@ export default function EventsTab() {
         }
       }
 
+      // Extract year from start_date for the year column
+      const year = new Date(formData.start_date).getFullYear()
+      const eventData = {
+        ...formData,
+        year
+      }
+
       let eventId
 
       if (editDialog.event) {
         // Update existing event
         const { error } = await supabase
           .from('events')
-          .update(formData)
+          .update(eventData)
           .eq('id', editDialog.event.id)
 
         if (error) throw error
@@ -215,7 +222,7 @@ export default function EventsTab() {
         // Create new event
         const { data, error } = await supabase
           .from('events')
-          .insert([formData])
+          .insert([eventData])
           .select()
 
         if (error) throw error
