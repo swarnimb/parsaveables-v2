@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Plus, Pencil, Trash2 } from 'lucide-react'
+import { Plus, Pencil, Trash2, Users } from 'lucide-react'
 import { supabase } from '@/services/supabase'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -8,12 +8,15 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
+import { Checkbox } from '@/components/ui/checkbox'
 import { useToast } from '@/hooks/use-toast'
 
 export default function EventsTab() {
   const { toast } = useToast()
   const [events, setEvents] = useState([])
   const [pointsSystems, setPointsSystems] = useState([])
+  const [players, setPlayers] = useState([])
+  const [eventPlayers, setEventPlayers] = useState({}) // Map of event_id -> player_ids
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
@@ -27,12 +30,15 @@ export default function EventsTab() {
     status: 'upcoming',
     points_system_id: null
   })
+  const [selectedPlayerIds, setSelectedPlayerIds] = useState([])
   const [error, setError] = useState('')
 
-  // Fetch events and points systems
+  // Fetch events, points systems, players, and event_players
   useEffect(() => {
     fetchEvents()
     fetchPointsSystems()
+    fetchPlayers()
+    fetchEventPlayers()
   }, [])
 
   const fetchPointsSystems = async () => {
@@ -46,6 +52,44 @@ export default function EventsTab() {
       setPointsSystems(data || [])
     } catch (err) {
       console.error('Error fetching points systems:', err)
+    }
+  }
+
+  const fetchPlayers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('registered_players')
+        .select('id, player_name')
+        .eq('status', 'active')
+        .order('player_name', { ascending: true })
+
+      if (error) throw error
+      setPlayers(data || [])
+    } catch (err) {
+      console.error('Error fetching players:', err)
+    }
+  }
+
+  const fetchEventPlayers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('event_players')
+        .select('event_id, player_id')
+
+      if (error) throw error
+
+      // Build a map of event_id -> array of player_ids
+      const eventPlayersMap = {}
+      data?.forEach(ep => {
+        if (!eventPlayersMap[ep.event_id]) {
+          eventPlayersMap[ep.event_id] = []
+        }
+        eventPlayersMap[ep.event_id].push(ep.player_id)
+      })
+
+      setEventPlayers(eventPlayersMap)
+    } catch (err) {
+      console.error('Error fetching event players:', err)
     }
   }
 
@@ -76,6 +120,7 @@ export default function EventsTab() {
       status: 'upcoming',
       points_system_id: pointsSystems.length > 0 ? pointsSystems[0].id : null
     })
+    setSelectedPlayerIds([])
     setEditDialog({ open: true, event: null })
   }
 
@@ -89,6 +134,8 @@ export default function EventsTab() {
       status: event.status,
       points_system_id: event.points_system_id
     })
+    // Load players for this event
+    setSelectedPlayerIds(eventPlayers[event.id] || [])
     setEditDialog({ open: true, event })
   }
 
@@ -103,6 +150,16 @@ export default function EventsTab() {
     } catch {
       return dateString
     }
+  }
+
+  const handlePlayerToggle = (playerId) => {
+    setSelectedPlayerIds(prev => {
+      if (prev.includes(playerId)) {
+        return prev.filter(id => id !== playerId)
+      } else {
+        return [...prev, playerId]
+      }
+    })
   }
 
   const handleSave = async () => {
@@ -126,35 +183,57 @@ export default function EventsTab() {
         }
       }
 
+      let eventId
+
       if (editDialog.event) {
-        // Update existing
+        // Update existing event
         const { error } = await supabase
           .from('events')
           .update(formData)
           .eq('id', editDialog.event.id)
 
         if (error) throw error
+        eventId = editDialog.event.id
 
-        toast({
-          title: 'Event updated',
-          description: `${formData.name} has been updated successfully`
-        })
+        // Delete existing event_players
+        const { error: deleteError } = await supabase
+          .from('event_players')
+          .delete()
+          .eq('event_id', eventId)
+
+        if (deleteError) throw deleteError
       } else {
-        // Create new
-        const { error } = await supabase
+        // Create new event
+        const { data, error } = await supabase
           .from('events')
           .insert([formData])
+          .select()
 
         if (error) throw error
-
-        toast({
-          title: 'Event created',
-          description: `${formData.name} has been created successfully`
-        })
+        eventId = data[0].id
       }
 
+      // Insert event_players for selected players
+      if (selectedPlayerIds.length > 0) {
+        const eventPlayerRecords = selectedPlayerIds.map(playerId => ({
+          event_id: eventId,
+          player_id: playerId
+        }))
+
+        const { error: insertError } = await supabase
+          .from('event_players')
+          .insert(eventPlayerRecords)
+
+        if (insertError) throw insertError
+      }
+
+      toast({
+        title: editDialog.event ? 'Event updated' : 'Event created',
+        description: `${formData.name} has been ${editDialog.event ? 'updated' : 'created'} successfully`
+      })
+
       setEditDialog({ open: false, event: null })
-      await fetchEvents()
+      await Promise.all([fetchEvents(), fetchEventPlayers()])
     } catch (err) {
       console.error('Error saving event:', err)
       setError(err.message || 'Failed to save event')
@@ -266,6 +345,7 @@ export default function EventsTab() {
   // Render event card
   const renderEventCard = (event) => {
     const isActive = isEventActive(event)
+    const playerCount = eventPlayers[event.id]?.length || 0
 
     return (
       <Card key={event.id} className="p-4">
@@ -273,7 +353,7 @@ export default function EventsTab() {
           {/* Event Name - Full Width */}
           <h3 className="font-medium">{event.name}</h3>
 
-          {/* Bottom Row: Date/Status on left, Actions on right */}
+          {/* Bottom Row: Date/Status/Players on left, Actions on right */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <p className="text-xs text-muted-foreground">
@@ -284,6 +364,10 @@ export default function EventsTab() {
               ) : (
                 <Badge variant="secondary">Inactive</Badge>
               )}
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <Users className="h-3 w-3" />
+                <span>{playerCount} {playerCount === 1 ? 'player' : 'players'}</span>
+              </div>
             </div>
             <div className="flex items-center gap-2">
               <Button
@@ -446,6 +530,36 @@ export default function EventsTab() {
               </Select>
               <p className="text-xs text-muted-foreground mt-1">
                 Select an existing points system or create a new one in the Rules tab
+              </p>
+            </div>
+
+            <div>
+              <Label>Players in Event</Label>
+              <div className="mt-2 border rounded-md p-3 max-h-48 overflow-y-auto">
+                {players.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No players available</p>
+                ) : (
+                  <div className="space-y-2">
+                    {players.map((player) => (
+                      <div key={player.id} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`player-${player.id}`}
+                          checked={selectedPlayerIds.includes(player.id)}
+                          onCheckedChange={() => handlePlayerToggle(player.id)}
+                        />
+                        <label
+                          htmlFor={`player-${player.id}`}
+                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                        >
+                          {player.player_name}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Select players who will participate in this event
               </p>
             </div>
 
