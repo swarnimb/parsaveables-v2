@@ -332,49 +332,67 @@ export default function RulesTab() {
         </div>
 
         {/* Row 2: Action Buttons */}
-        <div className="flex items-center gap-2">
-          {selectedSystem && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="text-sm"
-              onClick={() => {
-                setError('')
-                setNewSystemName('')
-                setCreateDialog({ open: true, duplicateFrom: selectedSystem })
-              }}
-            >
-              <Copy className="h-3 w-3 mr-1.5" />
-              Duplicate
-            </Button>
+        <div className="grid grid-cols-3 gap-3">
+          {selectedSystem ? (
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-sm w-full"
+                onClick={() => {
+                  setError('')
+                  setNewSystemName('')
+                  setCreateDialog({ open: true, duplicateFrom: selectedSystem })
+                }}
+              >
+                <Copy className="h-3 w-3 mr-1.5" />
+                Duplicate
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-sm w-full"
+                onClick={() => {
+                  setError('')
+                  setDeleteDialog({ open: true, system: selectedSystem })
+                }}
+              >
+                <Trash2 className="h-3 w-3 mr-1.5" />
+                Delete
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-sm w-full"
+                onClick={() => {
+                  setError('')
+                  setNewSystemName('')
+                  setCreateDialog({ open: true, duplicateFrom: null })
+                }}
+              >
+                <Plus className="h-3 w-3 mr-1.5" />
+                Create New
+              </Button>
+            </>
+          ) : (
+            <>
+              <div></div>
+              <div></div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-sm w-full"
+                onClick={() => {
+                  setError('')
+                  setNewSystemName('')
+                  setCreateDialog({ open: true, duplicateFrom: null })
+                }}
+              >
+                <Plus className="h-3 w-3 mr-1.5" />
+                Create New
+              </Button>
+            </>
           )}
-          {selectedSystem && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="text-sm"
-              onClick={() => {
-                setError('')
-                setDeleteDialog({ open: true, system: selectedSystem })
-              }}
-            >
-              <Trash2 className="h-3 w-3 mr-1.5" />
-              Delete
-            </Button>
-          )}
-          <Button
-            variant="outline"
-            size="sm"
-            className="text-sm"
-            onClick={() => {
-              setError('')
-              setNewSystemName('')
-              setCreateDialog({ open: true, duplicateFrom: null })
-            }}
-          >
-            <Plus className="h-3 w-3 mr-1.5" />
-            Create New
-          </Button>
         </div>
       </div>
 
