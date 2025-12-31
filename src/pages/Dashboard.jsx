@@ -15,6 +15,7 @@ export default function Dashboard() {
   const [selectedEventId, setSelectedEventId] = useState('all')
   const [playerStats, setPlayerStats] = useState(null)
   const [allPlayersStats, setAllPlayersStats] = useState([])
+  const [headToHeadRecords, setHeadToHeadRecords] = useState({})
   const [headToHeadExpanded, setHeadToHeadExpanded] = useState(false)
   const [loading, setLoading] = useState(true)
 
@@ -179,6 +180,98 @@ export default function Dashboard() {
     fetchAllPlayersStats()
   }, [player, selectedEventId, events])
 
+  // Calculate head-to-head records
+  useEffect(() => {
+    async function calculateHeadToHeadRecords() {
+      if (!player || !selectedEventId || allPlayersStats.length === 0) return
+
+      try {
+        // Get all rounds for the current player
+        let query = supabase
+          .from('player_rounds')
+          .select('round_id, player_name, rank')
+          .eq('player_name', player.player_name)
+
+        if (selectedEventId !== 'all') {
+          query = query.eq('event_id', selectedEventId)
+        }
+
+        const { data: playerRounds, error: playerError } = await query
+        if (playerError) throw playerError
+
+        // Get round IDs where current player participated
+        const roundIds = playerRounds.map(r => r.round_id)
+
+        if (roundIds.length === 0) {
+          setHeadToHeadRecords({})
+          return
+        }
+
+        // Get all rounds for these round IDs
+        let allRoundsQuery = supabase
+          .from('player_rounds')
+          .select('round_id, player_name, rank')
+          .in('round_id', roundIds)
+
+        if (selectedEventId !== 'all') {
+          allRoundsQuery = allRoundsQuery.eq('event_id', selectedEventId)
+        }
+
+        const { data: allRoundsData, error: allRoundsError } = await allRoundsQuery
+        if (allRoundsError) throw allRoundsError
+
+        // Group by round_id
+        const roundsMap = {}
+        allRoundsData.forEach(round => {
+          if (!roundsMap[round.round_id]) {
+            roundsMap[round.round_id] = []
+          }
+          roundsMap[round.round_id].push(round)
+        })
+
+        // Calculate head-to-head for each other player
+        const h2hRecords = {}
+
+        allPlayersStats.forEach(otherPlayer => {
+          if (otherPlayer.playerName === player.player_name) return
+
+          let wins = 0
+          let losses = 0
+          let ties = 0
+
+          // Check each round
+          Object.values(roundsMap).forEach(roundParticipants => {
+            const currentPlayerRound = roundParticipants.find(p => p.player_name === player.player_name)
+            const rivalRound = roundParticipants.find(p => p.player_name === otherPlayer.playerName)
+
+            // Both players must have participated in this round
+            if (currentPlayerRound && rivalRound) {
+              const currentRank = currentPlayerRound.rank
+              const rivalRank = rivalRound.rank
+
+              if (currentRank < rivalRank) {
+                wins++
+              } else if (currentRank > rivalRank) {
+                losses++
+              } else {
+                ties++
+              }
+            }
+          })
+
+          h2hRecords[otherPlayer.playerName] = { wins, losses, ties }
+        })
+
+        setHeadToHeadRecords(h2hRecords)
+      } catch (err) {
+        console.error('Error calculating head-to-head records:', err)
+        setHeadToHeadRecords({})
+      }
+    }
+
+    calculateHeadToHeadRecords()
+  }, [player, selectedEventId, allPlayersStats])
+
   // Calculate closest rival
   const getClosestRival = () => {
     if (!player || allPlayersStats.length === 0) return null
@@ -243,22 +336,13 @@ export default function Dashboard() {
 
   const closestRival = getClosestRival()
 
-  // Calculate head-to-head record
+  // Get head-to-head record from calculated records
   const getHeadToHeadRecord = (rivalName) => {
-    if (!player || !rivalName) return { wins: 0, losses: 0 }
+    if (!rivalName || !headToHeadRecords[rivalName]) {
+      return { wins: 0, losses: 0, ties: 0 }
+    }
 
-    // This is a simplified calculation - in reality you'd need to query rounds
-    // where both players participated and compare their ranks
-    const currentPlayer = allPlayersStats.find(p => p.playerName === player.player_name)
-    const rival = allPlayersStats.find(p => p.playerName === rivalName)
-
-    if (!currentPlayer || !rival) return { wins: 0, losses: 0 }
-
-    // Simplified: higher total wins = more head-to-head wins
-    const wins = Math.max(0, currentPlayer.wins - rival.wins)
-    const losses = Math.max(0, rival.wins - currentPlayer.wins)
-
-    return { wins, losses }
+    return headToHeadRecords[rivalName]
   }
 
   const getHeadToHeadColor = (wins, losses) => {
@@ -287,13 +371,6 @@ export default function Dashboard() {
 
   return (
     <PageContainer className="container mx-auto px-4 sm:px-6 py-8 max-w-6xl">
-      <div className="mb-8">
-        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-3">Dashboard</h1>
-        <p className="text-base text-muted-foreground">
-          Welcome back, {player?.player_name}
-        </p>
-      </div>
-
       {/* Event Selector */}
       {events.length > 0 && (
         <div className="flex items-center gap-3 mb-6">
@@ -346,7 +423,7 @@ export default function Dashboard() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">Points</p>
-                  <p className="text-2xl font-bold">{playerStats.totalPoints.toFixed(1)}</p>
+                  <p className="text-2xl font-bold text-blue-600">{playerStats.totalPoints.toFixed(1)}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">Rounds Played</p>
@@ -354,19 +431,19 @@ export default function Dashboard() {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">Wins</p>
-                  <p className="text-2xl font-bold">{playerStats.wins}</p>
+                  <p className="text-2xl font-bold text-green-600">{playerStats.wins}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">Podiums</p>
-                  <p className="text-2xl font-bold">{playerStats.podiums}</p>
+                  <p className="text-2xl font-bold text-yellow-600">{playerStats.podiums}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">Win Rate</p>
-                  <p className="text-2xl font-bold">{playerStats.winRate.toFixed(1)}%</p>
+                  <p className="text-2xl font-bold text-green-600">{playerStats.winRate.toFixed(0)}%</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">Average Rank</p>
-                  <p className="text-2xl font-bold">#{playerStats.avgRank.toFixed(1)}</p>
+                  <p className="text-2xl font-bold text-purple-600">#{playerStats.avgRank.toFixed(1)}</p>
                 </div>
               </div>
             </Card>
@@ -409,59 +486,69 @@ export default function Dashboard() {
               </h3>
 
               {closestRival ? (
-                <>
-                  {/* Closest Rival Row */}
-                  <div
-                    onClick={() => setHeadToHeadExpanded(!headToHeadExpanded)}
-                    className="flex items-center justify-between p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors cursor-pointer"
-                  >
-                    <div className="flex items-center gap-2 flex-1">
-                      <span className="text-xs text-muted-foreground">vs</span>
-                      <p className="font-medium">{closestRival.playerName}</p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      {(() => {
-                        const h2h = getHeadToHeadRecord(closestRival.playerName)
-                        return (
-                          <>
-                            <div className="flex items-center gap-1">
-                              <span className="text-sm font-semibold text-green-600">{h2h.wins}W</span>
-                              <span className="text-sm font-semibold text-muted-foreground">-</span>
-                              <span className="text-sm font-semibold text-red-600">{h2h.losses}L</span>
-                            </div>
-                            {headToHeadExpanded ? (
-                              <ChevronUp className="h-5 w-5 text-muted-foreground" />
-                            ) : (
-                              <ChevronDown className="h-5 w-5 text-muted-foreground" />
-                            )}
-                          </>
-                        )
-                      })()}
-                    </div>
-                  </div>
-
-                  {/* Expanded View - All Players */}
-                  <AnimatePresence>
-                    {headToHeadExpanded && (
+                <div
+                  onClick={() => setHeadToHeadExpanded(!headToHeadExpanded)}
+                  className="cursor-pointer"
+                >
+                  <AnimatePresence mode="wait">
+                    {!headToHeadExpanded ? (
+                      /* Collapsed View - Show Closest Rival Only */
                       <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="mt-4 overflow-hidden"
+                        key="collapsed"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.15 }}
+                        className="flex items-center justify-between p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
                       >
+                        <div className="flex items-center gap-2 flex-1">
+                          <span className="text-xs text-muted-foreground">vs</span>
+                          <p className="font-medium">{closestRival.playerName}</p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          {(() => {
+                            const h2h = getHeadToHeadRecord(closestRival.playerName)
+                            return (
+                              <>
+                                <div className="flex items-center gap-1">
+                                  <span className="text-sm font-semibold text-green-600">{h2h.wins}W</span>
+                                  <span className="text-sm font-semibold text-muted-foreground">-</span>
+                                  <span className="text-sm font-semibold text-red-600">{h2h.losses}L</span>
+                                </div>
+                                <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                              </>
+                            )
+                          })()}
+                        </div>
+                      </motion.div>
+                    ) : (
+                      /* Expanded View - Show All Players */
+                      <motion.div
+                        key="expanded"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.15 }}
+                        className="space-y-2"
+                      >
+                        {/* Header Row */}
+                        <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
+                          <p className="font-medium text-sm">All Rivals</p>
+                          <ChevronUp className="h-5 w-5 text-muted-foreground" />
+                        </div>
+
+                        {/* All Players List */}
                         <div className="max-h-64 overflow-y-auto space-y-2">
                           {allPlayersStats
                             .filter(p => p.playerName !== player.player_name)
-                            .map((p, index) => {
+                            .map((p) => {
                               const h2h = getHeadToHeadRecord(p.playerName)
                               return (
                                 <div
                                   key={p.playerName}
                                   className="flex items-center justify-between p-3 rounded-lg bg-background border border-border"
                                 >
-                                  <div className="flex items-center gap-3">
-                                    <span className="text-xs text-muted-foreground w-6">#{index + 1}</span>
+                                  <div className="flex items-center gap-2">
                                     <span className="text-xs text-muted-foreground">vs</span>
                                     <p className="font-medium">{p.playerName}</p>
                                   </div>
@@ -477,7 +564,7 @@ export default function Dashboard() {
                       </motion.div>
                     )}
                   </AnimatePresence>
-                </>
+                </div>
               ) : (
                 <div className="text-center text-muted-foreground py-4">
                   <p>No head-to-head data available yet.</p>
