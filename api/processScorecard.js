@@ -397,14 +397,9 @@ async function processSingleEmail(email, options = {}) {
   try {
     // Clear betting lock for ALL active events (since admin sets it on all)
     // This ensures consistency: if admin locks all events, processing unlocks all events
-    const { data: activeEvents, error: fetchError } = await supabase
-      .from('events')
-      .select('id, name, betting_lock_time')
-      .eq('is_active', true);
+    const activeEvents = await db.getActiveEvents();
 
-    if (fetchError) {
-      logger.error('Failed to fetch active events for lock reset', { error: fetchError.message });
-    } else if (activeEvents && activeEvents.length > 0) {
+    if (activeEvents && activeEvents.length > 0) {
       for (const evt of activeEvents) {
         if (evt.betting_lock_time) {
           await db.updateEvent(evt.id, { betting_lock_time: null });

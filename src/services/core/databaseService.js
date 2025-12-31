@@ -240,6 +240,26 @@ export async function updateEvent(eventId, updates) {
   return data;
 }
 
+/**
+ * Get all active events
+ * @returns {Promise<Array>} Array of active events
+ */
+export async function getActiveEvents() {
+  logger.info('Fetching active events');
+
+  const data = await executeQuery(
+    () => supabase
+      .from('events')
+      .select('id, name, type, betting_lock_time, start_date, end_date')
+      .eq('is_active', true)
+      .order('id'),
+    'Failed to fetch active events'
+  );
+
+  logger.info('Active events fetched', { count: data.length });
+  return data;
+}
+
 export default {
   getRegisteredPlayers,
   findEventByDate,
@@ -249,5 +269,6 @@ export default {
   insertRound,
   insertPlayerRounds,
   findCourseByNameOrAlias,
-  updateEvent
+  updateEvent,
+  getActiveEvents
 };
