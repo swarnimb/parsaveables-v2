@@ -80,6 +80,8 @@ export default function RulesTab() {
   }
 
   const loadSystemIntoForm = (system) => {
+    if (!system) return
+
     const config = system.config || {}
     setRankPoints(config.rank_points || {})
     setPerformancePoints({
@@ -90,7 +92,16 @@ export default function RulesTab() {
     })
 
     // Handle tie_breaking - convert to priority array format
-    const tieBreakerPriority = config.tie_breaking?.priority || ['', '', '', '']
+    let tieBreakerPriority = ['', '', '', '']
+    if (config.tie_breaking?.priority && Array.isArray(config.tie_breaking.priority)) {
+      // Ensure we have exactly 4 elements
+      tieBreakerPriority = [
+        config.tie_breaking.priority[0] || '',
+        config.tie_breaking.priority[1] || '',
+        config.tie_breaking.priority[2] || '',
+        config.tie_breaking.priority[3] || ''
+      ]
+    }
     setTieBreaking({ priority: tieBreakerPriority })
 
     setCourseMultiplier(config.course_multiplier || { enabled: true, source: 'course_tier' })

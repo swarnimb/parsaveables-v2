@@ -13,6 +13,7 @@ import { useToast } from '@/hooks/use-toast'
 export default function EventsTab() {
   const { toast } = useToast()
   const [events, setEvents] = useState([])
+  const [pointsSystems, setPointsSystems] = useState([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
@@ -23,14 +24,30 @@ export default function EventsTab() {
     start_date: '',
     end_date: '',
     type: 'season',
-    status: 'upcoming'
+    status: 'upcoming',
+    points_system_id: null
   })
   const [error, setError] = useState('')
 
-  // Fetch events
+  // Fetch events and points systems
   useEffect(() => {
     fetchEvents()
+    fetchPointsSystems()
   }, [])
+
+  const fetchPointsSystems = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('points_systems')
+        .select('id, name')
+        .order('name', { ascending: true })
+
+      if (error) throw error
+      setPointsSystems(data || [])
+    } catch (err) {
+      console.error('Error fetching points systems:', err)
+    }
+  }
 
   const fetchEvents = async () => {
     try {
@@ -56,7 +73,8 @@ export default function EventsTab() {
       start_date: '',
       end_date: '',
       type: 'season',
-      status: 'upcoming'
+      status: 'upcoming',
+      points_system_id: pointsSystems.length > 0 ? pointsSystems[0].id : null
     })
     setEditDialog({ open: true, event: null })
   }
@@ -68,7 +86,8 @@ export default function EventsTab() {
       start_date: event.start_date,
       end_date: event.end_date,
       type: event.type,
-      status: event.status
+      status: event.status,
+      points_system_id: event.points_system_id
     })
     setEditDialog({ open: true, event })
   }
@@ -406,6 +425,28 @@ export default function EventsTab() {
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+
+            <div>
+              <Label htmlFor="points_system">Points System *</Label>
+              <Select
+                value={formData.points_system_id?.toString() || ''}
+                onValueChange={(value) => setFormData({ ...formData, points_system_id: parseInt(value) })}
+              >
+                <SelectTrigger className="mt-1.5">
+                  <SelectValue placeholder="Select points system" />
+                </SelectTrigger>
+                <SelectContent>
+                  {pointsSystems.map((system) => (
+                    <SelectItem key={system.id} value={system.id.toString()}>
+                      {system.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground mt-1">
+                Select an existing points system or create a new one in the Rules tab
+              </p>
             </div>
 
             {error && (

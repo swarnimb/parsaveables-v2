@@ -213,7 +213,7 @@ export default function CoursesTab() {
           <p className="text-muted-foreground">No courses yet. Add your first course!</p>
         </Card>
       ) : (
-        <Accordion type="multiple" defaultValue={tiers.map(t => `tier-${t}`)} className="space-y-2">
+        <Accordion type="single" collapsible className="space-y-2">
           {tiers.map(tier => {
             const tierCourses = coursesByTier[tier] || []
             const multiplier = TIER_MULTIPLIERS[tier]

@@ -324,7 +324,7 @@ export default function PlayersTab() {
           </SelectContent>
         </Select>
 
-        <Button onClick={handleCreate}>
+        <Button onClick={handleCreate} className="text-sm">
           <Plus className="h-4 w-4 mr-2" />
           Add Player
         </Button>
