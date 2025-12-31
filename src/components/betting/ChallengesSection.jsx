@@ -18,6 +18,7 @@ export default function ChallengesSection({ playerId, pulpBalance, onChallengeAc
   const { toast } = useToast()
   const [players, setPlayers] = useState([])
   const [pendingChallenges, setPendingChallenges] = useState([])
+  const [activeChallenges, setActiveChallenges] = useState([])
   const [selectedPlayer, setSelectedPlayer] = useState('')
   const [wagerAmount, setWagerAmount] = useState(20)
   const [loading, setLoading] = useState(false)
@@ -133,7 +134,36 @@ export default function ChallengesSection({ playerId, pulpBalance, onChallengeAc
     }
 
     fetchPendingChallenges()
-  }, [playerId])
+  }, [playerId, onChallengeAction])
+
+  // Fetch active challenges (where I'm involved and status is 'accepted')
+  useEffect(() => {
+    async function fetchActiveChallenges() {
+      if (!playerId) return
+
+      try {
+        const { data, error } = await supabase
+          .from('challenges')
+          .select(`
+            *,
+            challenger:registered_players!challenges_challenger_id_fkey(player_name),
+            challenged:registered_players!challenges_challenged_id_fkey(player_name),
+            round:rounds(date, course_name)
+          `)
+          .or(`challenger_id.eq.${playerId},challenged_id.eq.${playerId}`)
+          .eq('status', 'accepted')
+          .is('round_id', null) // Only next round challenges
+          .order('issued_at', { ascending: false })
+
+        if (error) throw error
+        setActiveChallenges(data || [])
+      } catch (err) {
+        console.error('Error fetching active challenges:', err)
+      }
+    }
+
+    fetchActiveChallenges()
+  }, [playerId, onChallengeAction])
 
   const handleIssueChallenge = async () => {
     if (!selectedPlayer) {
@@ -248,17 +278,88 @@ export default function ChallengesSection({ playerId, pulpBalance, onChallengeAc
     }
   }
 
+  const hasActiveChallenge = activeChallenges.length > 0
+
   return (
-    <Tabs defaultValue="issue" className="w-full">
-      <TabsList className="grid w-full grid-cols-2">
-        <TabsTrigger value="issue">Issue Challenge</TabsTrigger>
+    <Tabs defaultValue={hasActiveChallenge ? "active" : "issue"} className="w-full">
+      <TabsList className="grid w-full grid-cols-3">
+        <TabsTrigger value="issue">Issue</TabsTrigger>
         <TabsTrigger value="respond">
           Pending ({pendingChallenges.length})
         </TabsTrigger>
+        <TabsTrigger value="active">
+          Active ({activeChallenges.length})
+        </TabsTrigger>
       </TabsList>
+
+      {/* Active Challenges Tab */}
+      <TabsContent value="active" className="mt-4">
+        {activeChallenges.length === 0 ? (
+          <div className="text-center text-muted-foreground py-8">
+            No active challenges
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {activeChallenges.map(challenge => {
+              const isChallenger = challenge.challenger_id === playerId
+              const opponentName = isChallenger
+                ? challenge.challenged?.player_name
+                : challenge.challenger?.player_name
+
+              return (
+                <div
+                  key={challenge.id}
+                  className="bg-primary/10 border-2 border-primary rounded-lg p-4 space-y-3"
+                >
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-semibold">Active Challenge</h3>
+                    <Swords className="h-4 w-4 text-primary" />
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-muted-foreground">Opponent:</span>
+                      <span className="font-semibold">{opponentName}</span>
+                    </div>
+
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-muted-foreground">Wager:</span>
+                      <span className="font-semibold">{challenge.wager_amount} PULPs</span>
+                    </div>
+
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-muted-foreground">Role:</span>
+                      <span className="font-semibold">
+                        {isChallenger ? 'Challenger' : 'Challenged'}
+                      </span>
+                    </div>
+
+                    <div className="border-t border-border pt-2">
+                      <p className="text-xs text-muted-foreground">
+                        This challenge will be resolved after the next round is played and processed.
+                        {isChallenger ? ' You initiated this challenge.' : ' You accepted this challenge.'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </TabsContent>
 
       {/* Issue Challenge Tab */}
       <TabsContent value="issue" className="space-y-6 mt-4">
+        {hasActiveChallenge ? (
+          <div className="bg-muted/50 border border-border rounded-lg p-4 text-center space-y-2">
+            <Swords className="h-8 w-8 mx-auto text-muted-foreground" />
+            <p className="text-sm font-semibold">Active Challenge in Progress</p>
+            <p className="text-xs text-muted-foreground">
+              You already have an active challenge. Wait for it to be resolved before issuing another.
+            </p>
+          </div>
+        ) : (
+          <>
         <div className="bg-muted/50 border border-border rounded-lg p-3">
           <h3 className="text-sm font-semibold mb-2">Challenge Rules</h3>
           <ul className="text-xs text-muted-foreground space-y-1 list-disc list-inside">
@@ -311,6 +412,8 @@ export default function ChallengesSection({ playerId, pulpBalance, onChallengeAc
           <Swords className="h-4 w-4 mr-2" />
           {loading ? 'Issuing...' : `Issue Challenge (${wagerAmount} PULPs)`}
         </Button>
+          </>
+        )}
       </TabsContent>
 
       {/* Respond to Challenges Tab */}

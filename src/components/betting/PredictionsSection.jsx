@@ -21,6 +21,7 @@ export default function PredictionsSection({ playerId, pulpBalance, onBetPlaced 
   const [predictions, setPredictions] = useState({ first: '', second: '', third: '' })
   const [wagerAmount, setWagerAmount] = useState(20)
   const [loading, setLoading] = useState(false)
+  const [existingBet, setExistingBet] = useState(null)
 
   // Fetch active event (for next round betting)
   useEffect(() => {
@@ -42,6 +43,30 @@ export default function PredictionsSection({ playerId, pulpBalance, onBetPlaced 
 
     fetchActiveEvent()
   }, [])
+
+  // Fetch existing bet for player (pending or locked)
+  useEffect(() => {
+    async function fetchExistingBet() {
+      if (!playerId) return
+
+      try {
+        const { data, error } = await supabase
+          .from('bets')
+          .select('*')
+          .eq('player_id', playerId)
+          .is('round_id', null) // Next round bets
+          .in('status', ['pending', 'locked'])
+          .maybeSingle()
+
+        if (error) throw error
+        setExistingBet(data)
+      } catch (err) {
+        console.error('Error fetching existing bet:', err)
+      }
+    }
+
+    fetchExistingBet()
+  }, [playerId, onBetPlaced])
 
   // Fetch registered players when round selected
   useEffect(() => {
@@ -150,6 +175,8 @@ export default function PredictionsSection({ playerId, pulpBalance, onBetPlaced 
   const isBettingLocked = selectedRound?.events?.betting_lock_time &&
     new Date(selectedRound.events.betting_lock_time) < new Date()
 
+  const hasPendingBet = existingBet && ['pending', 'locked'].includes(existingBet.status)
+
   return (
     <div className="space-y-6">
       {/* Instructions */}
@@ -163,22 +190,69 @@ export default function PredictionsSection({ playerId, pulpBalance, onBetPlaced 
         </ul>
       </div>
 
-      {/* Next Round Info */}
-      <div className="bg-muted/50 border border-border rounded-lg p-3">
-        <p className="text-xs font-semibold mb-1">Betting on: Next Round</p>
-        <p className="text-xs text-muted-foreground">
-          Your predictions apply to the next round played.
-        </p>
-        {isBettingLocked && (
-          <p className="text-sm text-destructive mt-2 flex items-center gap-2">
-            <Lock className="h-4 w-4" />
-            Betting is currently locked
-          </p>
-        )}
-      </div>
+      {/* Show Existing Bet if Present */}
+      {hasPendingBet ? (
+        <div className="bg-primary/10 border-2 border-primary rounded-lg p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold">Your Active Bet</h3>
+            {existingBet.status === 'locked' ? (
+              <Lock className="h-4 w-4 text-muted-foreground" />
+            ) : (
+              <Trophy className="h-4 w-4 text-primary" />
+            )}
+          </div>
 
-      {/* Predictions */}
-      {!isBettingLocked && (
+          <div className="space-y-2">
+            <div className="flex justify-between items-center text-sm">
+              <span className="text-muted-foreground">Wager:</span>
+              <span className="font-semibold">{existingBet.wager_amount} PULPs</span>
+            </div>
+
+            <div className="border-t border-border pt-2">
+              <p className="text-xs text-muted-foreground mb-1">Your Predictions:</p>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-mono bg-muted px-2 py-1 rounded">1st</span>
+                  <span className="text-sm font-semibold">{existingBet.prediction_first}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-mono bg-muted px-2 py-1 rounded">2nd</span>
+                  <span className="text-sm font-semibold">{existingBet.prediction_second}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-mono bg-muted px-2 py-1 rounded">3rd</span>
+                  <span className="text-sm font-semibold">{existingBet.prediction_third}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="border-t border-border pt-2">
+              <p className="text-xs text-muted-foreground">
+                {existingBet.status === 'locked'
+                  ? 'Betting is locked. Your bet will be resolved after the round is processed.'
+                  : 'Your bet is active. Results will be shown after the next round is played.'}
+              </p>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <>
+          {/* Next Round Info */}
+          <div className="bg-muted/50 border border-border rounded-lg p-3">
+            <p className="text-xs font-semibold mb-1">Betting on: Next Round</p>
+            <p className="text-xs text-muted-foreground">
+              Your predictions apply to the next round played.
+            </p>
+            {isBettingLocked && (
+              <p className="text-sm text-destructive mt-2 flex items-center gap-2">
+                <Lock className="h-4 w-4" />
+                Betting is currently locked
+              </p>
+            )}
+          </div>
+
+          {/* Predictions */}
+          {!isBettingLocked && (
         <div className="space-y-4">
           <div>
             <Label>1st Place</Label>
@@ -243,10 +317,12 @@ export default function PredictionsSection({ playerId, pulpBalance, onBetPlaced 
         </div>
       )}
 
-      {isBettingLocked && (
-        <div className="text-center text-muted-foreground py-8">
-          Betting is currently locked. Check back after the current round is processed.
-        </div>
+          {isBettingLocked && (
+            <div className="text-center text-muted-foreground py-8">
+              Betting is currently locked. Check back after the current round is processed.
+            </div>
+          )}
+        </>
       )}
     </div>
   )
