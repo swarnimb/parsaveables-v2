@@ -122,9 +122,8 @@ export default function Leaderboard() {
                 </optgroup>
               )}
             </select>
-          </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Podium Display for Top 3 */}
       {topThree.length > 0 && (
