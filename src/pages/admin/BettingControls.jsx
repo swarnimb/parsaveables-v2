@@ -314,21 +314,8 @@ export default function BettingControls() {
       </div>
 
       <div className="space-y-4">
-        {/* Error/Success Messages */}
-        {error && (
-          <div className="bg-destructive/10 text-destructive rounded-lg p-3 text-sm">
-            {error}
-          </div>
-        )}
-
-        {success && (
-          <div className="bg-green-500/10 text-green-600 rounded-lg p-3 text-sm">
-            {success}
-          </div>
-        )}
-
         {/* Show current locked state if betting is locked */}
-        {isLocked ? (
+        {isLocked && currentBettingLock ? (
           <>
             {/* Current Lock Status Card */}
             <div className="border-2 border-red-500/30 bg-red-500/5 rounded-lg p-4 space-y-3">
