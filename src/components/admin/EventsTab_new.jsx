@@ -66,15 +66,18 @@ export default function EventsTab() {
     try {
       const { data, error } = await supabase
         .from('registered_players')
-        .select('id, player_name, status')
+        .select('id, player_name')
         .order('player_name', { ascending: true })
 
       if (error) throw error
-      // Filter out inactive players if status column exists, otherwise show all
-      const activePlayers = data?.filter(p => !p.status || p.status === 'active') || []
-      setPlayers(activePlayers)
+      setPlayers(data || [])
     } catch (err) {
       console.error('Error fetching players:', err)
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Failed to load players. Please refresh the page.'
+      })
     }
   }
 

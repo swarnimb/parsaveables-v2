@@ -74,10 +74,7 @@ export default function PlayersTab() {
             player_id,
             registered_players (
               id,
-              player_name,
-              email,
-              user_id,
-              status
+              player_name
             )
           `)
           .eq('event_id', selectedEvent)
