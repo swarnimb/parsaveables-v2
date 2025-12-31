@@ -62,12 +62,26 @@ export async function placeBet(playerId, roundId, eventId, predictions, wagerAmo
     }
 
     // Check if player already has a bet for this round
-    const { data: existingBet } = await supabase
-      .from('bets')
-      .select('id')
-      .eq('player_id', playerId)
-      .eq('round_id', roundId)
-      .single();
+    // For next round bets (roundId = null), check for pending bets with null round_id
+    let existingBet;
+    if (roundId === null) {
+      const { data } = await supabase
+        .from('bets')
+        .select('id')
+        .eq('player_id', playerId)
+        .is('round_id', null)
+        .eq('status', 'pending')
+        .maybeSingle();
+      existingBet = data;
+    } else {
+      const { data } = await supabase
+        .from('bets')
+        .select('id')
+        .eq('player_id', playerId)
+        .eq('round_id', roundId)
+        .maybeSingle();
+      existingBet = data;
+    }
 
     if (existingBet) {
       throw new BusinessLogicError('You already have a bet for this round');
@@ -78,7 +92,7 @@ export async function placeBet(playerId, roundId, eventId, predictions, wagerAmo
       playerId,
       wagerAmount,
       'bet_loss', // Temporary - will change if they win
-      `Bet placed on round ${roundId}`,
+      roundId ? `Bet placed on round ${roundId}` : 'Bet placed on next round',
       { round_id: roundId, event_id: eventId }
     );
 
