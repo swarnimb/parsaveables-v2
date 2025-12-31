@@ -7,18 +7,28 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Badge } from '@/components/ui/badge'
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
+import { useToast } from '@/hooks/use-toast'
+
+// Tier multiplier mapping
+const TIER_MULTIPLIERS = {
+  1: 1.0,
+  2: 1.5,
+  3: 2.0,
+  4: 2.5
+}
 
 export default function CoursesTab() {
+  const { toast } = useToast()
   const [courses, setCourses] = useState([])
   const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const [editDialog, setEditDialog] = useState({ open: false, course: null })
   const [deleteDialog, setDeleteDialog] = useState({ open: false, course: null })
   const [formData, setFormData] = useState({
     course_name: '',
-    tier: 2,
-    multiplier: 1.5,
-    active: true
+    tier: 2
   })
   const [error, setError] = useState('')
 
@@ -46,21 +56,19 @@ export default function CoursesTab() {
   }
 
   const handleCreate = () => {
+    setError('')
     setFormData({
       course_name: '',
-      tier: 2,
-      multiplier: 1.5,
-      active: true
+      tier: 2
     })
     setEditDialog({ open: true, course: null })
   }
 
   const handleEdit = (course) => {
+    setError('')
     setFormData({
       course_name: course.course_name,
-      tier: course.tier,
-      multiplier: course.multiplier,
-      active: course.active
+      tier: course.tier
     })
     setEditDialog({ open: true, course })
   }
@@ -68,6 +76,7 @@ export default function CoursesTab() {
   const handleSave = async () => {
     try {
       setError('')
+      setSaving(true)
 
       // Validation
       if (!formData.course_name) {
@@ -75,34 +84,62 @@ export default function CoursesTab() {
         return
       }
 
+      // Auto-set multiplier based on tier
+      const multiplier = TIER_MULTIPLIERS[formData.tier] || 1.5
+
+      const saveData = {
+        course_name: formData.course_name,
+        tier: formData.tier,
+        multiplier,
+        active: true // Always active by default
+      }
+
       if (editDialog.course) {
         // Update existing
         const { error } = await supabase
           .from('courses')
-          .update(formData)
+          .update(saveData)
           .eq('id', editDialog.course.id)
 
         if (error) throw error
+
+        toast({
+          title: 'Course updated',
+          description: `${formData.course_name} has been updated successfully`
+        })
       } else {
         // Create new
         const { error } = await supabase
           .from('courses')
-          .insert([formData])
+          .insert([saveData])
 
         if (error) throw error
+
+        toast({
+          title: 'Course created',
+          description: `${formData.course_name} has been added successfully`
+        })
       }
 
       setEditDialog({ open: false, course: null })
-      fetchCourses()
+      await fetchCourses()
     } catch (err) {
       console.error('Error saving course:', err)
       setError(err.message || 'Failed to save course')
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: err.message || 'Failed to save course'
+      })
+    } finally {
+      setSaving(false)
     }
   }
 
   const handleDelete = async () => {
     try {
       setError('')
+      setDeleting(true)
 
       // Check if any rounds reference this course
       const { data: rounds, error: checkError } = await supabase
@@ -114,7 +151,7 @@ export default function CoursesTab() {
       if (checkError) throw checkError
 
       if (rounds && rounds.length > 0) {
-        setError('Cannot delete course - it is referenced by existing rounds. Set it as inactive instead.')
+        setError('Cannot delete course - it is referenced by existing rounds.')
         return
       }
 
@@ -126,83 +163,105 @@ export default function CoursesTab() {
 
       if (error) throw error
 
+      toast({
+        title: 'Course deleted',
+        description: `${deleteDialog.course.course_name} has been deleted successfully`
+      })
+
       setDeleteDialog({ open: false, course: null })
-      fetchCourses()
+      await fetchCourses()
     } catch (err) {
       console.error('Error deleting course:', err)
       setError(err.message || 'Failed to delete course')
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: err.message || 'Failed to delete course'
+      })
+    } finally {
+      setDeleting(false)
     }
-  }
-
-  const getTierBadge = (tier) => {
-    const variants = {
-      1: { label: 'Tier 1', variant: 'outline' },
-      2: { label: 'Tier 2', variant: 'default' },
-      3: { label: 'Tier 3', variant: 'secondary' }
-    }
-    const { label, variant } = variants[tier] || { label: `Tier ${tier}`, variant: 'outline' }
-    return <Badge variant={variant}>{label}</Badge>
   }
 
   if (loading) {
     return <div className="text-center py-12 text-muted-foreground">Loading courses...</div>
   }
 
+  // Group courses by tier
+  const coursesByTier = courses.reduce((acc, course) => {
+    const tier = course.tier
+    if (!acc[tier]) acc[tier] = []
+    acc[tier].push(course)
+    return acc
+  }, {})
+
+  const tiers = [1, 2, 3, 4] // All possible tiers
+
   return (
     <div className="space-y-4">
       {/* Header with Add button */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold">Courses</h2>
-          <p className="text-sm text-muted-foreground">Manage disc golf courses and their difficulty tiers</p>
-        </div>
+      <div className="flex items-center justify-end">
         <Button onClick={handleCreate}>
           <Plus className="h-4 w-4 mr-2" />
           Add Course
         </Button>
       </div>
 
-      {/* Courses List */}
+      {/* Courses Grouped by Tier */}
       {courses.length === 0 ? (
         <Card className="p-8 text-center">
           <p className="text-muted-foreground">No courses yet. Add your first course!</p>
         </Card>
       ) : (
-        <div className="space-y-2">
-          {courses.map((course) => (
-            <Card key={course.id} className="p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
+        <Accordion type="multiple" defaultValue={tiers.map(t => `tier-${t}`)} className="space-y-2">
+          {tiers.map(tier => {
+            const tierCourses = coursesByTier[tier] || []
+            const multiplier = TIER_MULTIPLIERS[tier]
+
+            if (tierCourses.length === 0) return null
+
+            return (
+              <AccordionItem key={tier} value={`tier-${tier}`} className="border rounded-lg px-4">
+                <AccordionTrigger className="hover:no-underline">
                   <div className="flex items-center gap-3">
-                    <h3 className="font-semibold">{course.course_name}</h3>
-                    {getTierBadge(course.tier)}
-                    <Badge variant="outline">{course.multiplier}x</Badge>
-                    {!course.active && <Badge variant="secondary">Inactive</Badge>}
+                    <h3 className="text-lg font-semibold">Tier {tier}</h3>
+                    <span className="text-sm text-muted-foreground">{multiplier}x multiplier</span>
                   </div>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Tier {course.tier} • {course.multiplier}x points multiplier
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleEdit(course)}
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setDeleteDialog({ open: true, course })}
-                  >
-                    <Trash2 className="h-4 w-4 text-destructive" />
-                  </Button>
-                </div>
-              </div>
-            </Card>
-          ))}
-        </div>
+                </AccordionTrigger>
+                <AccordionContent className="pt-3 pb-4">
+                  <div className="space-y-2">
+                    {tierCourses.map(course => (
+                      <Card key={course.id} className="p-3">
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-medium">{course.course_name}</h4>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleEdit(course)}
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                setError('')
+                                setDeleteDialog({ open: true, course })
+                              }}
+                            >
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            )
+          })}
+        </Accordion>
       )}
 
       {/* Create/Edit Dialog */}
@@ -229,63 +288,24 @@ export default function CoursesTab() {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="tier">Difficulty Tier *</Label>
-                <Select
-                  value={formData.tier.toString()}
-                  onValueChange={(value) => {
-                    const tier = parseInt(value)
-                    // Auto-set multiplier based on tier
-                    const multipliers = { 1: 1.0, 2: 1.5, 3: 2.0 }
-                    setFormData({
-                      ...formData,
-                      tier,
-                      multiplier: multipliers[tier] || 1.5
-                    })
-                  }}
-                >
-                  <SelectTrigger className="mt-1.5">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1">Tier 1 (Beginner)</SelectItem>
-                    <SelectItem value="2">Tier 2 (Intermediate)</SelectItem>
-                    <SelectItem value="3">Tier 3 (Advanced)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label htmlFor="multiplier">Points Multiplier *</Label>
-                <Input
-                  id="multiplier"
-                  type="number"
-                  step="0.1"
-                  min="0.5"
-                  max="3.0"
-                  value={formData.multiplier}
-                  onChange={(e) => setFormData({ ...formData, multiplier: parseFloat(e.target.value) })}
-                  className="mt-1.5"
-                />
-              </div>
-            </div>
-
             <div>
-              <Label htmlFor="active">Status</Label>
+              <Label htmlFor="tier">Difficulty Tier *</Label>
               <Select
-                value={formData.active.toString()}
-                onValueChange={(value) => setFormData({ ...formData, active: value === 'true' })}
+                value={formData.tier.toString()}
+                onValueChange={(value) => setFormData({ ...formData, tier: parseInt(value) })}
               >
                 <SelectTrigger className="mt-1.5">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="true">Active</SelectItem>
-                  <SelectItem value="false">Inactive</SelectItem>
+                  <SelectItem value="1">Tier 1 (1x)</SelectItem>
+                  <SelectItem value="2">Tier 2 (1.5x)</SelectItem>
+                  <SelectItem value="3">Tier 3 (2x)</SelectItem>
+                  <SelectItem value="4">Tier 4 (2.5x)</SelectItem>
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground mt-1">
-                Inactive courses won't appear in course selection dropdowns
+                Points multiplier is automatically set based on tier level
               </p>
             </div>
 
@@ -295,11 +315,14 @@ export default function CoursesTab() {
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setEditDialog({ open: false, course: null })}>
+            <Button variant="outline" onClick={() => {
+              setError('')
+              setEditDialog({ open: false, course: null })
+            }}>
               Cancel
             </Button>
-            <Button onClick={handleSave}>
-              {editDialog.course ? 'Save Changes' : 'Create'}
+            <Button onClick={handleSave} disabled={saving}>
+              {saving ? 'Saving...' : (editDialog.course ? 'Save Changes' : 'Create')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -311,7 +334,7 @@ export default function CoursesTab() {
           <DialogHeader>
             <DialogTitle>Delete Course</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete "{deleteDialog.course?.course_name}"? This will fail if the course is referenced by any rounds.
+              Are you sure you want to delete "{deleteDialog.course?.course_name}"? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
 
@@ -320,11 +343,14 @@ export default function CoursesTab() {
           )}
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteDialog({ open: false, course: null })}>
+            <Button variant="outline" onClick={() => {
+              setError('')
+              setDeleteDialog({ open: false, course: null })
+            }}>
               Cancel
             </Button>
-            <Button variant="destructive" onClick={handleDelete}>
-              Delete
+            <Button variant="destructive" onClick={handleDelete} disabled={deleting}>
+              {deleting ? 'Deleting...' : 'Delete'}
             </Button>
           </DialogFooter>
         </DialogContent>
