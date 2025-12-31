@@ -11,7 +11,7 @@ import { useToast } from '@/hooks/use-toast'
 
 // Tie breaker options
 const TIE_BREAKER_OPTIONS = [
-  { value: '', label: '(None)' },
+  { value: 'none', label: '(None)' },
   { value: 'aces', label: 'Number of Aces' },
   { value: 'eagles', label: 'Number of Eagles' },
   { value: 'birdies', label: 'Number of Birdies' },
@@ -40,7 +40,7 @@ export default function RulesTab() {
     most_birdies: 0
   })
   const [tieBreaking, setTieBreaking] = useState({
-    priority: ['', '', '', '']
+    priority: ['none', 'none', 'none', 'none']
   })
   const [courseMultiplier, setCourseMultiplier] = useState({
     enabled: true,
@@ -92,15 +92,16 @@ export default function RulesTab() {
     })
 
     // Handle tie_breaking - convert to priority array format
-    let tieBreakerPriority = ['', '', '', '']
+    // Convert empty strings from DB to 'none' for UI
+    let tieBreakerPriority = ['none', 'none', 'none', 'none']
     if (config.tie_breaking?.priority && Array.isArray(config.tie_breaking.priority)) {
-      // Ensure we have exactly 4 elements
+      // Ensure we have exactly 4 elements, convert '' to 'none'
       tieBreakerPriority = [
-        config.tie_breaking.priority[0] || '',
-        config.tie_breaking.priority[1] || '',
-        config.tie_breaking.priority[2] || '',
-        config.tie_breaking.priority[3] || ''
-      ]
+        config.tie_breaking.priority[0] || 'none',
+        config.tie_breaking.priority[1] || 'none',
+        config.tie_breaking.priority[2] || 'none',
+        config.tie_breaking.priority[3] || 'none'
+      ].map(val => val === '' ? 'none' : val)
     }
     setTieBreaking({ priority: tieBreakerPriority })
 
@@ -112,10 +113,15 @@ export default function RulesTab() {
       setSaving(true)
       setError('')
 
+      // Convert 'none' back to empty strings for database
+      const tieBreakerForDB = {
+        priority: tieBreaking.priority.map(val => val === 'none' ? '' : val)
+      }
+
       const updatedConfig = {
         rank_points: rankPoints,
         performance_points: performancePoints,
-        tie_breaking: tieBreaking,
+        tie_breaking: tieBreakerForDB,
         course_multiplier: courseMultiplier
       }
 
@@ -277,8 +283,8 @@ export default function RulesTab() {
 
   // Get available tie breaker options for a specific dropdown (excluding already selected)
   const getAvailableTieBreakerOptions = (currentIndex) => {
-    const selected = tieBreaking.priority.filter((val, idx) => idx !== currentIndex && val !== '')
-    return TIE_BREAKER_OPTIONS.filter(opt => opt.value === '' || !selected.includes(opt.value))
+    const selected = tieBreaking.priority.filter((val, idx) => idx !== currentIndex && val !== 'none')
+    return TIE_BREAKER_OPTIONS.filter(opt => opt.value === 'none' || !selected.includes(opt.value))
   }
 
   if (loading) {

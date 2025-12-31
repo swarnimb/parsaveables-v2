@@ -9,13 +9,6 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useToast } from '@/hooks/use-toast'
 
-// Simple email validation
-const validateEmail = (email) => {
-  if (!email) return true // Email is optional
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  return emailRegex.test(email)
-}
-
 export default function PlayersTab() {
   const { toast } = useToast()
   const [players, setPlayers] = useState([])
@@ -29,9 +22,7 @@ export default function PlayersTab() {
   const [deleteDialog, setDeleteDialog] = useState({ open: false, player: null })
   const [removeDialog, setRemoveDialog] = useState({ open: false, player: null })
   const [formData, setFormData] = useState({
-    player_name: '',
-    email: '',
-    user_id: ''
+    player_name: ''
   })
   const [error, setError] = useState('')
 
@@ -112,9 +103,7 @@ export default function PlayersTab() {
   const handleCreate = () => {
     setError('')
     setFormData({
-      player_name: '',
-      email: '',
-      user_id: ''
+      player_name: ''
     })
     setEditDialog({ open: true, player: null })
   }
@@ -122,9 +111,7 @@ export default function PlayersTab() {
   const handleEdit = (player) => {
     setError('')
     setFormData({
-      player_name: player.player_name,
-      email: player.email || '',
-      user_id: player.user_id || ''
+      player_name: player.player_name
     })
     setEditDialog({ open: true, player })
   }
@@ -140,33 +127,8 @@ export default function PlayersTab() {
         return
       }
 
-      // Email validation
-      if (formData.email && !validateEmail(formData.email)) {
-        setError('Please enter a valid email address')
-        return
-      }
-
-      // Check for duplicate email if provided
-      if (formData.email) {
-        const { data: existingPlayers, error: checkError } = await supabase
-          .from('registered_players')
-          .select('id')
-          .eq('email', formData.email)
-          .neq('id', editDialog.player?.id || 0)
-          .limit(1)
-
-        if (checkError) throw checkError
-
-        if (existingPlayers && existingPlayers.length > 0) {
-          setError('A player with this email already exists')
-          return
-        }
-      }
-
       const updateData = {
-        player_name: formData.player_name,
-        email: formData.email || null,
-        user_id: formData.user_id || null
+        player_name: formData.player_name
       }
 
       if (editDialog.player) {
@@ -407,32 +369,6 @@ export default function PlayersTab() {
                 placeholder="John Doe"
                 className="mt-1.5"
               />
-            </div>
-
-            <div>
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                placeholder="john@example.com"
-                className="mt-1.5"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="user_id">User ID (optional)</Label>
-              <Input
-                id="user_id"
-                value={formData.user_id}
-                onChange={(e) => setFormData({ ...formData, user_id: e.target.value })}
-                placeholder="UUID from auth.users table"
-                className="mt-1.5"
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                Link this player to an authenticated user account
-              </p>
             </div>
 
             {error && (
