@@ -6,7 +6,7 @@ import { Card } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useToast } from '@/hooks/use-toast'
 
 // Tie breaker options
@@ -21,6 +21,7 @@ const TIE_BREAKER_OPTIONS = [
 export default function RulesTab() {
   const { toast } = useToast()
   const [pointsSystems, setPointsSystems] = useState([])
+  const [events, setEvents] = useState([])
   const [selectedSystem, setSelectedSystem] = useState(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -61,15 +62,28 @@ export default function RulesTab() {
 
   const fetchPointsSystems = async () => {
     try {
-      const { data, error } = await supabase
-        .from('points_systems')
-        .select('*')
-        .order('name', { ascending: true })
+      // Fetch both points systems and events
+      const [systemsResult, eventsResult] = await Promise.all([
+        supabase
+          .from('points_systems')
+          .select('*')
+          .order('name', { ascending: true }),
+        supabase
+          .from('events')
+          .select('id, name, type, points_system_id')
+          .order('start_date', { ascending: false })
+      ])
 
-      if (error) throw error
-      setPointsSystems(data || [])
-      if (data && data.length > 0 && !selectedSystem) {
-        setSelectedSystem(data[0])
+      if (systemsResult.error) throw systemsResult.error
+      if (eventsResult.error) throw eventsResult.error
+
+      setPointsSystems(systemsResult.data || [])
+      setEvents(eventsResult.data || [])
+
+      // Default to "Season 2025" if it exists, otherwise first system
+      if (systemsResult.data && systemsResult.data.length > 0 && !selectedSystem) {
+        const season2025 = systemsResult.data.find(s => s.name === 'Season 2025')
+        setSelectedSystem(season2025 || systemsResult.data[0])
       }
     } catch (err) {
       console.error('Error fetching points systems:', err)
@@ -291,6 +305,37 @@ export default function RulesTab() {
     return <div className="text-center py-12 text-muted-foreground">Loading points systems...</div>
   }
 
+  // Categorize points systems based on events that use them
+  const categorizePointsSystems = () => {
+    const seasonSystems = []
+    const tournamentSystems = []
+    const uncategorizedSystems = []
+
+    pointsSystems.forEach(system => {
+      const eventsUsingSystem = events.filter(e => e.points_system_id === system.id)
+
+      if (eventsUsingSystem.length === 0) {
+        uncategorizedSystems.push(system)
+      } else {
+        const hasSeasons = eventsUsingSystem.some(e => e.type === 'season')
+        const hasTournaments = eventsUsingSystem.some(e => e.type === 'tournament')
+
+        if (hasSeasons && !hasTournaments) {
+          seasonSystems.push(system)
+        } else if (hasTournaments && !hasSeasons) {
+          tournamentSystems.push(system)
+        } else {
+          // Used by both or other types - put in uncategorized
+          uncategorizedSystems.push(system)
+        }
+      }
+    })
+
+    return { seasonSystems, tournamentSystems, uncategorizedSystems }
+  }
+
+  const { seasonSystems, tournamentSystems, uncategorizedSystems } = categorizePointsSystems()
+
   return (
     <div className="space-y-6">
       {/* Header with System Selector and Actions */}
@@ -312,11 +357,38 @@ export default function RulesTab() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {pointsSystems.map((system) => (
-                      <SelectItem key={system.id} value={system.id.toString()}>
-                        {system.name}
-                      </SelectItem>
-                    ))}
+                    {seasonSystems.length > 0 && (
+                      <SelectGroup>
+                        <SelectLabel>Seasons</SelectLabel>
+                        {seasonSystems.map((system) => (
+                          <SelectItem key={system.id} value={system.id.toString()}>
+                            {system.name}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    )}
+
+                    {tournamentSystems.length > 0 && (
+                      <SelectGroup>
+                        <SelectLabel>Tournaments</SelectLabel>
+                        {tournamentSystems.map((system) => (
+                          <SelectItem key={system.id} value={system.id.toString()}>
+                            {system.name}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    )}
+
+                    {uncategorizedSystems.length > 0 && (
+                      <SelectGroup>
+                        <SelectLabel>Other</SelectLabel>
+                        {uncategorizedSystems.map((system) => (
+                          <SelectItem key={system.id} value={system.id.toString()}>
+                            {system.name}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    )}
                   </SelectContent>
                 </Select>
               </>
