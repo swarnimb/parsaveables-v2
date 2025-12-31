@@ -201,7 +201,7 @@ export default function CoursesTab() {
     <div className="space-y-4">
       {/* Header with Add button */}
       <div className="flex items-center justify-end">
-        <Button onClick={handleCreate}>
+        <Button onClick={handleCreate} className="text-sm">
           <Plus className="h-4 w-4 mr-2" />
           Add Course
         </Button>
@@ -318,10 +318,10 @@ export default function CoursesTab() {
             <Button variant="outline" onClick={() => {
               setError('')
               setEditDialog({ open: false, course: null })
-            }}>
+            }} className="text-sm">
               Cancel
             </Button>
-            <Button onClick={handleSave} disabled={saving}>
+            <Button onClick={handleSave} disabled={saving} className="text-sm">
               {saving ? 'Saving...' : (editDialog.course ? 'Save Changes' : 'Create')}
             </Button>
           </DialogFooter>
@@ -346,10 +346,10 @@ export default function CoursesTab() {
             <Button variant="outline" onClick={() => {
               setError('')
               setDeleteDialog({ open: false, course: null })
-            }}>
+            }} className="text-sm">
               Cancel
             </Button>
-            <Button variant="destructive" onClick={handleDelete} disabled={deleting}>
+            <Button variant="destructive" onClick={handleDelete} disabled={deleting} className="text-sm">
               {deleting ? 'Deleting...' : 'Delete'}
             </Button>
           </DialogFooter>

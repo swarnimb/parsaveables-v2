@@ -33,12 +33,19 @@ export default function EventsTab() {
   const [selectedPlayerIds, setSelectedPlayerIds] = useState([])
   const [error, setError] = useState('')
 
-  // Fetch events, points systems, players, and event_players
+  // Fetch all data on mount
   useEffect(() => {
-    fetchEvents()
-    fetchPointsSystems()
-    fetchPlayers()
-    fetchEventPlayers()
+    const fetchAllData = async () => {
+      setLoading(true)
+      await Promise.all([
+        fetchEvents(),
+        fetchPointsSystems(),
+        fetchPlayers(),
+        fetchEventPlayers()
+      ])
+      setLoading(false)
+    }
+    fetchAllData()
   }, [])
 
   const fetchPointsSystems = async () => {
@@ -105,8 +112,6 @@ export default function EventsTab() {
     } catch (err) {
       console.error('Error fetching events:', err)
       setError('Failed to load events')
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -395,7 +400,7 @@ export default function EventsTab() {
     <div className="space-y-6">
       {/* Header with Add button */}
       <div className="flex items-center justify-end">
-        <Button onClick={handleCreate}>
+        <Button onClick={handleCreate} className="text-sm">
           <Plus className="h-4 w-4 mr-2" />
           Add Event
         </Button>
@@ -572,10 +577,10 @@ export default function EventsTab() {
             <Button variant="outline" onClick={() => {
               setError('')
               setEditDialog({ open: false, event: null })
-            }}>
+            }} className="text-sm">
               Cancel
             </Button>
-            <Button onClick={handleSave} disabled={saving}>
+            <Button onClick={handleSave} disabled={saving} className="text-sm">
               {saving ? 'Saving...' : (editDialog.event ? 'Save Changes' : 'Create')}
             </Button>
           </DialogFooter>
@@ -600,10 +605,10 @@ export default function EventsTab() {
             <Button variant="outline" onClick={() => {
               setError('')
               setDeleteDialog({ open: false, event: null })
-            }}>
+            }} className="text-sm">
               Cancel
             </Button>
-            <Button variant="destructive" onClick={handleDelete} disabled={deleting}>
+            <Button variant="destructive" onClick={handleDelete} disabled={deleting} className="text-sm">
               {deleting ? 'Deleting...' : 'Delete'}
             </Button>
           </DialogFooter>

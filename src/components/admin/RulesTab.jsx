@@ -396,7 +396,7 @@ export default function RulesTab() {
           </div>
 
           {selectedSystem && (
-            <Button onClick={handleSave} disabled={saving}>
+            <Button onClick={handleSave} disabled={saving} className="text-sm">
               <Save className="h-4 w-4 mr-2" />
               {saving ? 'Saving...' : 'Save Changes'}
             </Button>
@@ -486,8 +486,8 @@ export default function RulesTab() {
                 <h3 className="font-semibold text-lg">Placement Points</h3>
                 <p className="text-sm text-muted-foreground">Points awarded based on finishing position</p>
               </div>
-              <Button variant="outline" size="sm" onClick={handleAddRankPoint}>
-                <Plus className="h-4 w-4 mr-1" />
+              <Button variant="outline" size="sm" onClick={handleAddRankPoint} className="text-xs">
+                <Plus className="h-3 w-3 mr-1" />
                 Add Rank
               </Button>
             </div>
@@ -670,10 +670,10 @@ export default function RulesTab() {
             <Button variant="outline" onClick={() => {
               setError('')
               setCreateDialog({ open: false, duplicateFrom: null })
-            }}>
+            }} className="text-sm">
               Cancel
             </Button>
-            <Button onClick={handleCreateSystem} disabled={creating}>
+            <Button onClick={handleCreateSystem} disabled={creating} className="text-sm">
               {creating ? 'Creating...' : 'Create'}
             </Button>
           </DialogFooter>
@@ -698,10 +698,10 @@ export default function RulesTab() {
             <Button variant="outline" onClick={() => {
               setError('')
               setDeleteDialog({ open: false, system: null })
-            }}>
+            }} className="text-sm">
               Cancel
             </Button>
-            <Button variant="destructive" onClick={handleDelete} disabled={deleting}>
+            <Button variant="destructive" onClick={handleDelete} disabled={deleting} className="text-sm">
               {deleting ? 'Deleting...' : 'Delete'}
             </Button>
           </DialogFooter>

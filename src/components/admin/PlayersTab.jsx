@@ -380,10 +380,10 @@ export default function PlayersTab() {
             <Button variant="outline" onClick={() => {
               setError('')
               setEditDialog({ open: false, player: null })
-            }}>
+            }} className="text-sm">
               Cancel
             </Button>
-            <Button onClick={handleSave} disabled={saving}>
+            <Button onClick={handleSave} disabled={saving} className="text-sm">
               {saving ? 'Saving...' : (editDialog.player ? 'Save Changes' : 'Create')}
             </Button>
           </DialogFooter>
@@ -408,10 +408,10 @@ export default function PlayersTab() {
             <Button variant="outline" onClick={() => {
               setError('')
               setDeleteDialog({ open: false, player: null })
-            }}>
+            }} className="text-sm">
               Cancel
             </Button>
-            <Button variant="destructive" onClick={handleDelete} disabled={deleting}>
+            <Button variant="destructive" onClick={handleDelete} disabled={deleting} className="text-sm">
               {deleting ? 'Deactivating...' : 'Deactivate'}
             </Button>
           </DialogFooter>
@@ -436,10 +436,10 @@ export default function PlayersTab() {
             <Button variant="outline" onClick={() => {
               setError('')
               setRemoveDialog({ open: false, player: null })
-            }}>
+            }} className="text-sm">
               Cancel
             </Button>
-            <Button variant="destructive" onClick={handleRemoveFromEvent} disabled={removing}>
+            <Button variant="destructive" onClick={handleRemoveFromEvent} disabled={removing} className="text-sm">
               {removing ? 'Removing...' : 'Remove'}
             </Button>
           </DialogFooter>
