@@ -1,8 +1,18 @@
-import { supabase } from '../supabase.js';
+import { createClient } from '@supabase/supabase-js';
+import { config } from '../../config/index.js';
 import { createLogger } from '../../utils/logger.js';
 import { BusinessLogicError, DatabaseError } from '../../utils/errors.js';
 
 const logger = createLogger('PulpService');
+
+/**
+ * Initialize Supabase client with service role key
+ * This bypasses Row-Level Security for backend operations
+ */
+const supabase = createClient(
+  config.supabase.url,
+  config.supabase.serviceRoleKey
+);
 
 /**
  * PULP Service - Core balance and transaction management
