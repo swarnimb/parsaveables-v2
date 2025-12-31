@@ -1,8 +1,8 @@
 # ParSaveables v2 - Project Dashboard
 
-**Last Updated:** 2025-12-30
-**Current Phase:** Phase 5 (Testing & UX Polish) - IN PROGRESS
-**Status:** ✅ Foundation | ✅ Auth & Layout | ✅ Leaderboard | ✅ Rounds | ✅ PULP Design | ✅ Backend Services | ✅ Frontend UI | ✅ Season Awareness | ✅ UX Enhancements | ✅ Testing Framework | ✅ Guest Login | ✅ Admin Control Center
+**Last Updated:** 2025-12-30 (End of Session)
+**Current Phase:** Phase 5 (Testing & Bug Fixes) - IN PROGRESS
+**Status:** ✅ Foundation | ✅ Auth & Layout | ✅ Leaderboard | ✅ Rounds | ✅ PULP Design | ✅ Backend Services | ⚠️ PULP Settlement (Broken) | ✅ Frontend UI | ✅ Season Awareness | ✅ UX Enhancements | ✅ Testing Framework | ✅ Guest Login | ⚠️ Admin Control Center (Needs Polish)
 
 ---
 
@@ -23,13 +23,14 @@
 | 🎯 Rounds | ✅ Complete (Accordion, Scorecard images, Full-screen) |
 | 🏠 Dashboard | ✅ Complete (Event dropdown, All Time stats, Expanded metrics) |
 | 🔔 Notifications | ✅ Complete (Dropdown with recent activity, View All link) |
-| 🎲 Betting | ✅ Complete (Next round logic, No round selection) |
-| 🏆 Challenges | ✅ Complete (Next round logic, Accept/Reject tabs) |
+| 🎲 Betting | ✅ Complete (Next round logic, Active bet display) |
+| 🏆 Challenges | ✅ Complete (Next round logic, Active challenge display) |
 | 🗓️ Season Awareness | ✅ Complete (Auto-defaults to current season across all pages) |
 | 💰 PULP Economy Design | ✅ Complete (Architecture, Migration 006, Documentation) |
-| 🛠️ Backend Services (PULP) | ✅ Complete (5 services: pulp, betting, challenge, advantage, orchestrator) |
-| 🌐 PULP API Endpoints | ✅ Complete (7 endpoints in src/api/pulp/) |
+| 🛠️ Backend Services (PULP) | ⚠️ Implemented but Settlement Broken (5 services: pulp, betting, challenge, advantage, orchestrator) |
+| 🌐 PULP API Endpoints | ✅ Complete (7 endpoints in api/pulp/) |
 | 🎨 Frontend Pages (PULP) | ✅ Complete (Betting, Dashboard, Activity, About, Admin) |
+| 💸 PULP Settlement | ⚠️ BROKEN - Bets/challenges not resolving after scorecard processing |
 | 🎓 Tutorial System | ✅ Complete (Core + PULP tutorials) |
 | 🧪 Testing Framework | ✅ Complete (Vitest + React Testing Library + Happy DOM) |
 | 💸 PULP Transaction Tests | ✅ Complete (Advantages, Betting, Challenges - 16 tests) |
@@ -42,6 +43,82 @@
 ---
 
 ## This Session Summary (2025-12-30 - Latest)
+
+### PULP Economy UI Improvements & Bug Fixes - PARTIAL ⚠️
+
+**Work Completed:**
+- ✅ **Betting UI "Active Bet" Display**
+  - Modified PredictionsSection.jsx to show bet details after placing
+  - Added existingBet state to fetch pending/locked bets
+  - Conditional rendering: show bet card OR form (not both)
+  - Active bet card displays: wager, predictions (1st/2nd/3rd), status, lock icon
+  - Prevents duplicate bets by hiding form when active bet exists
+
+- ✅ **Challenges UI "Active Challenge" Display**
+  - Modified ChallengesSection.jsx to show issued/accepted challenges
+  - Added "Active" tab (3 tabs total: Issue, Pending, Active)
+  - Fetches TWO types of active challenges:
+    - Issued challenges (challenger_id = player, status='pending')
+    - Accepted challenges (either player, status='accepted')
+  - Shows different UI based on status (pending vs battle active)
+  - Prevents issuing new challenges when one is active
+  - Auto-defaults to Active tab when challenge exists
+
+- ✅ **API Validation Fixes**
+  - Fixed api/pulp/issueChallenge.js to allow null roundId
+  - Changed validation from `!roundId` to `wagerAmount === undefined`
+  - Allows "next round" challenges with roundId: null
+
+- ✅ **Database Schema Fix**
+  - Created migration 005_allow_null_round_id_in_challenges.sql
+  - Dropped NOT NULL constraint on challenges.round_id
+  - Allows challenges for "next round" before round is created
+
+- ✅ **Gamification Service Counter Fix**
+  - Fixed src/services/gamification/index.js line 337-368
+  - Replaced `supabase.raw('total_rounds_this_season + 1')` with fetch-increment-update
+  - Fixed src/services/gamification/challengeService.js line 217-240
+  - Replaced `supabase.raw('challenges_declined + 1')` with fetch-increment-update
+  - Supabase JS client doesn't have `.raw()` method - errors are now fixed
+
+**Files Modified (5 files):**
+- src/components/betting/PredictionsSection.jsx (active bet display)
+- src/components/betting/ChallengesSection.jsx (active challenge display)
+- api/pulp/issueChallenge.js (validation fix)
+- src/services/gamification/index.js (counter fix)
+- src/services/gamification/challengeService.js (counter fix)
+
+**Files Created (1 file):**
+- supabase/migrations/005_allow_null_round_id_in_challenges.sql
+
+**Critical Issue - UNRESOLVED ⚠️:**
+**PULP Settlement Still Not Working**
+- User tested bets and challenges end-to-end
+- Visually, bets and challenges appear to go through successfully
+- After processing scorecard, PULPs are NOT getting settled
+- Bets and challenges are NOT being resolved
+- Root cause appears to be in the PULP economy implementation itself
+- The gamification service may not be fully integrated with scorecard processing
+- OR bet/challenge resolution logic has bugs preventing settlement
+
+**Status:** PULP economy UI is complete, but backend settlement is broken. Needs full investigation and fix.
+
+**Next Steps (User's Priority List for Next Session):**
+1. **Control Center Implementation** - Finalize all CRUD operations for tournaments, players, courses, events, rules
+2. **PULP Economy UI Stages** - Implement specific views for:
+   - Pre-lock stage (betting open, can place bets/challenges)
+   - Post-lock stage (betting locked, can't change bets/challenges, show locked state)
+   - Post-resolve stage (show results, payouts, won/lost status)
+   - Apply to: Predictions, Challenges, Advantages
+3. **Fix PULP Economy Settlement** - Debug and fix why PULPs are not settling after scorecard processing
+4. **Activity & Notifications Tracking** - Ensure all events appear on activity page that should be there
+5. **End-to-End Testing** - Create accounts for all players, run multiple scenarios, test thoroughly
+6. **Production Preparation** - Delete all test accounts, reset PULP economy, prepare for real use
+
+**Commits (1):**
+- Commit `0a1a0c9`: Fix PULP settlement - replace supabase.raw() with proper counter updates
+
+---
 
 ### Toast Notifications System - COMPLETED ✅
 
@@ -877,44 +954,66 @@ PULP is a money-like economy. Bugs in these services = unfair advantages, lost P
 
 ---
 
-## Next Session: Immediate Tasks
+## Next Session: Immediate Tasks (User's Priority List)
 
-**Priority 1: Testing & Bug Fixes**
-- ✅ Install Radix UI dependencies (`npm install`)
-- Test app loads without errors
-- Test authentication flow (login, signup, logout)
-- Test Leaderboard and Rounds pages
-- Test Betting page (predictions, challenges, advantages sections)
-- Test Dashboard (Points/PULPs tabs)
-- Test Activity feed (Player/Community tabs)
-- Fix any runtime errors or missing imports
+**🚨 CRITICAL - Priority 1: Fix PULP Economy Settlement**
+- **BROKEN:** Bets and challenges are NOT resolving after scorecard processing
+- Debug gamificationService integration with processScorecard workflow
+- Verify bet resolution logic (resolveBets function)
+- Verify challenge resolution logic (resolveChallenge function)
+- Test end-to-end: Place bet → Process scorecard → Verify PULP settlement
+- Test end-to-end: Issue/accept challenge → Process scorecard → Verify winner gets PULPs
+- Check transaction logging (pulp_transactions table)
 
-**Priority 2: End-to-End PULP Testing**
-- Test processScorecard workflow with PULP integration
-- Place a test bet and verify deduction
-- Issue a test challenge and verify flow
-- Purchase an advantage and verify expiry
-- Test bet resolution (2x/1x/0x payouts)
-- Test challenge resolution
-- Verify PULP transaction logging
+**Priority 2: PULP Economy UI Stages**
+Implement different UI states for betting lifecycle:
+- **Pre-lock Stage:**
+  - Betting open, show available balance
+  - Allow placing bets/challenges
+  - Show countdown timer
+- **Post-lock Stage:**
+  - Betting locked, can't modify bets/challenges
+  - Show locked state with clear messaging
+  - Display what bets/challenges are active
+- **Post-resolve Stage:**
+  - Show results (won/lost)
+  - Display payouts received
+  - Show updated PULP balance
+  - Apply to: Predictions, Challenges, Advantages
 
-**Priority 3: Podcast Feature**
+**Priority 3: Control Center Polish**
+- Finalize all CRUD operations (Tournaments, Players, Courses, Events, Rules)
+- Test each tab thoroughly
+- Add loading states where missing
+- Polish error handling and validation
+- Test with real data scenarios
+
+**Priority 4: Activity & Notifications Tracking**
+- Ensure all PULP events appear on activity page:
+  - Bet placed/resolved
+  - Challenge issued/accepted/resolved
+  - Advantage purchased
+  - PULP earned (participation, DRS, etc.)
+- Verify notification bell shows correct count
+- Test "View All Activities" link
+
+**Priority 5: End-to-End Testing & Production Prep**
+- Create test accounts for all 10-12 players
+- Run multiple full scenarios:
+  - Place bets, process scorecard, verify payouts
+  - Issue challenges, accept/reject, process scorecard
+  - Purchase advantages, verify expiry
+  - Test streak bonuses, DRS, beat-higher-ranked
+- After successful testing:
+  - Delete all test user accounts
+  - Reset all PULP balances to 40
+  - Clear transaction history
+  - Prepare for production use
+
+**Priority 6: Podcast Feature (Lower Priority)**
 - Build Podcast page UI (audio player, episode description)
 - Test /api/generatePodcast endpoint
-- Integrate podcast modal (trigger from header/notification)
-
-**Priority 4: Notification System**
-- Build NotificationBell component with badge count
-- Implement real-time notification fetching
-- Create notification dropdown with history
-- Link notifications to relevant pages
-
-**Priority 5: Design Polish**
-- Apply custom color scheme (disc golf theme)
-- Add Framer Motion animations (confetti, PULP counter, page transitions)
-- Refine mobile responsiveness
-- Add loading states and skeleton screens
-- Polish typography and spacing
+- Finalize Episode 1 content
 
 ---
 
