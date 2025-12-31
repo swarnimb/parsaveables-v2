@@ -25,6 +25,7 @@ ParSaveables is a disc golf tournament and season tracking platform designed for
 - **Advantages Shop**: Spend PULPs on in-game advantages (Mulligans, Anti-Mulligans, Cancel, Bag Trump, Shotgun Buddy)
 - **Automated Podcast**: Monthly AI-generated podcast recapping highlights, rivalries, and drama
 - **Notification Dropdown**: Shows 5 recent activities with icons, timestamps, and "View All" link
+- **Admin Control Center**: Password-protected CRUD for events, players, courses, and points systems
 
 ### Design Philosophy
 1. **Engagement-First**: Reward all skill levels to keep everyone playing and interacting
@@ -57,14 +58,14 @@ ParSaveables is a disc golf tournament and season tracking platform designed for
 **Component structure:**
 ```
 src/components/
-├── ui/              # Shadcn base components (11 total: button, card, dialog, tabs, input, label, select, accordion, progress, badge, dropdown-menu)
+├── ui/              # Shadcn base components (12 total: button, card, dialog, tabs, input, label, select, accordion, progress, badge, dropdown-menu, checkbox)
 ├── layout/          # Header, BottomNav, NotificationBell (dropdown), AdminDropdown, ProfileDropdown
 ├── dashboard/       # StatCard, RivalryCard
 ├── leaderboard/     # LeaderboardTable (expandable rows), PodiumDisplay
 ├── betting/         # PredictionsSection (next round), ChallengesSection (next round), AdvantagesSection
 ├── rounds/          # RoundCard (accordion)
 ├── tutorial/        # Tutorial modal, tutorialData
-├── admin/           # BettingControlsModal
+├── admin/           # EventsTab_new, PlayersTab, CoursesTab, RulesTab
 └── shared/          # PulpCounter, Confetti, LoadingSpinner (future)
 ```
 
@@ -75,15 +76,55 @@ src/components/
 - Accessible by default (Shadcn/Radix handles this)
 - Premium feel: smooth transitions, polished interactions
 
+## Admin Control Center (4 Tabs)
+
+The Control Center is a password-protected admin interface accessible via Admin dropdown → Control Center.
+
+**Tab 1: Events**
+- Create/edit/delete seasons and tournaments
+- Select players via checkboxes when creating/editing
+- Display player count with Users icon on event cards
+- Year column auto-populated from start_date
+- Uses `events` table + `event_players` junction table
+
+**Tab 2: Players**
+- Add/edit players (name only)
+- Soft delete (set status='inactive')
+- View all registered players with PULP balances
+- Uses `registered_players` table
+
+**Tab 3: Courses**
+- Manage disc golf courses with difficulty tiers
+- Auto-set multipliers based on tier
+- Active/inactive status
+- Uses `courses` table
+
+**Tab 4: Rules**
+- Grouped dropdown (Seasons/Tournaments/Other)
+- Default selection to "Season 2025"
+- Configure placement points, performance bonuses
+- 4-priority tie-breaker system
+- Toggle course difficulty multipliers
+- Uses `points_systems` table (config JSONB)
+
 ## Project-Specific Rules
 - **Season Awareness**: All pages default to current season based on calendar year (auto-rollover Jan 1st)
 - **Next Round Logic**: Bets and challenges use `roundId: null` and resolve when next scorecard is processed
 - **PULP Economy**: Central feature - all interactions revolve around earning/spending PULPs
+- **Starting Balance**: 100 PULPs per player
 - **Advantages**: One per type limit (no stacking), expire at 11:59 PM same day
 - **Betting Lock**: Admin sets `events.betting_lock_time`, system prevents new bets after lock
 - **Expandable UI**: Leaderboard rows expand to show detailed stats (accordion behavior)
 - **Mobile-First**: Thumb-friendly design, smooth animations, premium feel
 - **Cost Control**: Stay under $5/month operational cost
+
+## Database Migrations (11 Total)
+- 001-006: Core PULP economy tables
+- 007: Podcast system
+- 008: Standardize events columns
+- 009: Create event_players junction table
+- 010: Add event_players write policies
+- 011: Clear PULP activity data (reset to 100)
 
 ## Coding Standards
 - **No Hacks or Workarounds**: Always implement proper, scalable solutions instead of hard-coded fixes for specific cases
@@ -96,3 +137,6 @@ src/components/
 - Current state: docs/SESSION-HANDOFF.md
 - Architecture: docs/ARCHITECTURE.md
 - API contracts: docs/API-CONTRACT.md
+
+## Known Issues
+- **PULP Settlement Broken**: Bets and challenges are NOT resolving after scorecard processing - needs debugging

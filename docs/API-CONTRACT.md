@@ -1,6 +1,6 @@
 # API Contract
 
-**Last Updated:** 2025-12-30
+**Last Updated:** 2025-12-31
 **Status:** Core endpoints (2) + PULP endpoints (7) + Betting Timer System implemented
 
 ---
@@ -126,7 +126,7 @@ Generate monthly podcast episode with AI hosts discussing recent rounds, rivalri
 
 ---
 
-## PULP Economy Endpoints ✅ IMPLEMENTED
+## PULP Economy Endpoints
 
 ### POST /api/pulp/placeBet
 
@@ -428,6 +428,134 @@ Get player's PULP transaction history.
 - `challenge_loss`: Challenge defeat
 - `challenge_reject`: Cowardice tax (50% wager)
 - `advantage_purchase`: Advantage cost deduction
+
+---
+
+## Supabase Direct Operations (Frontend)
+
+The Admin Control Center uses Supabase JS client directly for CRUD operations instead of dedicated API endpoints.
+
+### Events Table
+
+**Select events:**
+```javascript
+const { data, error } = await supabase
+  .from('events')
+  .select('*')
+  .order('start_date', { ascending: false })
+```
+
+**Create event:**
+```javascript
+const { data, error } = await supabase
+  .from('events')
+  .insert([{ name, start_date, end_date, type, status, points_system_id, year }])
+  .select()
+```
+
+**Update event:**
+```javascript
+const { error } = await supabase
+  .from('events')
+  .update({ name, start_date, end_date, type, status, points_system_id, year })
+  .eq('id', eventId)
+```
+
+**Delete event:**
+```javascript
+const { error } = await supabase
+  .from('events')
+  .delete()
+  .eq('id', eventId)
+```
+
+### Event Players Table (Junction)
+
+**Select event players:**
+```javascript
+const { data, error } = await supabase
+  .from('event_players')
+  .select('event_id, player_id')
+```
+
+**Add player to event:**
+```javascript
+const { error } = await supabase
+  .from('event_players')
+  .insert([{ event_id, player_id }])
+```
+
+**Remove player from event:**
+```javascript
+const { error } = await supabase
+  .from('event_players')
+  .delete()
+  .eq('event_id', eventId)
+  .eq('player_id', playerId)
+```
+
+**Bulk insert event players:**
+```javascript
+const eventPlayerRecords = selectedPlayerIds.map(playerId => ({
+  event_id: eventId,
+  player_id: playerId
+}))
+const { error } = await supabase
+  .from('event_players')
+  .insert(eventPlayerRecords)
+```
+
+### Players Table
+
+**Select active players:**
+```javascript
+const { data, error } = await supabase
+  .from('registered_players')
+  .select('id, player_name')
+  .order('player_name', { ascending: true })
+```
+
+**Note:** No filter on `status` to show all players, or filter with `.eq('status', 'active')` for active only.
+
+### Points Systems Table
+
+**Select points systems:**
+```javascript
+const { data, error } = await supabase
+  .from('points_systems')
+  .select('*')
+  .order('name', { ascending: true })
+```
+
+**Update points system config:**
+```javascript
+const updatedConfig = {
+  rank_points: { '1': 10, '2': 7, '3': 5, 'default': 2 },
+  performance_points: { birdie: 1, eagle: 3, ace: 5, most_birdies: 20 },
+  tie_breaking: { priority: ['aces', 'eagles', 'birdies', 'earliest_birdie'] },
+  course_multiplier: { enabled: true, source: 'course_tier' }
+}
+
+const { error } = await supabase
+  .from('points_systems')
+  .update({ config: updatedConfig })
+  .eq('id', systemId)
+```
+
+**Create points system:**
+```javascript
+const { error } = await supabase
+  .from('points_systems')
+  .insert([{ name, description, config }])
+```
+
+**Delete points system:**
+```javascript
+const { error } = await supabase
+  .from('points_systems')
+  .delete()
+  .eq('id', systemId)
+```
 
 ---
 
