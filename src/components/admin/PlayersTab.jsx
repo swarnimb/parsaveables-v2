@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Plus, Pencil, Trash2 } from 'lucide-react'
+import { Plus, Pencil, Trash2, RotateCcw } from 'lucide-react'
 import { supabase } from '@/services/supabase'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -7,10 +7,22 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
+import { useToast } from '@/hooks/use-toast'
+
+// Simple email validation
+const validateEmail = (email) => {
+  if (!email) return true // Email is optional
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  return emailRegex.test(email)
+}
 
 export default function PlayersTab() {
+  const { toast } = useToast()
   const [players, setPlayers] = useState([])
   const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [deactivating, setDeactivating] = useState(false)
+  const [reactivating, setReactivating] = useState(false)
   const [editDialog, setEditDialog] = useState({ open: false, player: null })
   const [deleteDialog, setDeleteDialog] = useState({ open: false, player: null })
   const [formData, setFormData] = useState({
@@ -43,6 +55,7 @@ export default function PlayersTab() {
   }
 
   const handleCreate = () => {
+    setError('') // Clear any previous errors
     setFormData({
       player_name: '',
       email: '',
@@ -52,6 +65,7 @@ export default function PlayersTab() {
   }
 
   const handleEdit = (player) => {
+    setError('') // Clear any previous errors
     setFormData({
       player_name: player.player_name,
       email: player.email || '',
@@ -63,11 +77,35 @@ export default function PlayersTab() {
   const handleSave = async () => {
     try {
       setError('')
+      setSaving(true)
 
       // Validation
       if (!formData.player_name) {
         setError('Player name is required')
         return
+      }
+
+      // Email validation
+      if (formData.email && !validateEmail(formData.email)) {
+        setError('Please enter a valid email address')
+        return
+      }
+
+      // Check for duplicate email if provided
+      if (formData.email) {
+        const { data: existingPlayers, error: checkError } = await supabase
+          .from('registered_players')
+          .select('id')
+          .eq('email', formData.email)
+          .neq('id', editDialog.player?.id || 0)
+          .limit(1)
+
+        if (checkError) throw checkError
+
+        if (existingPlayers && existingPlayers.length > 0) {
+          setError('A player with this email already exists')
+          return
+        }
       }
 
       const updateData = {
@@ -84,6 +122,11 @@ export default function PlayersTab() {
           .eq('id', editDialog.player.id)
 
         if (error) throw error
+
+        toast({
+          title: 'Player updated',
+          description: `${formData.player_name} has been updated successfully`
+        })
       } else {
         // Create new - include default values
         const { error } = await supabase
@@ -91,23 +134,36 @@ export default function PlayersTab() {
           .insert([{
             ...updateData,
             status: 'active',
-            total_pulps: 0
+            pulp_balance: 40 // Starting balance
           }])
 
         if (error) throw error
+
+        toast({
+          title: 'Player created',
+          description: `${formData.player_name} has been added successfully`
+        })
       }
 
       setEditDialog({ open: false, player: null })
-      fetchPlayers()
+      await fetchPlayers()
     } catch (err) {
       console.error('Error saving player:', err)
       setError(err.message || 'Failed to save player')
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: err.message || 'Failed to save player'
+      })
+    } finally {
+      setSaving(false)
     }
   }
 
   const handleDelete = async () => {
     try {
       setError('')
+      setDeactivating(true)
 
       // Soft delete - set status to inactive
       const { error } = await supabase
@@ -117,11 +173,52 @@ export default function PlayersTab() {
 
       if (error) throw error
 
+      toast({
+        title: 'Player deactivated',
+        description: `${deleteDialog.player.player_name} has been deactivated`
+      })
+
       setDeleteDialog({ open: false, player: null })
-      fetchPlayers()
+      await fetchPlayers()
     } catch (err) {
       console.error('Error deleting player:', err)
-      setError(err.message || 'Failed to delete player')
+      setError(err.message || 'Failed to deactivate player')
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: err.message || 'Failed to deactivate player'
+      })
+    } finally {
+      setDeactivating(false)
+    }
+  }
+
+  const handleReactivate = async (player) => {
+    try {
+      setReactivating(true)
+
+      const { error } = await supabase
+        .from('registered_players')
+        .update({ status: 'active' })
+        .eq('id', player.id)
+
+      if (error) throw error
+
+      toast({
+        title: 'Player reactivated',
+        description: `${player.player_name} is now active`
+      })
+
+      await fetchPlayers()
+    } catch (err) {
+      console.error('Error reactivating player:', err)
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Failed to reactivate player'
+      })
+    } finally {
+      setReactivating(false)
     }
   }
 
@@ -140,12 +237,21 @@ export default function PlayersTab() {
     return <div className="text-center py-12 text-muted-foreground">Loading players...</div>
   }
 
+  const activePlayers = players.filter(p => p.status === 'active')
+  const inactivePlayers = players.filter(p => p.status === 'inactive')
+
   return (
     <div className="space-y-4">
       {/* Header with Add button */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">Players</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-2xl font-bold">Players</h2>
+            <Badge variant="default">Active: {activePlayers.length}</Badge>
+            {inactivePlayers.length > 0 && (
+              <Badge variant="secondary">Inactive: {inactivePlayers.length}</Badge>
+            )}
+          </div>
           <p className="text-sm text-muted-foreground">Manage registered players</p>
         </div>
         <Button onClick={handleCreate}>
@@ -172,25 +278,41 @@ export default function PlayersTab() {
                   <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
                     {player.email && <span>{player.email}</span>}
                     <span>Joined: {formatDate(player.created_at)}</span>
-                    <span className="font-medium text-primary">{player.total_pulps || 0} PULPs</span>
+                    <span className="font-medium text-primary">{player.pulp_balance || 0} PULPs</span>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleEdit(player)}
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setDeleteDialog({ open: true, player })}
-                    disabled={player.status === 'inactive'}
-                  >
-                    <Trash2 className="h-4 w-4 text-destructive" />
-                  </Button>
+                  {player.status === 'inactive' ? (
+                    <Button
+                      variant="default"
+                      size="sm"
+                      onClick={() => handleReactivate(player)}
+                      disabled={reactivating}
+                    >
+                      <RotateCcw className="h-4 w-4 mr-1" />
+                      {reactivating ? 'Reactivating...' : 'Reactivate'}
+                    </Button>
+                  ) : (
+                    <>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleEdit(player)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setError('')
+                          setDeleteDialog({ open: true, player })
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </>
+                  )}
                 </div>
               </div>
             </Card>
@@ -254,11 +376,14 @@ export default function PlayersTab() {
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setEditDialog({ open: false, player: null })}>
+            <Button variant="outline" onClick={() => {
+              setError('')
+              setEditDialog({ open: false, player: null })
+            }}>
               Cancel
             </Button>
-            <Button onClick={handleSave}>
-              {editDialog.player ? 'Save Changes' : 'Create'}
+            <Button onClick={handleSave} disabled={saving}>
+              {saving ? 'Saving...' : (editDialog.player ? 'Save Changes' : 'Create')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -279,11 +404,14 @@ export default function PlayersTab() {
           )}
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteDialog({ open: false, player: null })}>
+            <Button variant="outline" onClick={() => {
+              setError('')
+              setDeleteDialog({ open: false, player: null })
+            }}>
               Cancel
             </Button>
-            <Button variant="destructive" onClick={handleDelete}>
-              Deactivate
+            <Button variant="destructive" onClick={handleDelete} disabled={deactivating}>
+              {deactivating ? 'Deactivating...' : 'Deactivate'}
             </Button>
           </DialogFooter>
         </DialogContent>
