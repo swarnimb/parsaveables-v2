@@ -1373,66 +1373,97 @@ npm run build
 
 1. ✅ Architecture approved & documented
 2. ✅ React + Vite project setup
-3. ✅ Shadcn/ui + Radix UI installed (11 components including dropdown-menu)
-4. ✅ Database migrations applied (006 PULP economy)
-5. ✅ Authentication system (Supabase Auth)
+3. ✅ Shadcn/ui + Radix UI installed (11 components including dropdown-menu, toast)
+4. ✅ Database migrations applied (006 PULP economy + 5 additional migrations)
+5. ✅ Authentication system (Supabase Auth + Guest Login)
 6. ✅ Core services restructured (src/services/core/)
 7. ✅ gamificationService implemented (5 files, ~750 lines)
-8. ✅ PULP API endpoints built (7 endpoints in src/api/pulp/)
+8. ✅ PULP API endpoints built (7 endpoints in api/pulp/)
 9. ✅ Frontend pages built (9 pages + 3 admin pages)
 10. ✅ Tutorial system (2 tutorials: Core + PULP)
 11. ✅ Utility files (logger, retry, errors, config, seasonUtils)
 12. ✅ Leaderboard page (event selector, podium, expandable table rows)
 13. ✅ Rounds page (accordion, scorecard viewer)
-14. ✅ Betting page (next round logic, 3 accordion sections)
+14. ✅ Betting page (next round logic, active bet/challenge display)
 15. ✅ Dashboard (event dropdown, expanded stats, Points + PULPs tabs)
 16. ✅ Activity feed (Player + Community tabs)
-17. ✅ Admin tools (ControlCenter, BettingControls, ProcessScorecards)
+17. ✅ Admin tools (ControlCenter password-protected, BettingControls with timer, ProcessScorecards)
 18. ✅ Season defaulting (auto-selects current season based on year)
 19. ✅ Notification dropdown (5 recent activities with "View All" link)
+20. ✅ Toast notification system (success/error feedback across all features)
+21. ✅ Betting timer & auto-lock system (countdown, extend, cancel, auto-reset)
+22. ✅ Guest login system (read-only access, disabled features)
+23. ✅ Testing framework (Vitest + React Testing Library, 16 PULP tests)
+
+### ⚠️ Known Issues (Blocking Production)
+
+1. **🚨 CRITICAL: PULP Settlement Broken**
+   - Bets and challenges are NOT resolving after scorecard processing
+   - PULPs are not being settled/transferred
+   - Root cause: gamificationService may not be fully integrated OR resolution logic has bugs
+   - **Impact:** PULP economy is completely non-functional
+   - **Next Step:** Debug processRoundGamification integration with scorecard workflow
 
 ### ⏳ Pending (Phase 5-6)
 
-1. ⏳ End-to-end testing (scorecard processing + PULP economy)
-2. ⏳ Podcast feature implementation
-3. ⏳ Notification system (bell icon + real-time updates)
-4. ⏳ Framer Motion animations (confetti, PULP counters)
-5. ⏳ Design system pass (colors, branding, polish)
-6. ⏳ Mobile testing & responsive refinements
-7. ⏳ Performance optimization
-8. ⏳ Production deployment
+1. ⏳ **Fix PULP economy settlement (CRITICAL)** - Bets/challenges not resolving
+2. ⏳ **PULP UI stages** - Implement pre-lock, post-lock, post-resolve views
+3. ⏳ End-to-end testing (scorecard processing + PULP economy)
+4. ⏳ Podcast feature implementation
+5. ⏳ Activity & notifications tracking (all PULP events)
+6. ⏳ Framer Motion animations (confetti, PULP counters)
+7. ⏳ Design system pass (colors, branding, polish)
+8. ⏳ Mobile testing & responsive refinements
+9. ⏳ Performance optimization
+10. ⏳ Production deployment
 
 ### 📊 Progress Summary
 
-**Backend:** ~90% complete
+**Backend:** ~90% complete (⚠️ PULP settlement broken)
 - ✅ Core services (9 files)
 - ✅ PULP services (5 files)
 - ✅ API endpoints (7 PULP endpoints + 2 core)
 - ✅ Season utilities (getCurrentSeasonYear, getCurrentEvent)
+- ⚠️ **CRITICAL BUG:** Bets/challenges not resolving after scorecard processing
 - ⏳ End-to-end testing needed
 
-**Frontend:** ~92% complete
+**Frontend:** ~95% complete
 - ✅ All pages built (12 total) with season awareness
-- ✅ All UI components (11 Shadcn components)
-- ✅ Tutorial system
+- ✅ All UI components (11 Shadcn components + toast)
+- ✅ Tutorial system (Core + PULP)
 - ✅ Notification dropdown system
 - ✅ Dashboard with comprehensive stats
 - ✅ Leaderboard with expandable rows
-- ✅ Next round betting logic
+- ✅ Next round betting logic with active bet/challenge display
+- ✅ Toast notifications across all features
+- ✅ Betting timer with countdown and auto-reset
+- ✅ Guest login system
+- ⏳ PULP UI stages (pre-lock, post-lock, post-resolve) needed
 - ⏳ Podcast page pending
 - ⏳ Design polish needed
 
 **Database:** ✅ 100% complete
-- ✅ All migrations applied
-- ✅ PULP economy tables ready
+- ✅ All 6 migrations applied (001-006)
+- ✅ PULP economy tables ready (bets, challenges, pulp_transactions, advantage_catalog)
 - ✅ RLS policies configured
+- ✅ NULL round_id support for "next round" functionality
 
 **UX Enhancements:** ✅ 100% complete
 - ✅ Season defaulting (current year-based)
 - ✅ Expandable player stats in leaderboard
 - ✅ Next round betting (no future rounds needed)
+- ✅ Active bet/challenge display (prevents duplicates)
 - ✅ Notification dropdown with recent activity
 - ✅ Event/All Time filtering on Dashboard
+- ✅ Toast notifications for user feedback
+- ✅ Betting timer with auto-lock and auto-reset
+
+**Testing:** ✅ Framework complete, ⏳ Coverage incomplete
+- ✅ Vitest + React Testing Library configured
+- ✅ 16 PULP transaction tests (advantages, betting, challenges)
+- ✅ Utility and component tests
+- ⏳ End-to-end integration tests needed
+- ⏳ PULP settlement testing blocked by bug
 
 ---
 
