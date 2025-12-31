@@ -66,12 +66,13 @@ export default function EventsTab() {
     try {
       const { data, error } = await supabase
         .from('registered_players')
-        .select('id, player_name')
-        .eq('status', 'active')
+        .select('id, player_name, status')
         .order('player_name', { ascending: true })
 
       if (error) throw error
-      setPlayers(data || [])
+      // Filter out inactive players if status column exists, otherwise show all
+      const activePlayers = data?.filter(p => !p.status || p.status === 'active') || []
+      setPlayers(activePlayers)
     } catch (err) {
       console.error('Error fetching players:', err)
     }
