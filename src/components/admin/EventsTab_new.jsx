@@ -252,12 +252,12 @@ export default function EventsTab() {
       <Card key={event.id} className="p-4">
         <div className="space-y-3">
           {/* Event Name - Full Width */}
-          <h3 className="font-semibold text-lg">{event.name}</h3>
+          <h3 className="font-medium">{event.name}</h3>
 
           {/* Bottom Row: Date/Status on left, Actions on right */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 {formatDate(event.start_date)} {event.end_date && `- ${formatDate(event.end_date)}`}
               </p>
               {isActive ? (
@@ -291,10 +291,7 @@ export default function EventsTab() {
   return (
     <div className="space-y-6">
       {/* Header with Add button */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Badge variant="secondary">{events.length}</Badge>
-        </div>
+      <div className="flex items-center justify-end">
         <Button onClick={handleCreate}>
           <Plus className="h-4 w-4 mr-2" />
           Add Event
@@ -311,10 +308,7 @@ export default function EventsTab() {
           {/* Seasons Section */}
           {seasons.length > 0 && (
             <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <h3 className="text-lg font-semibold">Seasons</h3>
-                <Badge variant="outline">{seasons.length}</Badge>
-              </div>
+              <h3 className="text-lg font-semibold">Seasons</h3>
               <div className="space-y-2">
                 {seasons.map(renderEventCard)}
               </div>
@@ -324,10 +318,7 @@ export default function EventsTab() {
           {/* Tournaments Section */}
           {tournaments.length > 0 && (
             <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <h3 className="text-lg font-semibold">Tournaments</h3>
-                <Badge variant="outline">{tournaments.length}</Badge>
-              </div>
+              <h3 className="text-lg font-semibold">Tournaments</h3>
               <div className="space-y-2">
                 {tournaments.map(renderEventCard)}
               </div>
