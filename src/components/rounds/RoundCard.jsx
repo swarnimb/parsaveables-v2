@@ -167,42 +167,44 @@ export default function RoundCard({ round, isExpanded, onToggle }) {
     </AnimatePresence>
 
       {/* Full-screen Image Modal */}
-      {isImageFullScreen && round.scorecard_image_url && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4 backdrop-blur-sm"
-          onClick={() => setIsImageFullScreen(false)}
-          onTouchStart={(e) => {
-            const startY = e.touches[0].clientY
-            const handleTouchMove = (e) => {
-              const deltaY = Math.abs(e.touches[0].clientY - startY)
-              if (deltaY > 50) {
-                setIsImageFullScreen(false)
-                document.removeEventListener('touchmove', handleTouchMove)
-              }
-            }
-            document.addEventListener('touchmove', handleTouchMove, { once: true })
-          }}
-        >
-          <motion.img
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.2 }}
-            src={round.scorecard_image_url}
-            alt="Scorecard Full Screen"
-            className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          />
-          <button
+      <AnimatePresence>
+        {isImageFullScreen && round.scorecard_image_url && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4 backdrop-blur-sm"
             onClick={() => setIsImageFullScreen(false)}
-            className="absolute top-4 right-4 h-10 w-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white font-bold transition-colors"
+            onTouchStart={(e) => {
+              const startY = e.touches[0].clientY
+              const handleTouchMove = (e) => {
+                const deltaY = Math.abs(e.touches[0].clientY - startY)
+                if (deltaY > 50) {
+                  setIsImageFullScreen(false)
+                  document.removeEventListener('touchmove', handleTouchMove)
+                }
+              }
+              document.addEventListener('touchmove', handleTouchMove, { once: true })
+            }}
           >
-            ✕
-          </button>
-        </motion.div>
-      )}
+            <motion.img
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.2 }}
+              src={round.scorecard_image_url}
+              alt="Scorecard Full Screen"
+              className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            />
+            <button
+              onClick={() => setIsImageFullScreen(false)}
+              className="absolute top-4 right-4 h-10 w-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white font-bold transition-colors"
+            >
+              ✕
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   )
 }

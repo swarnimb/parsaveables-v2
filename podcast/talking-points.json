@@ -1,0 +1,37 @@
+{
+  "_instructions": "Add custom talking points for each episode. The script will incorporate these naturally into the dialogue.",
+  "_format": {
+    "episode_X": {
+      "highlights": ["Amazing shots, comebacks, clutch performances"],
+      "rivalries": ["Intense challenges, trash talk, ongoing feuds"],
+      "funny_moments": ["Hilarious incidents, bloopers, memorable quotes"],
+      "pulp_notes": ["Notable PULP economy moments, big bets, advantage usage"],
+      "general_notes": ["Anything else worth mentioning"]
+    }
+  },
+  "episode_2": {
+    "highlights": [
+      "Add your 2025 season highlights here",
+      "Notable performances from last 2 rounds",
+      "Season champions and top performers"
+    ],
+    "rivalries": [
+      "Any ongoing feuds from 2025",
+      "Challenge history between rivals"
+    ],
+    "funny_moments": [
+      "Memorable moments from 2025",
+      "Funny incidents from recent rounds"
+    ],
+    "pulp_notes": [
+      "PULP economy stats for 2025",
+      "Biggest wins/losses of the season",
+      "How the new PULP system will work in 2026"
+    ],
+    "general_notes": [
+      "Welcome new players joining in 2026",
+      "Preview of 2026 season changes",
+      "Any rule updates or new features"
+    ]
+  }
+}

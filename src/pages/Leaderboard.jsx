@@ -92,18 +92,17 @@ export default function Leaderboard() {
   return (
     <PageContainer className="container mx-auto px-4 sm:px-6 py-8 max-w-6xl">
       {/* Event Selector */}
-      <div className="flex justify-end mb-8">
-        {events.length > 0 && (
-          <div className="flex items-center gap-3">
-            <label htmlFor="event-select" className="text-sm font-medium whitespace-nowrap">
-              Event:
-            </label>
-            <select
-              id="event-select"
-              value={selectedEventId || ''}
-              onChange={(e) => setSelectedEventId(Number(e.target.value))}
-              className="px-3 py-2 border border-input rounded-md bg-background text-xs min-w-[200px]"
-            >
+      {events.length > 0 && (
+        <div className="flex items-center gap-3 mb-8">
+          <label htmlFor="event-select" className="text-sm font-medium whitespace-nowrap">
+            Event:
+          </label>
+          <select
+            id="event-select"
+            value={selectedEventId || ''}
+            onChange={(e) => setSelectedEventId(Number(e.target.value))}
+            className="px-3 py-2 border border-input rounded-md bg-background text-xs flex-1"
+          >
               {seasons.length > 0 && (
                 <optgroup label="Seasons">
                   {seasons.map(event => (

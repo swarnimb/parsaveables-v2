@@ -1,0 +1,55 @@
+name: Generate Monthly Podcast
+
+on:
+  # Run on 1st of every month at 12:00 AM UTC (starting February 2026)
+  schedule:
+    - cron: '0 0 1 2-12 *'  # Runs Feb-Dec only (skips January)
+
+  # Allow manual trigger from GitHub Actions tab
+  workflow_dispatch:
+
+jobs:
+  generate-podcast:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: 'podcast/package-lock.json'
+
+      - name: Install FFmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+
+      - name: Install podcast dependencies
+        run: |
+          cd podcast
+          npm ci
+
+      - name: Generate podcast episode
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ANTHROPIC_MODEL: ${{ secrets.ANTHROPIC_MODEL }}
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+          ELEVENLABS_HOST_VOICE_ID: ${{ secrets.ELEVENLABS_HOST_VOICE_ID }}
+          ELEVENLABS_COHOST_VOICE_ID: ${{ secrets.ELEVENLABS_COHOST_VOICE_ID }}
+        run: |
+          cd podcast
+          npm run generate
+
+      - name: Notify on success
+        if: success()
+        run: echo "✅ Podcast generated successfully!"
+
+      - name: Notify on failure
+        if: failure()
+        run: echo "❌ Podcast generation failed. Check logs above."

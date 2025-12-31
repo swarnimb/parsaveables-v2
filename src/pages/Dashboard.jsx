@@ -381,7 +381,7 @@ export default function Dashboard() {
             id="event-select"
             value={selectedEventId || ''}
             onChange={(e) => setSelectedEventId(e.target.value === 'all' ? 'all' : Number(e.target.value))}
-            className="px-3 py-2 border border-input rounded-md bg-background text-sm min-w-[200px]"
+            className="px-3 py-2 border border-input rounded-md bg-background text-sm flex-1"
           >
             <option value="all">All Time</option>
             {seasons.length > 0 && (

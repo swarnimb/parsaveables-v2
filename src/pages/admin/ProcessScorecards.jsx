@@ -69,13 +69,6 @@ export default function ProcessScorecards() {
 
   return (
     <PageContainer className="container mx-auto px-4 py-6 max-w-4xl">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold mb-2">Process Scorecards</h1>
-        <p className="text-muted-foreground">
-          Manually trigger scorecard processing from email
-        </p>
-      </div>
-
       <Card className="p-8 relative overflow-hidden">
         {/* Background gradient */}
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-primary/10 opacity-50"></div>

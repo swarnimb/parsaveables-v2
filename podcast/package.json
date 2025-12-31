@@ -1,0 +1,17 @@
+{
+  "name": "parsaveables-podcast-generator",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Automated podcast generation for ParSaveables",
+  "main": "generate-dialogue-podcast.js",
+  "scripts": {
+    "generate": "node generate-dialogue-podcast.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.32.1",
+    "@supabase/supabase-js": "^2.47.13",
+    "dotenv": "^17.2.3",
+    "fluent-ffmpeg": "^2.1.3",
+    "node-fetch": "^3.3.2"
+  }
+}

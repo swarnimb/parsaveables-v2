@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import { Lock } from 'lucide-react'
+import { Lock, X } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
@@ -17,6 +18,7 @@ export default function ControlCenter() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [activeTab, setActiveTab] = useState('tournaments')
+  const navigate = useNavigate()
 
   // Check if already authenticated on mount
   useEffect(() => {
@@ -47,11 +49,24 @@ export default function ControlCenter() {
     }
   }
 
+  const handleClose = () => {
+    navigate(-1) // Go back to previous page
+  }
+
   // Password Modal
   if (!isAuthenticated) {
     return (
       <Dialog open={true}>
         <DialogContent className="sm:max-w-md" onInteractOutside={(e) => e.preventDefault()}>
+          {/* Close Button */}
+          <button
+            onClick={handleClose}
+            className="absolute top-4 right-4 h-8 w-8 rounded-full hover:bg-accent flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+            aria-label="Close"
+          >
+            <X className="h-4 w-4" />
+          </button>
+
           <DialogHeader>
             <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
               <Lock className="h-6 w-6 text-primary" />

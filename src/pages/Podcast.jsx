@@ -1,29 +1,55 @@
 import { useState, useEffect, useRef } from 'react'
 import { Play, Pause, Square } from 'lucide-react'
+import { supabase } from '@/services/supabase'
 import PageContainer from '@/components/layout/PageContainer'
 import { Card } from '@/components/ui/card'
 import { motion } from 'framer-motion'
 import { staggerContainer, staggerItem } from '@/utils/animations'
+import { usePodcastNotifications } from '@/hooks/usePodcastNotifications'
 
 export default function Podcast() {
   const [episodes, setEpisodes] = useState([])
+  const [loading, setLoading] = useState(true)
   const [playingEpisodeId, setPlayingEpisodeId] = useState(null)
   const [currentTimes, setCurrentTimes] = useState({})
   const [durations, setDurations] = useState({})
   const audioRefs = useRef({})
+  const { markAllAsRead } = usePodcastNotifications()
 
-  // Mock podcast episodes (will be replaced with API call)
+  // Fetch published podcast episodes from database
   useEffect(() => {
-    const mockEpisodes = [
-      {
-        id: 1,
-        title: 'The Ruckus so far',
-        date: '2025-01-01',
-        audioUrl: 'https://bcovevbtcdsgzbrieiin.supabase.co/storage/v1/object/public/podcast-episodes/ParSaveables-EP01.mp3',
+    async function fetchEpisodes() {
+      try {
+        const { data, error } = await supabase
+          .from('podcast_episodes')
+          .select('*')
+          .eq('is_published', true)
+          .order('episode_number', { ascending: false })
+
+        if (error) throw error
+
+        // Transform to match component expectations
+        const transformedEpisodes = data.map(ep => ({
+          id: ep.id,
+          title: ep.title,
+          date: ep.published_at || ep.created_at,
+          audioUrl: ep.audio_url,
+          description: ep.description
+        }))
+
+        setEpisodes(transformedEpisodes)
+
+        // Mark all episodes as read when user visits the page
+        markAllAsRead()
+      } catch (err) {
+        console.error('Error fetching podcast episodes:', err)
+      } finally {
+        setLoading(false)
       }
-    ]
-    setEpisodes(mockEpisodes)
-  }, [])
+    }
+
+    fetchEpisodes()
+  }, [markAllAsRead])
 
   const togglePlay = (episodeId) => {
     const audio = audioRefs.current[episodeId]
@@ -91,6 +117,28 @@ export default function Podcast() {
     const mins = Math.floor(seconds / 60)
     const secs = Math.floor(seconds % 60)
     return `${mins}:${secs.toString().padStart(2, '0')}`
+  }
+
+  if (loading) {
+    return (
+      <PageContainer className="container mx-auto px-4 py-6 max-w-4xl">
+        <div className="text-center py-12 text-muted-foreground">
+          Loading episodes...
+        </div>
+      </PageContainer>
+    )
+  }
+
+  if (episodes.length === 0) {
+    return (
+      <PageContainer className="container mx-auto px-4 py-6 max-w-4xl">
+        <Card className="p-8 text-center">
+          <p className="text-muted-foreground">
+            No podcast episodes available yet. Check back soon!
+          </p>
+        </Card>
+      </PageContainer>
+    )
   }
 
   return (

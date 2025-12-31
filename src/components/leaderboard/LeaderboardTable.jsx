@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, Fragment } from 'react'
 import { ChevronUp, ChevronDown, ChevronRight } from 'lucide-react'
 import { getPlayerDisplayName } from '@/utils/playerUtils'
 import { motion } from 'framer-motion'
@@ -80,9 +80,8 @@ export default function LeaderboardTable({ players, startRank = 1 }) {
               const stats = calculateStats(player)
 
               return (
-                <>
+                <Fragment key={player.player_name}>
                   <motion.tr
-                    key={player.player_name}
                     variants={staggerItem}
                     className="border-t border-border hover:bg-accent/50 transition-colors cursor-pointer"
                     onClick={() => toggleExpand(player.player_name)}
@@ -141,7 +140,7 @@ export default function LeaderboardTable({ players, startRank = 1 }) {
                       </td>
                     </tr>
                   )}
-                </>
+                </Fragment>
               )
             })}
           </motion.tbody>

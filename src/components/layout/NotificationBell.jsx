@@ -22,11 +22,24 @@ export default function NotificationBell() {
         const { data: { user } } = await supabase.auth.getUser()
         if (!user) return
 
-        // Fetch recent activities for the logged-in player
+        // First, get the player record to get the INTEGER id
+        const { data: player, error: playerError } = await supabase
+          .from('registered_players')
+          .select('id')
+          .eq('user_id', user.id)
+          .maybeSingle()
+
+        if (playerError) throw playerError
+        if (!player) {
+          setLoading(false)
+          return
+        }
+
+        // Fetch recent activities for the logged-in player using the INTEGER id
         const { data, error } = await supabase
           .from('activity_feed')
           .select('*')
-          .eq('player_id', user.id)
+          .eq('player_id', player.id)
           .order('created_at', { ascending: false })
           .limit(5)
 

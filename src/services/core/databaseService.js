@@ -217,6 +217,29 @@ export async function findCourseByNameOrAlias(courseName) {
   }
 }
 
+/**
+ * Update an event
+ * @param {number} eventId - Event ID
+ * @param {Object} updates - Object with fields to update
+ * @returns {Promise<Object>} Updated event
+ */
+export async function updateEvent(eventId, updates) {
+  logger.info('Updating event', { eventId, updates });
+
+  const data = await executeQuerySingle(
+    () => supabase
+      .from('events')
+      .update(updates)
+      .eq('id', eventId)
+      .select()
+      .single(),
+    'Failed to update event'
+  );
+
+  logger.info('Event updated', { eventId });
+  return data;
+}
+
 export default {
   getRegisteredPlayers,
   findEventByDate,
@@ -225,5 +248,6 @@ export default {
   getPointsSystem,
   insertRound,
   insertPlayerRounds,
-  findCourseByNameOrAlias
+  findCourseByNameOrAlias,
+  updateEvent
 };

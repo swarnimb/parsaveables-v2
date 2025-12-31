@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { User, LayoutDashboard, Info, LogOut } from 'lucide-react'
+import { LayoutDashboard, Info, LogOut } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 
 export default function ProfileDropdown() {
@@ -8,6 +8,16 @@ export default function ProfileDropdown() {
   const { player, signOut } = useAuth()
 
   const userName = player?.player_name || player?.email || 'Player'
+
+  // Get initials from player name
+  const getInitials = (name) => {
+    if (!name) return 'P'
+    const parts = name.trim().split(' ')
+    if (parts.length === 1) return parts[0][0].toUpperCase()
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+  }
+
+  const initials = getInitials(userName)
 
   const handleLogout = async () => {
     try {
@@ -25,8 +35,8 @@ export default function ProfileDropdown() {
         className="p-2 hover:bg-accent rounded-lg transition-colors"
         aria-label="Profile menu"
       >
-        <div className="h-8 w-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center">
-          <User className="h-4 w-4" />
+        <div className="h-8 w-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-semibold text-sm">
+          {initials}
         </div>
       </button>
 
