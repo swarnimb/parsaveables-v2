@@ -80,6 +80,7 @@ export default function Betting() {
           .from('events')
           .select('betting_lock_time')
           .eq('is_active', true)
+          .order('id')
           .limit(1)
           .single()
 

@@ -395,18 +395,34 @@ async function processSingleEmail(email, options = {}) {
   // Step 14: Reset betting lock after PULP settlement
   logger.info('Step 14: Resetting betting lock after PULP settlement');
   try {
-    // Always clear betting lock after processing a round and settling PULP transactions
-    // This ensures players can bet on the next round
-    if (event.betting_lock_time) {
-      await db.updateEvent(event.id, { betting_lock_time: null });
-      logger.info('Betting lock reset after round processing', {
-        eventId: event.id,
+    // Clear betting lock for ALL active events (since admin sets it on all)
+    // This ensures consistency: if admin locks all events, processing unlocks all events
+    const { data: activeEvents, error: fetchError } = await supabase
+      .from('events')
+      .select('id, name, betting_lock_time')
+      .eq('is_active', true);
+
+    if (fetchError) {
+      logger.error('Failed to fetch active events for lock reset', { error: fetchError.message });
+    } else if (activeEvents && activeEvents.length > 0) {
+      for (const evt of activeEvents) {
+        if (evt.betting_lock_time) {
+          await db.updateEvent(evt.id, { betting_lock_time: null });
+          logger.info('Betting lock reset for event', {
+            eventId: evt.id,
+            eventName: evt.name,
+            previousLockTime: evt.betting_lock_time,
+            roundId: round.id
+          });
+        }
+      }
+      logger.info('All active events betting locks cleared', {
         roundId: round.id,
-        previousLockTime: event.betting_lock_time,
+        eventsCleared: activeEvents.filter(e => e.betting_lock_time).length,
         pulpSettled: gamificationResults ? 'yes' : 'attempted'
       });
     } else {
-      logger.info('No betting lock to reset', { eventId: event.id });
+      logger.info('No active events found to reset betting lock');
     }
   } catch (error) {
     logger.error('Failed to reset betting lock (non-fatal)', {
