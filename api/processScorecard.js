@@ -322,6 +322,7 @@ async function processSingleEmail(email, options = {}) {
   // 10b: Insert player rounds
   const playerRoundsData = playersWithPoints.map(player => ({
     round_id: round.id,
+    player_id: player.playerId, // Foreign key to registered_players
     player_name: player.registeredName || player.name,
     rank: player.rank,
     total_strokes: player.totalStrokes,
@@ -527,6 +528,7 @@ export async function processSingleScorecard(imageUrl, options = {}) {
 
   const playerRoundsData = playersWithPoints.map(player => ({
     round_id: round.id,
+    player_id: player.playerId, // Foreign key to registered_players
     player_name: player.registeredName || player.name,
     rank: player.rank,
     total_score: player.totalScore,
