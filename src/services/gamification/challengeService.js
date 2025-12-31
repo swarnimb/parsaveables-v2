@@ -215,12 +215,29 @@ export async function respondToChallenge(challengeId, challengedId, accept) {
       if (updateError) throw updateError;
 
       // Increment challenges_declined counter
-      await supabase
+      // Fetch current value first
+      const { data: player, error: fetchError } = await supabase
         .from('registered_players')
-        .update({
-          challenges_declined: supabase.raw('challenges_declined + 1')
-        })
-        .eq('id', challengedId);
+        .select('challenges_declined')
+        .eq('id', challengedId)
+        .single();
+
+      if (fetchError) {
+        logger.error('Failed to fetch challenges_declined counter', { error: fetchError.message, challengedId });
+      } else {
+        // Increment and update
+        const newCount = (player.challenges_declined || 0) + 1;
+        const { error: updateCounterError } = await supabase
+          .from('registered_players')
+          .update({
+            challenges_declined: newCount
+          })
+          .eq('id', challengedId);
+
+        if (updateCounterError) {
+          logger.error('Failed to update challenges_declined counter', { error: updateCounterError.message, challengedId });
+        }
+      }
 
       logger.info('Challenge rejected', {
         challengeId,

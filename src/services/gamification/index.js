@@ -336,18 +336,31 @@ function calculateHigherRankedBeaten(playerName, currentRank, playerRounds, seas
  */
 async function updatePlayerCounters(playerId, roundDate, newStreak) {
   try {
+    // Fetch current total_rounds_this_season
+    const { data: player, error: fetchError } = await supabase
+      .from('registered_players')
+      .select('total_rounds_this_season')
+      .eq('id', playerId)
+      .single();
+
+    if (fetchError) throw fetchError;
+
+    // Increment the counter
+    const newTotalRounds = (player.total_rounds_this_season || 0) + 1;
+
+    // Update all counters
     const { error } = await supabase
       .from('registered_players')
       .update({
         participation_streak: newStreak,
         last_round_date: roundDate.toISOString().split('T')[0], // DATE format (YYYY-MM-DD)
-        total_rounds_this_season: supabase.raw('total_rounds_this_season + 1')
+        total_rounds_this_season: newTotalRounds
       })
       .eq('id', playerId);
 
     if (error) throw error;
 
-    logger.debug('Updated player counters', { playerId, newStreak, roundDate: roundDate.toISOString() });
+    logger.debug('Updated player counters', { playerId, newStreak, roundDate: roundDate.toISOString(), totalRounds: newTotalRounds });
   } catch (error) {
     logger.error('Failed to update player counters', { error: error.message, playerId });
     throw error;
