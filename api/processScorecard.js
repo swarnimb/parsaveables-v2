@@ -392,39 +392,21 @@ async function processSingleEmail(email, options = {}) {
     }
   }
 
-  // Step 14: Reset betting lock if round date >= lock time
-  logger.info('Step 14: Checking if betting lock should be reset');
+  // Step 14: Reset betting lock after PULP settlement
+  logger.info('Step 14: Resetting betting lock after PULP settlement');
   try {
-    // Construct full datetime from round date and time
-    const roundDateTime = round.time
-      ? new Date(`${round.date}T${round.time}`)
-      : new Date(`${round.date}T00:00:00`);
-
-    logger.info('Round datetime', {
-      roundDate: round.date,
-      roundTime: round.time,
-      roundDateTime: roundDateTime.toISOString()
-    });
-
-    // Check if event has a betting lock time set
+    // Always clear betting lock after processing a round and settling PULP transactions
+    // This ensures players can bet on the next round
     if (event.betting_lock_time) {
-      const lockTime = new Date(event.betting_lock_time);
-
-      logger.info('Comparing round time with lock time', {
-        roundDateTime: roundDateTime.toISOString(),
-        lockTime: lockTime.toISOString(),
-        shouldReset: roundDateTime >= lockTime
+      await db.updateEvent(event.id, { betting_lock_time: null });
+      logger.info('Betting lock reset after round processing', {
+        eventId: event.id,
+        roundId: round.id,
+        previousLockTime: event.betting_lock_time,
+        pulpSettled: gamificationResults ? 'yes' : 'attempted'
       });
-
-      // If round date/time is >= lock time, reset the lock
-      if (roundDateTime >= lockTime) {
-        await db.updateEvent(event.id, { betting_lock_time: null });
-        logger.info('Betting lock reset - round processed after lock time', {
-          eventId: event.id,
-          roundId: round.id,
-          previousLockTime: event.betting_lock_time
-        });
-      }
+    } else {
+      logger.info('No betting lock to reset', { eventId: event.id });
     }
   } catch (error) {
     logger.error('Failed to reset betting lock (non-fatal)', {
