@@ -82,7 +82,8 @@ export default async function handler(req, res) {
     // Validate request body
     const { roundId, eventId, predictions, wagerAmount } = req.body;
 
-    if (!roundId || !eventId || !predictions || !wagerAmount) {
+    // Note: roundId can be null for "next round" bets
+    if (eventId === undefined || !predictions || wagerAmount === undefined) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
