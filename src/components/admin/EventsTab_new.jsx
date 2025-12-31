@@ -223,8 +223,73 @@ export default function EventsTab() {
     return <div className="text-center py-12 text-muted-foreground">Loading events...</div>
   }
 
+  // Group events by type
+  const seasons = events.filter(e => e.type === 'season')
+  const tournaments = events.filter(e => e.type === 'tournament')
+
+  // Helper to determine active status based on dates
+  const isEventActive = (event) => {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0) // Reset time to start of day
+
+    const startDate = new Date(event.start_date)
+    startDate.setHours(0, 0, 0, 0)
+
+    const endDate = event.end_date ? new Date(event.end_date) : null
+    if (endDate) endDate.setHours(23, 59, 59, 999) // End of day
+
+    if (endDate) {
+      return today >= startDate && today <= endDate
+    }
+    return today >= startDate
+  }
+
+  // Render event card
+  const renderEventCard = (event) => {
+    const isActive = isEventActive(event)
+
+    return (
+      <Card key={event.id} className="p-4">
+        <div className="space-y-3">
+          {/* Event Name - Full Width */}
+          <h3 className="font-semibold text-lg">{event.name}</h3>
+
+          {/* Bottom Row: Date/Status on left, Actions on right */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <p className="text-sm text-muted-foreground">
+                {formatDate(event.start_date)} {event.end_date && `- ${formatDate(event.end_date)}`}
+              </p>
+              {isActive ? (
+                <Badge variant="default">Active</Badge>
+              ) : (
+                <Badge variant="secondary">Inactive</Badge>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleEdit(event)}
+              >
+                <Pencil className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setDeleteDialog({ open: true, event })}
+              >
+                <Trash2 className="h-4 w-4 text-destructive" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      </Card>
+    )
+  }
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Header with Add button */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -236,45 +301,38 @@ export default function EventsTab() {
         </Button>
       </div>
 
-      {/* Events List */}
+      {/* No Events State */}
       {events.length === 0 ? (
         <Card className="p-8 text-center">
           <p className="text-muted-foreground">No events yet. Create your first one!</p>
         </Card>
       ) : (
-        <div className="space-y-2">
-          {events.map((event) => (
-            <Card key={event.id} className="p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3">
-                    <h3 className="font-semibold">{event.name}</h3>
-                    {getStatusBadge(event.status)}
-                    <Badge variant="outline">{event.type}</Badge>
-                  </div>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {formatDate(event.start_date)} {event.end_date && `- ${formatDate(event.end_date)}`}
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleEdit(event)}
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setDeleteDialog({ open: true, event })}
-                  >
-                    <Trash2 className="h-4 w-4 text-destructive" />
-                  </Button>
-                </div>
+        <div className="space-y-6">
+          {/* Seasons Section */}
+          {seasons.length > 0 && (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <h3 className="text-lg font-semibold">Seasons</h3>
+                <Badge variant="outline">{seasons.length}</Badge>
               </div>
-            </Card>
-          ))}
+              <div className="space-y-2">
+                {seasons.map(renderEventCard)}
+              </div>
+            </div>
+          )}
+
+          {/* Tournaments Section */}
+          {tournaments.length > 0 && (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <h3 className="text-lg font-semibold">Tournaments</h3>
+                <Badge variant="outline">{tournaments.length}</Badge>
+              </div>
+              <div className="space-y-2">
+                {tournaments.map(renderEventCard)}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
