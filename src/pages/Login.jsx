@@ -2,15 +2,16 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import { playerAPI } from '@/services/api'
+import { useToast } from '@/hooks/use-toast'
 
 export default function Login() {
+  const { toast } = useToast()
   const [mode, setMode] = useState('signin') // 'signin' or 'signup'
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [selectedPlayerId, setSelectedPlayerId] = useState('')
   const [unclaimedPlayers, setUnclaimedPlayers] = useState([])
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [errorMessage, setErrorMessage] = useState('')
 
   const { signIn, signUp, continueAsGuest, isAuthenticated, isGuest, loading } = useAuth()
   const navigate = useNavigate()
@@ -37,24 +38,39 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    setErrorMessage('')
     setIsSubmitting(true)
 
     try {
       if (mode === 'signin') {
         await signIn(email, password)
+        toast({
+          title: 'Signed In!',
+          description: 'Welcome back to ParSaveables'
+        })
       } else {
         // Sign up mode
         if (!selectedPlayerId) {
-          setErrorMessage('Please select your player name')
+          toast({
+            variant: 'destructive',
+            title: 'Player Not Selected',
+            description: 'Please select your player name to create an account'
+          })
           setIsSubmitting(false)
           return
         }
         await signUp(email, password, parseInt(selectedPlayerId))
+        toast({
+          title: 'Account Created!',
+          description: 'Welcome to ParSaveables'
+        })
       }
       // Navigation will happen via useEffect when isAuthenticated becomes true
     } catch (error) {
-      setErrorMessage(error.message || `Failed to ${mode === 'signin' ? 'sign in' : 'sign up'}`)
+      toast({
+        variant: 'destructive',
+        title: mode === 'signin' ? 'Sign In Failed' : 'Sign Up Failed',
+        description: error.message || `Failed to ${mode === 'signin' ? 'sign in' : 'sign up'}`
+      })
     } finally {
       setIsSubmitting(false)
     }
@@ -162,13 +178,6 @@ export default function Login() {
                     ? 'Loading players...'
                     : `${unclaimedPlayers.length} player(s) available`}
                 </p>
-              </div>
-            )}
-
-            {/* Error Message */}
-            {errorMessage && (
-              <div className="p-3 rounded-md bg-destructive/10 border border-destructive/20">
-                <p className="text-sm text-destructive">{errorMessage}</p>
               </div>
             )}
 

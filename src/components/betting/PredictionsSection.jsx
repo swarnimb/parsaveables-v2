@@ -11,16 +11,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { useToast } from '@/hooks/use-toast'
 
 export default function PredictionsSection({ playerId, pulpBalance, onBetPlaced }) {
+  const { toast } = useToast()
   const [rounds, setRounds] = useState([])
   const [selectedRound, setSelectedRound] = useState(null)
   const [players, setPlayers] = useState([])
   const [predictions, setPredictions] = useState({ first: '', second: '', third: '' })
   const [wagerAmount, setWagerAmount] = useState(20)
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
-  const [success, setSuccess] = useState(null)
 
   // Fetch active event (for next round betting)
   useEffect(() => {
@@ -65,29 +65,42 @@ export default function PredictionsSection({ playerId, pulpBalance, onBetPlaced 
   }, [selectedRound])
 
   const handlePlaceBet = async () => {
-    setError(null)
-    setSuccess(null)
-
     // Validation
     if (!predictions.first || !predictions.second || !predictions.third) {
-      setError('Please select all 3 predictions')
+      toast({
+        variant: 'destructive',
+        title: 'Missing Predictions',
+        description: 'Please select all 3 predictions'
+      })
       return
     }
 
     if (predictions.first === predictions.second ||
         predictions.first === predictions.third ||
         predictions.second === predictions.third) {
-      setError('Predictions must be different players')
+      toast({
+        variant: 'destructive',
+        title: 'Invalid Predictions',
+        description: 'Predictions must be different players'
+      })
       return
     }
 
     if (wagerAmount < 20) {
-      setError('Minimum wager is 20 PULPs')
+      toast({
+        variant: 'destructive',
+        title: 'Invalid Wager',
+        description: 'Minimum wager is 20 PULPs'
+      })
       return
     }
 
     if (wagerAmount > pulpBalance) {
-      setError('Insufficient PULPs')
+      toast({
+        variant: 'destructive',
+        title: 'Insufficient PULPs',
+        description: `You only have ${pulpBalance} PULPs available`
+      })
       return
     }
 
@@ -116,12 +129,19 @@ export default function PredictionsSection({ playerId, pulpBalance, onBetPlaced 
         throw new Error(result.error || 'Failed to place bet')
       }
 
-      setSuccess(`Bet placed successfully! ${wagerAmount} PULPs wagered on next round.`)
+      toast({
+        title: 'Bet Placed!',
+        description: `${wagerAmount} PULPs wagered on next round. Good luck!`
+      })
       setPredictions({ first: '', second: '', third: '' })
       setWagerAmount(20)
       onBetPlaced()
     } catch (err) {
-      setError(err.message)
+      toast({
+        variant: 'destructive',
+        title: 'Failed to Place Bet',
+        description: err.message
+      })
     } finally {
       setLoading(false)
     }
@@ -211,18 +231,6 @@ export default function PredictionsSection({ playerId, pulpBalance, onBetPlaced 
               onChange={(e) => setWagerAmount(parseInt(e.target.value) || 20)}
             />
           </div>
-
-          {error && (
-            <div className="bg-destructive/10 text-destructive rounded-lg p-3 text-sm">
-              {error}
-            </div>
-          )}
-
-          {success && (
-            <div className="bg-green-500/10 text-green-600 rounded-lg p-3 text-sm">
-              {success}
-            </div>
-          )}
 
           <Button
             onClick={handlePlaceBet}

@@ -12,15 +12,15 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { useToast } from '@/hooks/use-toast'
 
 export default function ChallengesSection({ playerId, pulpBalance, onChallengeAction }) {
+  const { toast } = useToast()
   const [players, setPlayers] = useState([])
   const [pendingChallenges, setPendingChallenges] = useState([])
   const [selectedPlayer, setSelectedPlayer] = useState('')
   const [wagerAmount, setWagerAmount] = useState(20)
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
-  const [success, setSuccess] = useState(null)
 
   // Fetch players - only higher ranked
   useEffect(() => {
@@ -136,21 +136,30 @@ export default function ChallengesSection({ playerId, pulpBalance, onChallengeAc
   }, [playerId])
 
   const handleIssueChallenge = async () => {
-    setError(null)
-    setSuccess(null)
-
     if (!selectedPlayer) {
-      setError('Please select an opponent')
+      toast({
+        variant: 'destructive',
+        title: 'No Opponent Selected',
+        description: 'Please select an opponent to challenge'
+      })
       return
     }
 
     if (wagerAmount < 20) {
-      setError('Minimum wager is 20 PULPs')
+      toast({
+        variant: 'destructive',
+        title: 'Invalid Wager',
+        description: 'Minimum wager is 20 PULPs'
+      })
       return
     }
 
     if (wagerAmount > pulpBalance) {
-      setError('Insufficient PULPs')
+      toast({
+        variant: 'destructive',
+        title: 'Insufficient PULPs',
+        description: `You only have ${pulpBalance} PULPs available`
+      })
       return
     }
 
@@ -177,12 +186,20 @@ export default function ChallengesSection({ playerId, pulpBalance, onChallengeAc
         throw new Error(result.error || 'Failed to issue challenge')
       }
 
-      setSuccess(`Challenge issued! ${wagerAmount} PULPs wagered on next round.`)
+      const playerName = players.find(p => p.id === parseInt(selectedPlayer))?.player_name
+      toast({
+        title: 'Challenge Issued!',
+        description: `${wagerAmount} PULPs wagered against ${playerName} for next round`
+      })
       setSelectedPlayer('')
       setWagerAmount(20)
       onChallengeAction()
     } catch (err) {
-      setError(err.message)
+      toast({
+        variant: 'destructive',
+        title: 'Failed to Issue Challenge',
+        description: err.message
+      })
     } finally {
       setLoading(false)
     }
@@ -190,7 +207,6 @@ export default function ChallengesSection({ playerId, pulpBalance, onChallengeAc
 
   const handleRespondToChallenge = async (challengeId, accept) => {
     setLoading(true)
-    setError(null)
 
     try {
       const { data: session } = await supabase.auth.getSession()
@@ -212,12 +228,21 @@ export default function ChallengesSection({ playerId, pulpBalance, onChallengeAc
         throw new Error(result.error || 'Failed to respond')
       }
 
-      setSuccess(accept ? 'Challenge accepted!' : 'Challenge rejected')
+      toast({
+        title: accept ? 'Challenge Accepted!' : 'Challenge Rejected',
+        description: accept
+          ? 'Good luck in your head-to-head battle!'
+          : 'A 50% cowardice tax has been deducted'
+      })
       // Refresh pending challenges
       setPendingChallenges(prev => prev.filter(c => c.id !== challengeId))
       onChallengeAction()
     } catch (err) {
-      setError(err.message)
+      toast({
+        variant: 'destructive',
+        title: 'Failed to Respond',
+        description: err.message
+      })
     } finally {
       setLoading(false)
     }
@@ -277,18 +302,6 @@ export default function ChallengesSection({ playerId, pulpBalance, onChallengeAc
             onChange={(e) => setWagerAmount(parseInt(e.target.value) || 20)}
           />
         </div>
-
-        {error && (
-          <div className="bg-destructive/10 text-destructive rounded-lg p-3 text-sm">
-            {error}
-          </div>
-        )}
-
-        {success && (
-          <div className="bg-green-500/10 text-green-600 rounded-lg p-3 text-sm">
-            {success}
-          </div>
-        )}
 
         <Button
           onClick={handleIssueChallenge}

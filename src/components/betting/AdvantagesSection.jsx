@@ -2,13 +2,13 @@ import { useState, useEffect } from 'react'
 import { ShoppingCart, Clock } from 'lucide-react'
 import { supabase } from '@/services/supabase'
 import { Button } from '@/components/ui/button'
+import { useToast } from '@/hooks/use-toast'
 
 export default function AdvantagesSection({ playerId, pulpBalance, onPurchase }) {
+  const { toast } = useToast()
   const [catalog, setCatalog] = useState([])
   const [activeAdvantages, setActiveAdvantages] = useState([])
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
-  const [success, setSuccess] = useState(null)
 
   // Fetch advantage catalog
   useEffect(() => {
@@ -57,19 +57,24 @@ export default function AdvantagesSection({ playerId, pulpBalance, onPurchase })
     fetchActiveAdvantages()
   }, [playerId])
 
-  const handlePurchase = async (advantageKey, cost) => {
-    setError(null)
-    setSuccess(null)
-
+  const handlePurchase = async (advantageKey, cost, advantageName) => {
     if (cost > pulpBalance) {
-      setError('Insufficient PULPs')
+      toast({
+        variant: 'destructive',
+        title: 'Insufficient PULPs',
+        description: `You need ${cost} PULPs but only have ${pulpBalance}`
+      })
       return
     }
 
     // Check if already owns this advantage
     const hasActive = activeAdvantages.some(adv => adv.advantage_key === advantageKey)
     if (hasActive) {
-      setError('You already have an active advantage of this type')
+      toast({
+        variant: 'destructive',
+        title: 'Already Owned',
+        description: 'You already have an active advantage of this type'
+      })
       return
     }
 
@@ -92,11 +97,18 @@ export default function AdvantagesSection({ playerId, pulpBalance, onPurchase })
         throw new Error(result.error || 'Failed to purchase advantage')
       }
 
-      setSuccess(`${result.catalogEntry.name} purchased! Expires in 24 hours.`)
+      toast({
+        title: 'Advantage Purchased!',
+        description: `${result.catalogEntry.name} - Expires in 24 hours`
+      })
       setActiveAdvantages(prev => [...prev, result.advantage])
       onPurchase(cost)
     } catch (err) {
-      setError(err.message)
+      toast({
+        variant: 'destructive',
+        title: 'Purchase Failed',
+        description: err.message
+      })
     } finally {
       setLoading(false)
     }
@@ -182,7 +194,7 @@ export default function AdvantagesSection({ playerId, pulpBalance, onPurchase })
                 </span>
                 <Button
                   size="sm"
-                  onClick={() => handlePurchase(advantage.advantage_key, advantage.pulp_cost)}
+                  onClick={() => handlePurchase(advantage.advantage_key, advantage.pulp_cost, advantage.name)}
                   disabled={loading || hasActive || advantage.pulp_cost > pulpBalance}
                 >
                   <ShoppingCart className="h-3 w-3 mr-1" />
@@ -193,18 +205,6 @@ export default function AdvantagesSection({ playerId, pulpBalance, onPurchase })
           )
         })}
       </div>
-
-      {error && (
-        <div className="bg-destructive/10 text-destructive rounded-lg p-3 text-sm">
-          {error}
-        </div>
-      )}
-
-      {success && (
-        <div className="bg-green-500/10 text-green-600 rounded-lg p-3 text-sm">
-          {success}
-        </div>
-      )}
     </div>
   )
 }

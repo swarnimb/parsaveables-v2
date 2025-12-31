@@ -4,14 +4,14 @@ import { supabase } from '@/services/supabase'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import PageContainer from '@/components/layout/PageContainer'
+import { useToast } from '@/hooks/use-toast'
 
 export default function BettingControls() {
+  const { toast } = useToast()
   const [roundDateTime, setRoundDateTime] = useState('')
   const [lockTime, setLockTime] = useState('')
   const [confirmedRoundTime, setConfirmedRoundTime] = useState(null)
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
-  const [success, setSuccess] = useState(null)
   const [currentBettingLock, setCurrentBettingLock] = useState(null)
   const [isLocked, setIsLocked] = useState(false)
 
@@ -72,24 +72,31 @@ export default function BettingControls() {
 
   const handleConfirmRoundTime = () => {
     if (!roundDateTime) {
-      setError('Please select a date and time for the next round')
+      toast({
+        variant: 'destructive',
+        title: 'Time Not Set',
+        description: 'Please select a date and time for the next round'
+      })
       return
     }
 
     setConfirmedRoundTime(roundDateTime)
-    setError(null)
-    setSuccess('Round time confirmed!')
-    setTimeout(() => setSuccess(null), 2000)
+    toast({
+      title: 'Round Time Confirmed!',
+      description: `Betting will lock 15 minutes after round time`
+    })
   }
 
   const handleLockBetting = async () => {
     if (!confirmedRoundTime) {
-      setError('Please confirm the round time first')
+      toast({
+        variant: 'destructive',
+        title: 'Round Time Not Confirmed',
+        description: 'Please confirm the round time first'
+      })
       return
     }
 
-    setError(null)
-    setSuccess(null)
     setLoading(true)
 
     try {
@@ -105,7 +112,11 @@ export default function BettingControls() {
       if (fetchError) throw fetchError
 
       if (!activeEvents || activeEvents.length === 0) {
-        setError('No active events found')
+        toast({
+          variant: 'destructive',
+          title: 'No Active Events',
+          description: 'No active events found to lock betting'
+        })
         setLoading(false)
         return
       }
@@ -122,7 +133,10 @@ export default function BettingControls() {
         }
       }
 
-      setSuccess('Betting locked successfully!')
+      toast({
+        title: 'Betting Locked!',
+        description: `New bets are now disabled for all active events`
+      })
 
       // Update local state to show locked view
       setCurrentBettingLock(lockDateTime)
@@ -133,15 +147,17 @@ export default function BettingControls() {
       setConfirmedRoundTime(null)
       setLockTime('')
     } catch (err) {
-      setError(err.message)
+      toast({
+        variant: 'destructive',
+        title: 'Lock Failed',
+        description: err.message
+      })
     } finally {
       setLoading(false)
     }
   }
 
   const handleCancelLock = async () => {
-    setError(null)
-    setSuccess(null)
     setLoading(true)
 
     try {
@@ -154,7 +170,11 @@ export default function BettingControls() {
       if (fetchError) throw fetchError
 
       if (!activeEvents || activeEvents.length === 0) {
-        setError('No active events found')
+        toast({
+          variant: 'destructive',
+          title: 'No Active Events',
+          description: 'No active events found'
+        })
         setLoading(false)
         return
       }
@@ -170,11 +190,18 @@ export default function BettingControls() {
         }
       }
 
-      setSuccess('Betting lock cancelled!')
+      toast({
+        title: 'Lock Cancelled!',
+        description: 'Betting is now open for all active events'
+      })
       setCurrentBettingLock(null)
       setIsLocked(false)
     } catch (err) {
-      setError(err.message)
+      toast({
+        variant: 'destructive',
+        title: 'Cancel Failed',
+        description: err.message
+      })
     } finally {
       setLoading(false)
     }
@@ -182,12 +209,14 @@ export default function BettingControls() {
 
   const handleExtendCurrentLock = async () => {
     if (!currentBettingLock) {
-      setError('No active lock to extend')
+      toast({
+        variant: 'destructive',
+        title: 'No Active Lock',
+        description: 'No active lock to extend'
+      })
       return
     }
 
-    setError(null)
-    setSuccess(null)
     setLoading(true)
 
     try {
@@ -204,7 +233,11 @@ export default function BettingControls() {
       if (fetchError) throw fetchError
 
       if (!activeEvents || activeEvents.length === 0) {
-        setError('No active events found')
+        toast({
+          variant: 'destructive',
+          title: 'No Active Events',
+          description: 'No active events found'
+        })
         setLoading(false)
         return
       }
@@ -220,10 +253,17 @@ export default function BettingControls() {
         }
       }
 
-      setSuccess('Lock time extended by 15 minutes!')
+      toast({
+        title: 'Lock Extended!',
+        description: 'Lock time extended by 15 minutes'
+      })
       setCurrentBettingLock(newLockDateTime)
     } catch (err) {
-      setError(err.message)
+      toast({
+        variant: 'destructive',
+        title: 'Extend Failed',
+        description: err.message
+      })
     } finally {
       setLoading(false)
     }
@@ -231,7 +271,11 @@ export default function BettingControls() {
 
   const handleExtendLock = () => {
     if (!lockTime) {
-      setError('No lock time to extend')
+      toast({
+        variant: 'destructive',
+        title: 'No Lock Time',
+        description: 'No lock time to extend'
+      })
       return
     }
 
@@ -245,8 +289,10 @@ export default function BettingControls() {
     const minutes = String(newLockDate.getMinutes()).padStart(2, '0')
 
     setLockTime(`${year}-${month}-${day}T${hours}:${minutes}`)
-    setSuccess('Lock time extended by 15 minutes!')
-    setTimeout(() => setSuccess(null), 2000)
+    toast({
+      title: 'Preview Extended!',
+      description: 'Lock time preview extended by 15 minutes'
+    })
   }
 
   const formatDateTime = (dateTimeString) => {
