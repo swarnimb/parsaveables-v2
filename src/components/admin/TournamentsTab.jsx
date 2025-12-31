@@ -8,10 +8,14 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
+import { useToast } from '@/hooks/use-toast'
 
 export default function TournamentsTab() {
+  const { toast } = useToast()
   const [tournaments, setTournaments] = useState([])
   const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const [editDialog, setEditDialog] = useState({ open: false, tournament: null })
   const [deleteDialog, setDeleteDialog] = useState({ open: false, tournament: null })
   const [formData, setFormData] = useState({
@@ -46,6 +50,7 @@ export default function TournamentsTab() {
   }
 
   const handleCreate = () => {
+    setError('') // Clear any previous errors
     setFormData({
       event_name: '',
       start_date: '',
@@ -57,6 +62,7 @@ export default function TournamentsTab() {
   }
 
   const handleEdit = (tournament) => {
+    setError('') // Clear any previous errors
     setFormData({
       event_name: tournament.event_name,
       start_date: tournament.start_date,
@@ -67,14 +73,38 @@ export default function TournamentsTab() {
     setEditDialog({ open: true, tournament })
   }
 
+  const formatDate = (dateString) => {
+    if (!dateString) return ''
+    try {
+      return new Date(dateString).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      })
+    } catch {
+      return dateString
+    }
+  }
+
   const handleSave = async () => {
     try {
       setError('')
+      setSaving(true)
 
       // Validation
       if (!formData.event_name || !formData.start_date) {
         setError('Name and start date are required')
         return
+      }
+
+      // Date validation: end_date must be >= start_date
+      if (formData.end_date && formData.start_date) {
+        const startDate = new Date(formData.start_date)
+        const endDate = new Date(formData.end_date)
+        if (endDate < startDate) {
+          setError('End date must be on or after start date')
+          return
+        }
       }
 
       if (editDialog.tournament) {
@@ -85,6 +115,11 @@ export default function TournamentsTab() {
           .eq('id', editDialog.tournament.id)
 
         if (error) throw error
+
+        toast({
+          title: 'Tournament updated',
+          description: `${formData.event_name} has been updated successfully`
+        })
       } else {
         // Create new
         const { error } = await supabase
@@ -92,20 +127,62 @@ export default function TournamentsTab() {
           .insert([formData])
 
         if (error) throw error
+
+        toast({
+          title: 'Tournament created',
+          description: `${formData.event_name} has been created successfully`
+        })
       }
 
       setEditDialog({ open: false, tournament: null })
-      fetchTournaments()
+      await fetchTournaments()
     } catch (err) {
       console.error('Error saving tournament:', err)
       setError(err.message || 'Failed to save tournament')
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: err.message || 'Failed to save tournament'
+      })
+    } finally {
+      setSaving(false)
     }
   }
 
   const handleDelete = async () => {
     try {
       setError('')
+      setDeleting(true)
 
+      // Check for foreign key constraints - see if tournament has rounds
+      const { data: rounds, error: roundsError } = await supabase
+        .from('rounds')
+        .select('id')
+        .eq('event_id', deleteDialog.tournament.id)
+        .limit(1)
+
+      if (roundsError) throw roundsError
+
+      if (rounds && rounds.length > 0) {
+        setError('Cannot delete tournament with existing rounds. Please delete the rounds first.')
+        return
+      }
+
+      // Check for event_players
+      const { data: participants, error: participantsError } = await supabase
+        .from('event_players')
+        .select('player_id')
+        .eq('event_id', deleteDialog.tournament.id)
+        .limit(1)
+
+      if (participantsError) throw participantsError
+
+      if (participants && participants.length > 0) {
+        setError('Cannot delete tournament with registered participants. Please remove participants first.')
+        return
+      }
+
+      // Safe to delete
       const { error } = await supabase
         .from('events')
         .delete()
@@ -113,11 +190,23 @@ export default function TournamentsTab() {
 
       if (error) throw error
 
+      toast({
+        title: 'Tournament deleted',
+        description: `${deleteDialog.tournament.event_name} has been deleted successfully`
+      })
+
       setDeleteDialog({ open: false, tournament: null })
-      fetchTournaments()
+      await fetchTournaments()
     } catch (err) {
       console.error('Error deleting tournament:', err)
       setError(err.message || 'Failed to delete tournament')
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: err.message || 'Failed to delete tournament'
+      })
+    } finally {
+      setDeleting(false)
     }
   }
 
@@ -139,7 +228,10 @@ export default function TournamentsTab() {
       {/* Header with Add button */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">Tournaments</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-2xl font-bold">Tournaments</h2>
+            <Badge variant="secondary">{tournaments.length}</Badge>
+          </div>
           <p className="text-sm text-muted-foreground">Manage seasons and tournaments</p>
         </div>
         <Button onClick={handleCreate}>
@@ -165,7 +257,7 @@ export default function TournamentsTab() {
                     <Badge variant="outline">{tournament.event_type}</Badge>
                   </div>
                   <p className="text-sm text-muted-foreground mt-1">
-                    {tournament.start_date} {tournament.end_date && `- ${tournament.end_date}`}
+                    {formatDate(tournament.start_date)} {tournament.end_date && `- ${formatDate(tournament.end_date)}`}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -277,11 +369,14 @@ export default function TournamentsTab() {
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setEditDialog({ open: false, tournament: null })}>
+            <Button variant="outline" onClick={() => {
+              setError('')
+              setEditDialog({ open: false, tournament: null })
+            }}>
               Cancel
             </Button>
-            <Button onClick={handleSave}>
-              {editDialog.tournament ? 'Save Changes' : 'Create'}
+            <Button onClick={handleSave} disabled={saving}>
+              {saving ? 'Saving...' : (editDialog.tournament ? 'Save Changes' : 'Create')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -302,11 +397,14 @@ export default function TournamentsTab() {
           )}
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteDialog({ open: false, tournament: null })}>
+            <Button variant="outline" onClick={() => {
+              setError('')
+              setDeleteDialog({ open: false, tournament: null })
+            }}>
               Cancel
             </Button>
-            <Button variant="destructive" onClick={handleDelete}>
-              Delete
+            <Button variant="destructive" onClick={handleDelete} disabled={deleting}>
+              {deleting ? 'Deleting...' : 'Delete'}
             </Button>
           </DialogFooter>
         </DialogContent>
