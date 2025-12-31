@@ -3,6 +3,7 @@ import { Trophy, History, Mic2, Bell, Coins } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/hooks/useAuth'
+import { usePodcastNotifications } from '@/hooks/usePodcastNotifications'
 
 const navItems = [
   { path: '/leaderboard', icon: Trophy, label: 'Leaderboard' },
@@ -15,9 +16,24 @@ const navItems = [
 export default function BottomNav() {
   const location = useLocation()
   const { isGuest } = useAuth()
+  const { unreadCount } = usePodcastNotifications()
+
+  // Pages where bottom nav should not be highlighted
+  const noHighlightPaths = [
+    '/dashboard',
+    '/about',
+    '/admin/control-center',
+    '/admin/betting-controls',
+    '/admin/process-scorecards'
+  ]
+
+  // Check if current path should not show highlight
+  const shouldHideIndicator = noHighlightPaths.includes(location.pathname)
 
   // Find the index of the active tab
-  const activeIndex = navItems.findIndex(item => item.path === location.pathname)
+  const activeIndex = shouldHideIndicator
+    ? -1
+    : navItems.findIndex(item => item.path === location.pathname)
 
   // Calculate indicator position (each tab is 20% wide since we have 5 tabs with flex-1)
   // Position at center of each tab: 10%, 30%, 50%, 70%, 90%
@@ -34,22 +50,26 @@ export default function BottomNav() {
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-t border-border bottom-nav shadow-lg">
       <div className="relative flex items-center justify-around">
-        {/* Single persistent indicator */}
-        <motion.div
-          className="absolute top-0 h-1 w-12 bg-primary rounded-full"
-          animate={{
-            left: `calc(${indicatorPosition}% - 24px)` // 24px is half of w-12 (48px)
-          }}
-          transition={{
-            type: 'spring',
-            stiffness: 300,
-            damping: 30
-          }}
-        />
+        {/* Single persistent indicator - only show when on a bottom nav page */}
+        {activeIndex >= 0 && (
+          <motion.div
+            className="absolute top-0 h-1 w-12 bg-primary rounded-full"
+            animate={{
+              left: `calc(${indicatorPosition}% - 24px)` // 24px is half of w-12 (48px)
+            }}
+            transition={{
+              type: 'spring',
+              stiffness: 300,
+              damping: 30
+            }}
+          />
+        )}
 
         {navItems.map(({ path, icon: Icon, label }) => {
           const isBettingTab = path === '/betting'
+          const isPodcastTab = path === '/podcast'
           const isDisabled = isGuest && isBettingTab
+          const showBadge = isPodcastTab && unreadCount > 0
 
           return (
           <NavLink
@@ -87,6 +107,13 @@ export default function BottomNav() {
                     'h-5 w-5 transition-transform duration-200',
                     isActive && 'scale-110'
                   )} />
+
+                  {/* Notification Badge */}
+                  {showBadge && (
+                    <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </span>
+                  )}
 
                   {/* Ripple effect container */}
                   <span className="absolute inset-0 rounded-xl overflow-hidden">

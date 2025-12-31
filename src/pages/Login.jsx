@@ -32,7 +32,7 @@ export default function Login() {
   // Redirect if already authenticated or in guest mode
   useEffect(() => {
     if ((isAuthenticated || isGuest) && !loading) {
-      navigate('/leaderboard')
+      navigate('/dashboard')
     }
   }, [isAuthenticated, isGuest, loading, navigate])
 
@@ -220,7 +220,7 @@ export default function Login() {
             type="button"
             onClick={() => {
               continueAsGuest()
-              navigate('/leaderboard')
+              navigate('/dashboard')
             }}
             className="mt-4 w-full py-2 px-4 border border-border rounded-md font-medium text-foreground hover:bg-accent transition-colors"
           >

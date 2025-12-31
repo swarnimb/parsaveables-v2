@@ -47,7 +47,7 @@ function AnimatedRoutes() {
 
         {/* Protected routes with layout */}
         <Route element={<AppLayout />}>
-          <Route path="/" element={<Navigate to="/leaderboard" replace />} />
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/leaderboard" element={<Leaderboard />} />
           <Route path="/rounds" element={<Rounds />} />
           <Route path="/podcast" element={<Suspense fallback={<PageLoader />}><Podcast /></Suspense>} />
