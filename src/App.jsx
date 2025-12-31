@@ -21,6 +21,8 @@ const ProcessScorecards = lazy(() => import('@/pages/admin/ProcessScorecards'))
 // Layout wrapper for authenticated pages
 import AppLayout from '@/components/layout/AppLayout'
 import SplashScreen from '@/components/layout/SplashScreen'
+import ErrorBoundary from '@/components/shared/ErrorBoundary'
+import OfflineDetector from '@/components/shared/OfflineDetector'
 import { Toaster } from '@/components/ui/toaster'
 
 // Loading fallback component
@@ -71,11 +73,14 @@ function AnimatedRoutes() {
 
 function App() {
   return (
-    <BrowserRouter>
-      <SplashScreen />
-      <AnimatedRoutes />
-      <Toaster />
-    </BrowserRouter>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <SplashScreen />
+        <OfflineDetector />
+        <AnimatedRoutes />
+        <Toaster />
+      </BrowserRouter>
+    </ErrorBoundary>
   )
 }
 

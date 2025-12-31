@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { ChevronLeft, ChevronRight, X } from 'lucide-react'
 import {
   Dialog,
@@ -10,10 +10,19 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
+import { useTutorialTracking } from '@/hooks/useTutorialTracking'
 
-export default function Tutorial({ tutorial, trigger, onComplete }) {
+export default function Tutorial({ tutorial, trigger, onComplete, autoShow = false }) {
   const [open, setOpen] = useState(false)
   const [currentStep, setCurrentStep] = useState(0)
+  const { shouldShow, markCompleted, markSkipped } = useTutorialTracking(tutorial.id)
+
+  // Auto-show on first login if autoShow is true
+  useEffect(() => {
+    if (autoShow && shouldShow) {
+      setOpen(true)
+    }
+  }, [autoShow, shouldShow])
 
   const step = tutorial.steps[currentStep]
   const isFirstStep = currentStep === 0
@@ -24,6 +33,7 @@ export default function Tutorial({ tutorial, trigger, onComplete }) {
     if (isLastStep) {
       setOpen(false)
       setCurrentStep(0)
+      markCompleted() // Track completion
       onComplete?.()
     } else {
       setCurrentStep(prev => prev + 1)
@@ -41,6 +51,12 @@ export default function Tutorial({ tutorial, trigger, onComplete }) {
     setCurrentStep(0)
   }
 
+  const handleSkip = () => {
+    setOpen(false)
+    setCurrentStep(0)
+    markSkipped() // Track skip
+  }
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -50,12 +66,20 @@ export default function Tutorial({ tutorial, trigger, onComplete }) {
         <DialogHeader>
           <div className="flex items-center justify-between">
             <DialogTitle>{tutorial.title}</DialogTitle>
-            <button
-              onClick={handleClose}
-              className="rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100"
-            >
-              <X className="h-4 w-4" />
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleSkip}
+                className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Skip Tutorial
+              </button>
+              <button
+                onClick={handleClose}
+                className="rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
           </div>
           <DialogDescription>
             Step {currentStep + 1} of {tutorial.steps.length}
