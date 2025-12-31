@@ -7,17 +7,16 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import PageContainer from '@/components/layout/PageContainer'
-import TournamentsTab from '@/components/admin/TournamentsTab'
+import EventsTab from '@/components/admin/EventsTab_new'
 import PlayersTab from '@/components/admin/PlayersTab'
 import CoursesTab from '@/components/admin/CoursesTab'
-import EventsTab from '@/components/admin/EventsTab'
 import RulesTab from '@/components/admin/RulesTab'
 
 export default function ControlCenter() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
-  const [activeTab, setActiveTab] = useState('tournaments')
+  const [activeTab, setActiveTab] = useState('events')
   const navigate = useNavigate()
 
   // Check if already authenticated on mount
@@ -110,22 +109,21 @@ export default function ControlCenter() {
       <div className="mb-6">
         <h1 className="text-3xl font-bold">Control Center</h1>
         <p className="text-muted-foreground mt-1">
-          Manage tournaments, players, courses, events, and rules
+          Manage events, players, courses, and points systems
         </p>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5 max-w-4xl">
-          <TabsTrigger value="tournaments">Tournaments</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-4 max-w-3xl">
+          <TabsTrigger value="events">Events</TabsTrigger>
           <TabsTrigger value="players">Players</TabsTrigger>
           <TabsTrigger value="courses">Courses</TabsTrigger>
-          <TabsTrigger value="events">Events</TabsTrigger>
           <TabsTrigger value="rules">Rules</TabsTrigger>
         </TabsList>
 
-        {/* Tournaments Tab */}
-        <TabsContent value="tournaments">
-          <TournamentsTab />
+        {/* Events Tab */}
+        <TabsContent value="events">
+          <EventsTab />
         </TabsContent>
 
         {/* Players Tab */}
@@ -136,11 +134,6 @@ export default function ControlCenter() {
         {/* Courses Tab */}
         <TabsContent value="courses">
           <CoursesTab />
-        </TabsContent>
-
-        {/* Events Tab */}
-        <TabsContent value="events">
-          <EventsTab />
         </TabsContent>
 
         {/* Rules Tab */}
