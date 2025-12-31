@@ -136,13 +136,31 @@ export default function ChallengesSection({ playerId, pulpBalance, onChallengeAc
     fetchPendingChallenges()
   }, [playerId, onChallengeAction])
 
-  // Fetch active challenges (where I'm involved and status is 'accepted')
+  // Fetch active challenges (issued by me OR accepted challenges I'm in)
   useEffect(() => {
     async function fetchActiveChallenges() {
       if (!playerId) return
 
       try {
-        const { data, error } = await supabase
+        // Fetch challenges where:
+        // 1. I'm the challenger and status is 'pending' (issued, waiting for response)
+        // 2. I'm involved and status is 'accepted' (head-to-head battle active)
+        const { data: issuedChallenges, error: issuedError } = await supabase
+          .from('challenges')
+          .select(`
+            *,
+            challenger:registered_players!challenges_challenger_id_fkey(player_name),
+            challenged:registered_players!challenges_challenged_id_fkey(player_name),
+            round:rounds(date, course_name)
+          `)
+          .eq('challenger_id', playerId)
+          .eq('status', 'pending')
+          .is('round_id', null)
+          .order('issued_at', { ascending: false })
+
+        if (issuedError) throw issuedError
+
+        const { data: acceptedChallenges, error: acceptedError } = await supabase
           .from('challenges')
           .select(`
             *,
@@ -152,11 +170,13 @@ export default function ChallengesSection({ playerId, pulpBalance, onChallengeAc
           `)
           .or(`challenger_id.eq.${playerId},challenged_id.eq.${playerId}`)
           .eq('status', 'accepted')
-          .is('round_id', null) // Only next round challenges
+          .is('round_id', null)
           .order('issued_at', { ascending: false })
 
-        if (error) throw error
-        setActiveChallenges(data || [])
+        if (acceptedError) throw acceptedError
+
+        // Combine both types of active challenges
+        setActiveChallenges([...(issuedChallenges || []), ...(acceptedChallenges || [])])
       } catch (err) {
         console.error('Error fetching active challenges:', err)
       }
@@ -305,6 +325,7 @@ export default function ChallengesSection({ playerId, pulpBalance, onChallengeAc
               const opponentName = isChallenger
                 ? challenge.challenged?.player_name
                 : challenge.challenger?.player_name
+              const isPending = challenge.status === 'pending'
 
               return (
                 <div
@@ -312,7 +333,9 @@ export default function ChallengesSection({ playerId, pulpBalance, onChallengeAc
                   className="bg-primary/10 border-2 border-primary rounded-lg p-4 space-y-3"
                 >
                   <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-semibold">Active Challenge</h3>
+                    <h3 className="text-sm font-semibold">
+                      {isPending ? 'Challenge Issued' : 'Active Challenge'}
+                    </h3>
                     <Swords className="h-4 w-4 text-primary" />
                   </div>
 
@@ -328,16 +351,19 @@ export default function ChallengesSection({ playerId, pulpBalance, onChallengeAc
                     </div>
 
                     <div className="flex justify-between items-center text-sm">
-                      <span className="text-muted-foreground">Role:</span>
+                      <span className="text-muted-foreground">Status:</span>
                       <span className="font-semibold">
-                        {isChallenger ? 'Challenger' : 'Challenged'}
+                        {isPending ? 'Waiting for response' : 'Battle active'}
                       </span>
                     </div>
 
                     <div className="border-t border-border pt-2">
                       <p className="text-xs text-muted-foreground">
-                        This challenge will be resolved after the next round is played and processed.
-                        {isChallenger ? ' You initiated this challenge.' : ' You accepted this challenge.'}
+                        {isPending
+                          ? `Waiting for ${opponentName} to accept or reject your challenge.`
+                          : `This challenge will be resolved after the next round is played and processed.
+                             ${isChallenger ? ' You initiated this challenge.' : ' You accepted this challenge.'}`
+                        }
                       </p>
                     </div>
                   </div>
