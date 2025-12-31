@@ -294,75 +294,87 @@ export default function RulesTab() {
   return (
     <div className="space-y-6">
       {/* Header with System Selector and Actions */}
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex-1 max-w-md">
-          {pointsSystems.length > 0 && (
-            <>
-              <Label htmlFor="system-select">Select Points System</Label>
-              <Select
-                value={selectedSystem?.id.toString()}
-                onValueChange={(value) => {
-                  const system = pointsSystems.find(s => s.id === parseInt(value))
-                  setSelectedSystem(system)
-                }}
-              >
-                <SelectTrigger className="mt-1.5">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {pointsSystems.map((system) => (
-                    <SelectItem key={system.id} value={system.id.toString()}>
-                      {system.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </>
-          )}
-        </div>
+      <div className="space-y-3">
+        {/* Row 1: Points System Selector and Save Button */}
+        <div className="flex items-end justify-between gap-4">
+          <div className="flex-1 max-w-md">
+            {pointsSystems.length > 0 && (
+              <>
+                <Label htmlFor="system-select">Select Points System</Label>
+                <Select
+                  value={selectedSystem?.id.toString()}
+                  onValueChange={(value) => {
+                    const system = pointsSystems.find(s => s.id === parseInt(value))
+                    setSelectedSystem(system)
+                  }}
+                >
+                  <SelectTrigger className="mt-1.5">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {pointsSystems.map((system) => (
+                      <SelectItem key={system.id} value={system.id.toString()}>
+                        {system.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </>
+            )}
+          </div>
 
-        <div className="flex items-center gap-2">
-          {selectedSystem && (
-            <>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setError('')
-                  setNewSystemName('')
-                  setCreateDialog({ open: true, duplicateFrom: selectedSystem })
-                }}
-              >
-                <Copy className="h-4 w-4 mr-2" />
-                Duplicate
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setError('')
-                  setDeleteDialog({ open: true, system: selectedSystem })
-                }}
-              >
-                <Trash2 className="h-4 w-4 mr-2" />
-                Delete
-              </Button>
-            </>
-          )}
-          <Button
-            onClick={() => {
-              setError('')
-              setNewSystemName('')
-              setCreateDialog({ open: true, duplicateFrom: null })
-            }}
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Create New
-          </Button>
           {selectedSystem && (
             <Button onClick={handleSave} disabled={saving}>
               <Save className="h-4 w-4 mr-2" />
               {saving ? 'Saving...' : 'Save Changes'}
             </Button>
           )}
+        </div>
+
+        {/* Row 2: Action Buttons */}
+        <div className="flex items-center gap-2">
+          {selectedSystem && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-sm"
+              onClick={() => {
+                setError('')
+                setNewSystemName('')
+                setCreateDialog({ open: true, duplicateFrom: selectedSystem })
+              }}
+            >
+              <Copy className="h-3 w-3 mr-1.5" />
+              Duplicate
+            </Button>
+          )}
+          {selectedSystem && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-sm"
+              onClick={() => {
+                setError('')
+                setDeleteDialog({ open: true, system: selectedSystem })
+              }}
+            >
+              <Trash2 className="h-3 w-3 mr-1.5" />
+              Delete
+            </Button>
+          )}
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-sm"
+            onClick={() => {
+              setError('')
+              setNewSystemName('')
+              setCreateDialog({ open: true, duplicateFrom: null })
+            }}
+          >
+            <Plus className="h-3 w-3 mr-1.5" />
+            Create New
+          </Button>
         </div>
       </div>
 
