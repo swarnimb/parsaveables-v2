@@ -9,6 +9,7 @@ import PageContainer from '@/components/layout/PageContainer'
 import { motion } from 'framer-motion'
 import { staggerContainer, staggerItem, cardHover } from '@/utils/animations'
 import { SkeletonCard } from '@/components/ui/skeleton'
+import { features } from '@/config/features'
 
 export default function Activity() {
   const { isGuest } = useAuth()
@@ -46,67 +47,70 @@ export default function Activity() {
       if (!player || activeTab !== 'player') return
 
       try {
-        // Fetch player's recent transactions
-        const { data: transactions } = await supabase
-          .from('pulp_transactions')
-          .select('*')
-          .eq('player_id', player.id)
-          .order('created_at', { ascending: false })
-          .limit(10)
-
-        // Fetch player's recent bets
-        const { data: bets } = await supabase
-          .from('bets')
-          .select(`
-            *,
-            round:rounds(date, course_name)
-          `)
-          .eq('player_id', player.id)
-          .order('created_at', { ascending: false })
-          .limit(5)
-
-        // Fetch player's recent challenges (issued or received)
-        const { data: challenges } = await supabase
-          .from('challenges')
-          .select(`
-            *,
-            challenger:registered_players!challenges_challenger_id_fkey(player_name),
-            challenged:registered_players!challenges_challenged_id_fkey(player_name),
-            round:rounds(date, course_name)
-          `)
-          .or(`challenger_id.eq.${player.id},challenged_id.eq.${player.id}`)
-          .order('issued_at', { ascending: false })
-          .limit(5)
-
         // Combine and sort feed items
         const feed = []
 
-        transactions?.forEach(txn => {
-          feed.push({
-            id: `txn-${txn.id}`,
-            type: 'transaction',
-            timestamp: new Date(txn.created_at),
-            data: txn
-          })
-        })
+        // Only fetch PULP-related data if feature is enabled
+        if (features.pulpEconomy) {
+          // Fetch player's recent transactions
+          const { data: transactions } = await supabase
+            .from('pulp_transactions')
+            .select('*')
+            .eq('player_id', player.id)
+            .order('created_at', { ascending: false })
+            .limit(10)
 
-        bets?.forEach(bet => {
-          feed.push({
-            id: `bet-${bet.id}`,
-            type: 'bet',
-            timestamp: new Date(bet.created_at),
-            data: bet
-          })
-        })
+          // Fetch player's recent bets
+          const { data: bets } = await supabase
+            .from('bets')
+            .select(`
+              *,
+              round:rounds(date, course_name)
+            `)
+            .eq('player_id', player.id)
+            .order('created_at', { ascending: false })
+            .limit(5)
 
-        challenges?.forEach(challenge => {
-          feed.push({
-            id: `challenge-${challenge.id}`,
-            type: 'challenge',
-            timestamp: new Date(challenge.issued_at),
-            data: challenge
+          // Fetch player's recent challenges (issued or received)
+          const { data: challenges } = await supabase
+            .from('challenges')
+            .select(`
+              *,
+              challenger:registered_players!challenges_challenger_id_fkey(player_name),
+              challenged:registered_players!challenges_challenged_id_fkey(player_name),
+              round:rounds(date, course_name)
+            `)
+            .or(`challenger_id.eq.${player.id},challenged_id.eq.${player.id}`)
+            .order('issued_at', { ascending: false })
+            .limit(5)
+
+          transactions?.forEach(txn => {
+            feed.push({
+              id: `txn-${txn.id}`,
+              type: 'transaction',
+              timestamp: new Date(txn.created_at),
+              data: txn
+            })
           })
-        })
+
+          bets?.forEach(bet => {
+            feed.push({
+              id: `bet-${bet.id}`,
+              type: 'bet',
+              timestamp: new Date(bet.created_at),
+              data: bet
+            })
+          })
+
+          challenges?.forEach(challenge => {
+            feed.push({
+              id: `challenge-${challenge.id}`,
+              type: 'challenge',
+              timestamp: new Date(challenge.issued_at),
+              data: challenge
+            })
+          })
+        }
 
         // Sort by timestamp descending
         feed.sort((a, b) => b.timestamp - a.timestamp)
@@ -125,39 +129,15 @@ export default function Activity() {
       if (activeTab !== 'community') return
 
       try {
-        // Fetch recent rounds
+        // Combine and sort feed items
+        const feed = []
+
+        // Fetch recent rounds (always shown)
         const { data: rounds } = await supabase
           .from('rounds')
           .select('*')
           .order('date', { ascending: false })
           .limit(5)
-
-        // Fetch recent challenges
-        const { data: challenges } = await supabase
-          .from('challenges')
-          .select(`
-            *,
-            challenger:registered_players!challenges_challenger_id_fkey(player_name),
-            challenged:registered_players!challenges_challenged_id_fkey(player_name),
-            round:rounds(date, course_name)
-          `)
-          .order('issued_at', { ascending: false })
-          .limit(10)
-
-        // Fetch recent achievement unlocks (simulated - would need achievement_unlocks table)
-        // For now, we'll just show recent transactions with achievement types
-        const { data: achievementTxns } = await supabase
-          .from('pulp_transactions')
-          .select(`
-            *,
-            player:registered_players(player_name)
-          `)
-          .eq('transaction_type', 'achievement_unlock')
-          .order('created_at', { ascending: false })
-          .limit(10)
-
-        // Combine and sort feed items
-        const feed = []
 
         rounds?.forEach(round => {
           feed.push({
@@ -168,23 +148,50 @@ export default function Activity() {
           })
         })
 
-        challenges?.forEach(challenge => {
-          feed.push({
-            id: `challenge-${challenge.id}`,
-            type: 'challenge',
-            timestamp: new Date(challenge.issued_at),
-            data: challenge
-          })
-        })
+        // Only fetch PULP-related data if feature is enabled
+        if (features.pulpEconomy) {
+          // Fetch recent challenges
+          const { data: challenges } = await supabase
+            .from('challenges')
+            .select(`
+              *,
+              challenger:registered_players!challenges_challenger_id_fkey(player_name),
+              challenged:registered_players!challenges_challenged_id_fkey(player_name),
+              round:rounds(date, course_name)
+            `)
+            .order('issued_at', { ascending: false })
+            .limit(10)
 
-        achievementTxns?.forEach(txn => {
-          feed.push({
-            id: `achievement-${txn.id}`,
-            type: 'achievement',
-            timestamp: new Date(txn.created_at),
-            data: txn
+          // Fetch recent achievement unlocks (simulated - would need achievement_unlocks table)
+          // For now, we'll just show recent transactions with achievement types
+          const { data: achievementTxns } = await supabase
+            .from('pulp_transactions')
+            .select(`
+              *,
+              player:registered_players(player_name)
+            `)
+            .eq('transaction_type', 'achievement_unlock')
+            .order('created_at', { ascending: false })
+            .limit(10)
+
+          challenges?.forEach(challenge => {
+            feed.push({
+              id: `challenge-${challenge.id}`,
+              type: 'challenge',
+              timestamp: new Date(challenge.issued_at),
+              data: challenge
+            })
           })
-        })
+
+          achievementTxns?.forEach(txn => {
+            feed.push({
+              id: `achievement-${txn.id}`,
+              type: 'achievement',
+              timestamp: new Date(txn.created_at),
+              data: txn
+            })
+          })
+        }
 
         // Sort by timestamp descending
         feed.sort((a, b) => b.timestamp - a.timestamp)

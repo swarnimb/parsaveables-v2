@@ -15,9 +15,16 @@ import AdvantagesSection from '@/components/betting/AdvantagesSection'
 import PageContainer from '@/components/layout/PageContainer'
 import { motion, AnimatePresence } from 'framer-motion'
 import { scaleIn, pulse } from '@/utils/animations'
+import ComingSoon from '@/components/betting/ComingSoon'
+import { features } from '@/config/features'
 
 export default function Betting() {
   const { player } = useAuth()
+
+  // If PULP economy is disabled OR user confirmed interest, show Coming Soon
+  if (!features.pulpEconomy || player?.betting_interest_confirmed) {
+    return <ComingSoon />
+  }
   const [pulpBalance, setPulpBalance] = useState(null)
   const [transactions, setTransactions] = useState([])
   const [balanceExpanded, setBalanceExpanded] = useState(false)

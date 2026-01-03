@@ -5,6 +5,7 @@ import Header from './Header'
 import BottomNav from './BottomNav'
 import OnboardingTutorial from '@/components/tutorial/Tutorial'
 import BettingTutorial from '@/components/tutorial/BettingTutorial'
+import ComingSoon from '@/components/betting/ComingSoon'
 import { tutorialAPI } from '@/services/api'
 
 export default function AppLayout() {
@@ -42,17 +43,18 @@ export default function AppLayout() {
     }
   }, [player, loading])
 
-  // Intercept betting navigation for tutorial
+  // Intercept betting navigation
   useEffect(() => {
-    // Show tutorial if user hasn't confirmed interest (undefined or false)
-    if (!loading && player && location.pathname === '/betting' && player.betting_interest_confirmed !== true) {
-      // Mark as shown in database
-      tutorialAPI.markBettingInterestShown(player.id).catch(err => {
-        console.error('Error marking betting interest shown:', err)
-      })
-
-      // Show tutorial (it will handle navigation on close)
-      setShowBettingTutorial(true)
+    if (!loading && player && location.pathname === '/betting') {
+      if (player.betting_interest_confirmed === true) {
+        // User confirmed interest - do nothing, ComingSoon will render via Outlet
+      } else {
+        // User hasn't confirmed - show tutorial
+        tutorialAPI.markBettingInterestShown(player.id).catch(err => {
+          console.error('Error marking betting interest shown:', err)
+        })
+        setShowBettingTutorial(true)
+      }
     }
   }, [location.pathname, player, loading])
 
