@@ -1,8 +1,8 @@
 # ParSaveables 2.0 - System Architecture
 
-**Last Updated:** 2025-12-31
+**Last Updated:** 2026-01-03
 **Version:** 2.0 (PULP Economy Edition)
-**Status:** Backend & Frontend Complete - Season Aware - Guest Login - Admin Control Center Complete - Testing Phase
+**Status:** Backend & Frontend Complete - Season Aware - Guest Login - Admin Control Center Complete - Tutorial System Complete - Feature Flags - Testing Phase
 
 ---
 
@@ -435,23 +435,47 @@ ParSaveables 2.0 is a disc golf tournament tracking platform for small friend gr
 
 ### First-Time User Experience
 
-**Two Separate Tutorials:**
+**Two Separate Tutorials (IMPLEMENTED):**
 
-**1. Core App Tutorial** (triggered on first signup/login)
-- Welcome to ParSaveables
-- How the points system works (events, seasons, tournaments)
-- Navigation overview (bottom nav, dropdowns)
-- How to view leaderboards, rounds, and podcast
-- How scorecard processing works
+**1. Onboarding Tutorial** (triggered on first signup/login - mandatory, 7 screens)
+1. **Welcome Screen**: ParSaveables introduction with logo
+2. **How It Works**: UDisc screenshot → AI processing → Leaderboard flow (with animation)
+3. **Leaderboard**: Explanation of rankings, podium, expandable rows (spotlight highlight on bottom nav)
+4. **Rounds**: Round history and scorecard viewer (spotlight highlight on bottom nav)
+5. **Podcast**: Monthly AI-generated recaps (spotlight highlight on bottom nav)
+6. **Process Scorecard**: Admin button in top navigation (centered, no spotlight)
+7. **Betting Tease**: "Don't tap the betting button yet 😏" (spotlight highlight on bottom nav)
 
-**2. PULP Economy Tutorial** (triggered on first access to Betting page OR Dashboard PULPs tab)
-- What are PULPs and why they exist
-- How to earn PULPs (participation, DRS, streaks, beat higher-ranked)
-- How to spend PULPs (betting, challenges, advantages)
-- Where to view PULP balance (Betting page, Dashboard PULPs tab)
-- Betting predictions, challenges, and advantages shop overview
+**Tutorial Features:**
+- **Spotlight Effect**: Semi-transparent overlay with CSS box-shadow cutouts highlighting actual UI elements
+- **Data Attributes**: Navigation elements tagged with `data-tutorial-target` for spotlight targeting
+- **No Skip Button**: Onboarding is mandatory for new users
+- **Progress Indicator**: Shows current screen (e.g., "3 of 7")
+- **Database Tracking**: `onboarding_completed` column in `registered_players` table
 
-**Note**: Tutorial design and implementation details to be decided later
+**2. Betting Tutorial** (triggered on first access to /betting page - 5 screens)
+1. **Welcome to PULP**: Introduction to ParSaveables Ultimate Loyalty Program
+2. **Earn PULPs**: Play more, earn streaks (+20 every 4 weeks)
+3. **Grow Your PULPs**: Betting (top 3 predictions) and challenges (head-to-head)
+4. **Use Your PULPs**: 2x2 grid of advantages (Mulligan, Bag Trump, Anti-Mulligan, Shotgun Buddy)
+5. **Your Vote Kinda Matters**: Democracy vote with dual response system
+
+**Dual Response System:**
+- **"Yes, I'm interested"** → Shows thank you message, sets `betting_interest_confirmed = true`
+- **"Nah, I'm good"** → Shows chicken message 🐔, keeps `betting_interest_confirmed = false`
+- **Re-show Logic**: Tutorial re-appears if user said "no" (allows them to change their mind)
+- **Navigation**: After "Got it" button, navigate to /leaderboard
+- **Coming Soon Screen**: Users who confirmed interest see Coming Soon when visiting /betting
+
+**Database Tracking:**
+- `onboarding_completed`: Boolean, tracks core tutorial completion
+- `betting_interest_shown`: Boolean, tracks if betting tutorial was shown
+- `betting_interest_confirmed`: Boolean, tracks user response (interested or not)
+
+**Technical Implementation:**
+- Components: `TutorialSpotlight.jsx`, `Tutorial.jsx`, `BettingTutorial.jsx`, `tutorialData.js`
+- Integration: `AppLayout.jsx` checks player fields and shows tutorials conditionally
+- Spotlight: Uses CSS `box-shadow` with rgba(0,0,0,0.8) overlay and 9999px spread for full-screen effect
 
 ---
 
@@ -474,6 +498,63 @@ ParSaveables 2.0 is a disc golf tournament tracking platform for small friend gr
 | **Deployment** | Vercel | Auto-deploy from Git, free tier |
 
 **Monthly Cost Estimate:** $3-5 (Claude API only)
+
+---
+
+## Feature Flag System
+
+ParSaveables uses a simple feature flag system to toggle major features on/off without code changes.
+
+**Configuration File:** `src/config/features.js`
+
+```javascript
+export const features = {
+  pulpEconomy: false, // Set to true when ready to launch PULP economy
+}
+
+export function useFeatureFlag(flag) {
+  return features[flag] ?? false
+}
+```
+
+**Current Flags:**
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `pulpEconomy` | `false` | Controls all PULP economy features (betting, challenges, advantages, PULP notifications) |
+
+**PULP Economy Feature Toggle:**
+
+When `features.pulpEconomy = false`:
+- **Betting page** shows Coming Soon screen (for users who confirmed interest)
+- **Betting page** shows tutorial (for users who haven't seen it)
+- **NotificationBell** filters out PULP-related event types (bet_won, bet_lost, challenge_issued, etc.)
+- **Activity page** skips fetching PULP data (transactions, bets, challenges)
+- **Community feed** hides challenges and achievements, shows only rounds
+
+When `features.pulpEconomy = true`:
+- All PULP features enabled
+- Betting page shows actual betting UI (predictions, challenges, advantages)
+- All PULP notifications visible
+- Full activity feed with PULP transactions
+
+**Usage in Components:**
+```javascript
+import { features } from '@/config/features'
+
+// Check flag
+if (features.pulpEconomy) {
+  // Show PULP features
+} else {
+  // Show Coming Soon or hide
+}
+```
+
+**Deployment:**
+To enable PULP economy in production:
+1. Update `src/config/features.js`: `pulpEconomy: true`
+2. Commit and push to main branch
+3. Vercel auto-deploys with features enabled
 
 ---
 
@@ -707,6 +788,9 @@ parsaveables-v2/
 │   │       ├── BettingControls.jsx      # Betting lock management
 │   │       └── ProcessScorecards.jsx    # Manual scorecard trigger
 │   │
+│   ├── config/
+│   │   └── features.js                  # Feature flags (pulpEconomy toggle)
+│   │
 │   ├── components/
 │   │   ├── ui/                          # Shadcn base components (12 total)
 │   │   │   ├── button.jsx
@@ -724,11 +808,11 @@ parsaveables-v2/
 │   │   │
 │   │   ├── layout/
 │   │   │   ├── Header.jsx               # 3-icon design (Notifications, Admin, Profile)
-│   │   │   ├── BottomNav.jsx            # 5-tab navigation
-│   │   │   ├── AdminDropdown.jsx        # Admin menu dropdown
+│   │   │   ├── BottomNav.jsx            # 5-tab navigation (with data-tutorial-target)
+│   │   │   ├── AdminDropdown.jsx        # Admin menu dropdown (with data-tutorial-target)
 │   │   │   ├── ProfileDropdown.jsx      # Profile menu dropdown
-│   │   │   ├── NotificationBell.jsx     # Notification dropdown with recent activity
-│   │   │   ├── AppLayout.jsx            # Layout wrapper with auth
+│   │   │   ├── NotificationBell.jsx     # Notification dropdown (PULP filtering)
+│   │   │   ├── AppLayout.jsx            # Layout wrapper (tutorial integration)
 │   │   │   └── PageContainer.jsx        # Page content wrapper
 │   │   │
 │   │   ├── admin/                       # Control Center tab components
@@ -740,8 +824,10 @@ parsaveables-v2/
 │   │   │   └── BettingControlsModal.jsx # Lock betting modal
 │   │   │
 │   │   ├── tutorial/
-│   │   │   ├── Tutorial.jsx             # Tutorial modal component
-│   │   │   └── tutorialData.js          # Core + PULP tutorial content
+│   │   │   ├── TutorialSpotlight.jsx    # Spotlight overlay for UI highlighting
+│   │   │   ├── Tutorial.jsx             # Onboarding tutorial (7 screens)
+│   │   │   ├── BettingTutorial.jsx      # Betting tutorial (5 screens, dual response)
+│   │   │   └── tutorialData.js          # Screen content for both tutorials
 │   │   │
 │   │   ├── leaderboard/
 │   │   │   ├── LeaderboardTable.jsx     # Sortable table with expandable rows
@@ -750,7 +836,8 @@ parsaveables-v2/
 │   │   ├── betting/
 │   │   │   ├── PredictionsSection.jsx   # Top 3 prediction (next round)
 │   │   │   ├── ChallengesSection.jsx    # Issue/respond to challenges (next round)
-│   │   │   └── AdvantagesSection.jsx    # Purchase advantages shop
+│   │   │   ├── AdvantagesSection.jsx    # Purchase advantages shop
+│   │   │   └── ComingSoon.jsx           # Coming Soon screen (when PULP disabled)
 │   │   │
 │   │   └── rounds/
 │   │       └── RoundCard.jsx            # Accordion round card
@@ -766,7 +853,7 @@ parsaveables-v2/
 │   │
 │   ├── services/
 │   │   ├── supabase.js                  # Supabase client
-│   │   ├── api.js                       # Frontend API helpers
+│   │   ├── api.js                       # Frontend API helpers (tutorialAPI)
 │   │   ├── podcastService.js            # Podcast generation
 │   │   ├── core/                        # 9 core services
 │   │   └── gamification/                # PULP services
@@ -779,7 +866,7 @@ parsaveables-v2/
 │   └── main.jsx                         # Entry point
 │
 ├── supabase/
-│   └── migrations/                      # 11 migration files (001-011)
+│   └── migrations/                      # 14 migration files (001-014)
 │
 ├── public/
 │   └── assets/
@@ -1026,27 +1113,28 @@ npm run build
 1. Architecture approved & documented
 2. React + Vite project setup
 3. Shadcn/ui + Radix UI installed (12 components including checkbox)
-4. Database migrations applied (001-011)
+4. Database migrations applied (001-014)
 5. Authentication system (Supabase Auth + Guest Login)
 6. Core services restructured (src/services/core/)
 7. gamificationService implemented (5 files, ~750 lines)
 8. PULP API endpoints built (7 endpoints in api/pulp/)
 9. Frontend pages built (9 pages + 3 admin pages)
-10. Tutorial system (2 tutorials: Core + PULP)
-11. Utility files (logger, retry, errors, config, seasonUtils)
-12. Leaderboard page (event selector, podium, expandable table rows)
-13. Rounds page (accordion, scorecard viewer)
-14. Betting page (next round logic, active bet/challenge display)
-15. Dashboard (event dropdown, expanded stats, Points + PULPs tabs)
-16. Activity feed (Player + Community tabs)
-17. Admin Control Center (4 tabs: Events, Players, Courses, Rules)
-18. Season defaulting (auto-selects current season based on year)
-19. Notification dropdown (5 recent activities with "View All" link)
-20. Toast notification system (success/error feedback)
-21. Betting timer & auto-lock system
-22. Guest login system (read-only access)
-23. Testing framework (Vitest + React Testing Library)
-24. Event player management (junction table, checkboxes in event creation)
+10. Tutorial system (Onboarding 7 screens + Betting 5 screens, spotlight effect, database tracking)
+11. Feature flag system (src/config/features.js, PULP economy toggle, Coming Soon screen)
+12. Utility files (logger, retry, errors, config, seasonUtils)
+13. Leaderboard page (event selector, podium, expandable table rows)
+14. Rounds page (accordion, scorecard viewer)
+15. Betting page (next round logic, active bet/challenge display, Coming Soon screen)
+16. Dashboard (event dropdown, expanded stats, Points + PULPs tabs)
+17. Activity feed (Player + Community tabs, PULP filtering when disabled)
+18. Admin Control Center (4 tabs: Events, Players, Courses, Rules)
+19. Season defaulting (auto-selects current season based on year)
+20. Notification dropdown (5 recent activities, PULP filtering, "View All" link)
+21. Toast notification system (success/error feedback)
+22. Betting timer & auto-lock system
+23. Guest login system (read-only access)
+24. Testing framework (Vitest + React Testing Library)
+25. Event player management (junction table, checkboxes in event creation)
 
 ### Known Issues
 

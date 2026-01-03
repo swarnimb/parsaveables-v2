@@ -1,8 +1,8 @@
 # ParSaveables v2 - Project Dashboard
 
-**Last Updated:** 2025-12-31 (End of Session)
+**Last Updated:** 2026-01-03 (End of Session)
 **Current Phase:** Phase 5 (Testing & Bug Fixes) - IN PROGRESS
-**Status:** Foundation | Auth & Layout | Leaderboard | Rounds | PULP Design | Backend Services | PULP Settlement (Broken) | Frontend UI | Season Awareness | UX Enhancements | Testing Framework | Guest Login | Admin Control Center COMPLETE
+**Status:** Foundation | Auth & Layout | Leaderboard | Rounds | PULP Design | Backend Services | Frontend UI | Season Awareness | UX Enhancements | Testing Framework | Guest Login | Admin Control Center | Tutorial System | Feature Flags COMPLETE
 
 ---
 
@@ -10,11 +10,11 @@
 
 | Area | Status |
 |------|--------|
-| Documentation | Complete & Updated (Dec 31) |
+| Documentation | Complete & Updated (Jan 3, 2026) |
 | Project Setup | Complete (Vite, Tailwind v3, Shadcn, Radix UI) |
 | Folder Structure | Complete (core/, gamification/ organized) |
 | Supabase Client | Configured & Connected |
-| Database Migration | Complete (11 migrations: 001-011) |
+| Database Migration | Complete (14 migrations: 001-014) |
 | Routing | Complete (12 routes + 404) |
 | Layout Components | Complete (Header 3-icon, BottomNav, Dropdowns, NotificationDropdown) |
 | UI Components | Complete (12 Shadcn components including checkbox) |
@@ -31,7 +31,8 @@
 | PULP API Endpoints | Complete (7 endpoints in api/pulp/) |
 | Frontend Pages (PULP) | Complete (Betting, Dashboard, Activity, About, Admin) |
 | PULP Settlement | BROKEN - Bets/challenges not resolving after scorecard processing |
-| Tutorial System | Complete (Core + PULP tutorials) |
+| Tutorial System | Complete (Onboarding 7 screens + Betting 5 screens, spotlight effect) |
+| Feature Flag System | Complete (PULP economy toggle, Coming Soon screen) |
 | Testing Framework | Complete (Vitest + React Testing Library + Happy DOM) |
 | PULP Transaction Tests | Complete (Advantages, Betting, Challenges - 16 tests) |
 | Guest Login System | Complete (Read-only access, disabled features, tooltips) |
@@ -42,7 +43,90 @@
 
 ---
 
-## This Session Summary (2025-12-31 - Latest)
+## This Session Summary (2026-01-03 - Latest)
+
+### Tutorial System & Feature Flag Implementation
+
+**Work Completed:**
+
+1. **Tutorial System (Onboarding + Betting)**
+   - **Onboarding Tutorial** (7 screens, mandatory on first login):
+     1. Welcome to ParSaveables
+     2. How it works (UDisc → AI → Leaderboard flow with animation)
+     3. Leaderboard explanation (with spotlight highlight)
+     4. Rounds explanation (with spotlight highlight)
+     5. Podcast explanation (with spotlight highlight)
+     6. Process Scorecard button (centered, no spotlight to avoid cutoff)
+     7. Betting tab tease ("Don't tap it yet 😏" with spotlight)
+   - **Betting Tutorial** (5 screens, triggered on first /betting access):
+     1. Welcome to PULP (ParSaveables Ultimate Loyalty Program)
+     2. Earn PULPs (play more, streaks)
+     3. Grow Your PULPs (betting, challenges)
+     4. Use Your PULPs (2x2 advantages grid: Mulligan, Bag Trump, Anti-Mulligan, Shotgun Buddy)
+     5. Your Vote Kinda Matters (democracy vote with dual responses)
+   - **Dual Response System**:
+     - "Yes, I'm interested" → "Thank you for showing interest, a new betting economy is coming to you shortly"
+     - "Nah, I'm good" → "Someone's a chicken 🐔"
+   - **Re-show Logic**: Tutorial re-appears if user said "no" (betting_interest_confirmed !== true)
+   - **Spotlight Effect**: Semi-transparent overlay with CSS box-shadow cutouts highlighting UI elements
+   - **Navigation**: After "Got it" button, navigate to /leaderboard
+
+2. **Database Schema Updates**
+   - Added tutorial tracking columns to registered_players:
+     - `onboarding_completed` (BOOLEAN, default FALSE)
+     - `betting_interest_shown` (BOOLEAN, default FALSE)
+     - `betting_interest_confirmed` (BOOLEAN, default FALSE)
+
+3. **Feature Flag System**
+   - Created `src/config/features.js` with pulpEconomy flag (default: false)
+   - Centralized toggle for all PULP economy features
+   - Easy enable/disable without code changes
+
+4. **Coming Soon Screen**
+   - Created `ComingSoon.jsx` component with rocket icon and animated ping
+   - Shows to users who confirmed interest when visiting /betting
+   - Prevents access to actual betting page until feature enabled
+   - Logic: Show Coming Soon when `!features.pulpEconomy` OR `player.betting_interest_confirmed === true`
+
+5. **PULP Activity Filtering**
+   - **NotificationBell**: Filters out PULP-related event types when `features.pulpEconomy === false`
+   - **Activity Page**: Skips fetching PULP data (transactions, bets, challenges) when feature disabled
+   - **Community Feed**: Only shows rounds, hides challenges and achievements when disabled
+
+6. **Bug Fixes**
+   - Fixed betting tutorial flicker (removed navigate from effect, handled in onClose callback)
+   - Fixed Process Scorecard screen cutoff (removed spotlight, kept centered)
+   - Reset user email associations for testing (SQL provided)
+
+**Files Created:**
+- src/components/tutorial/TutorialSpotlight.jsx (NEW - spotlight effect)
+- src/components/tutorial/tutorialData.js (NEW - screen content for both tutorials)
+- src/config/features.js (NEW - feature flag config)
+- src/components/betting/ComingSoon.jsx (NEW - coming soon screen)
+
+**Files Modified:**
+- src/components/tutorial/Tutorial.jsx (OnboardingTutorial with spotlight)
+- src/components/tutorial/BettingTutorial.jsx (5 screens, advantages grid, dual responses)
+- src/components/layout/AppLayout.jsx (tutorial integration, betting navigation intercept)
+- src/components/layout/BottomNav.jsx (added data-tutorial-target attributes)
+- src/components/layout/AdminDropdown.jsx (added data-tutorial-target to Process Scorecard)
+- src/components/layout/NotificationBell.jsx (PULP event filtering)
+- src/pages/Leaderboard.jsx (empty state message update)
+- src/pages/Activity.jsx (PULP data filtering)
+- src/pages/Betting.jsx (conditional ComingSoon rendering)
+
+**Database Migrations:**
+- Migration 014: Add tutorial tracking columns (onboarding_completed, betting_interest_shown, betting_interest_confirmed)
+
+**Tutorial Flow:**
+1. New user signs up → Onboarding tutorial shows immediately (7 screens)
+2. User taps Betting tab → Betting tutorial shows (5 screens)
+3. User selects response → Coming Soon screen shows (if interested)
+4. Every subsequent visit to /betting → Coming Soon screen (until feature enabled)
+
+---
+
+## Previous Session Summary (2025-12-31)
 
 ### Admin Control Center Completion & Bug Fixes
 
@@ -226,6 +310,9 @@ Implement different UI states for betting lifecycle:
 | 009 | Create event_players junction table |
 | 010 | Add event_players write policies (INSERT/UPDATE/DELETE) |
 | 011 | Clear PULP activity data (reset balances to 100) |
+| 012 | Reserved (not yet used) |
+| 013 | Reserved (not yet used) |
+| 014 | Add tutorial tracking columns (onboarding_completed, betting_interest_shown, betting_interest_confirmed) |
 
 ---
 
@@ -244,14 +331,15 @@ src/pages/admin/ControlCenter.jsx
 ```
 src/
 ├── pages/          # 9 pages + 3 admin pages
+├── config/         # features.js (feature flags)
 ├── components/
 │   ├── ui/         # 12 Shadcn components
-│   ├── layout/     # Header, BottomNav, Dropdowns
+│   ├── layout/     # Header, BottomNav, Dropdowns, NotificationBell
 │   ├── admin/      # Control Center tabs
-│   ├── leaderboard/
-│   ├── betting/
-│   ├── rounds/
-│   └── tutorial/
+│   ├── leaderboard/# PodiumDisplay, LeaderboardTable
+│   ├── betting/    # PredictionsSection, ChallengesSection, AdvantagesSection, ComingSoon
+│   ├── rounds/     # RoundCard
+│   └── tutorial/   # TutorialSpotlight, Tutorial, BettingTutorial, tutorialData
 ├── hooks/          # useAuth, use-toast
 ├── services/       # core/, gamification/, api.js
 └── utils/          # seasonUtils, playerUtils
