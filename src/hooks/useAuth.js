@@ -21,11 +21,12 @@ export function useAuth() {
       return
     }
 
-    // Failsafe: Ensure loading never hangs for more than 5 seconds
+    // Failsafe: Ensure loading never hangs for more than 10 seconds
+    // This should only fire if Supabase is completely unresponsive
     const failsafeTimeout = setTimeout(() => {
-      console.warn('Auth initialization taking too long, forcing loading to false')
+      console.warn('Auth initialization taking too long (10s), forcing loading to false')
       setLoading(false)
-    }, 5000)
+    }, 10000)
 
     // Check for existing session with proper error handling
     const initAuth = async () => {
