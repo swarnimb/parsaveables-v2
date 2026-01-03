@@ -51,8 +51,7 @@ export const onboardingScreens = [
     content: 'Found the Process Scorecard button in the top navigation? That\'s where admins can manually upload scorecards to keep the league running smoothly.',
     emoji: '⚙️',
     showImage: false,
-    spotlightTarget: 'process-scorecard',
-    spotlightPosition: 'below',
+    // No spotlight - keep centered to avoid bottom nav cutoff
   },
   {
     id: 7,
