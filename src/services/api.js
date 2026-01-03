@@ -46,9 +46,10 @@ export const authAPI = {
    * Get current session
    */
   getSession: async () => {
-    // Add 10-second timeout to prevent infinite loading
+    // Add 3-second timeout to prevent infinite loading on mobile
+    // Mobile browsers can be slow when returning to the app
     const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('Session fetch timeout')), 10000)
+      setTimeout(() => reject(new Error('Session fetch timeout')), 3000)
     )
     const sessionPromise = supabase.auth.getSession()
 
@@ -291,6 +292,48 @@ export const eventAPI = {
     })))
 
     return sortedPlayers
+  },
+}
+
+/**
+ * Tutorial API helpers
+ */
+
+export const tutorialAPI = {
+  /**
+   * Mark onboarding tutorial as completed
+   */
+  completeOnboarding: async (playerId) => {
+    const { error } = await supabase
+      .from('registered_players')
+      .update({ onboarding_completed: true })
+      .eq('id', playerId)
+
+    if (error) throw error
+  },
+
+  /**
+   * Mark betting tutorial as shown
+   */
+  markBettingInterestShown: async (playerId) => {
+    const { error } = await supabase
+      .from('registered_players')
+      .update({ betting_interest_shown: true })
+      .eq('id', playerId)
+
+    if (error) throw error
+  },
+
+  /**
+   * Confirm user interest in betting feature
+   */
+  confirmBettingInterest: async (playerId) => {
+    const { error } = await supabase
+      .from('registered_players')
+      .update({ betting_interest_confirmed: true })
+      .eq('id', playerId)
+
+    if (error) throw error
   },
 }
 

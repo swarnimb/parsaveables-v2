@@ -21,6 +21,12 @@ export function useAuth() {
       return
     }
 
+    // Failsafe: Ensure loading never hangs for more than 5 seconds
+    const failsafeTimeout = setTimeout(() => {
+      console.warn('Auth initialization taking too long, forcing loading to false')
+      setLoading(false)
+    }, 5000)
+
     // Check for existing session with proper error handling
     const initAuth = async () => {
       try {
@@ -42,6 +48,8 @@ export function useAuth() {
         setUser(null)
         setPlayer(null)
       } finally {
+        // Clear failsafe timeout
+        clearTimeout(failsafeTimeout)
         // ALWAYS set loading to false, even on error
         setLoading(false)
       }
@@ -68,9 +76,10 @@ export function useAuth() {
       }
     )
 
-    // Cleanup subscription on unmount
+    // Cleanup subscription and timeout on unmount
     return () => {
       subscription?.unsubscribe()
+      clearTimeout(failsafeTimeout)
     }
   }, [])
 

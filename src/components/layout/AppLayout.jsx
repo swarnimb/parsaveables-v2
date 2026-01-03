@@ -1,13 +1,18 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import Header from './Header'
 import BottomNav from './BottomNav'
+import OnboardingTutorial from '@/components/tutorial/Tutorial'
+import BettingTutorial from '@/components/tutorial/BettingTutorial'
+import { tutorialAPI } from '@/services/api'
 
 export default function AppLayout() {
-  const { isAuthenticated, isGuest, loading } = useAuth()
+  const { isAuthenticated, isGuest, loading, player } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
+  const [showOnboarding, setShowOnboarding] = useState(false)
+  const [showBettingTutorial, setShowBettingTutorial] = useState(false)
 
   // Redirect to login if not authenticated and not guest
   useEffect(() => {
@@ -30,6 +35,29 @@ export default function AppLayout() {
     }
   }, [isGuest, loading, location.pathname, navigate])
 
+  // Check if onboarding tutorial should be shown
+  useEffect(() => {
+    if (!loading && player && !player.onboarding_completed) {
+      setShowOnboarding(true)
+    }
+  }, [player, loading])
+
+  // Intercept betting navigation for tutorial
+  useEffect(() => {
+    if (!loading && player && location.pathname === '/betting' && !player.betting_interest_shown) {
+      // Mark betting tutorial as shown in database
+      tutorialAPI.markBettingInterestShown(player.id).catch(err => {
+        console.error('Error marking betting interest shown:', err)
+      })
+
+      // Show tutorial
+      setShowBettingTutorial(true)
+
+      // Navigate back immediately
+      navigate(-1)
+    }
+  }, [location.pathname, player, loading, navigate])
+
   // Show loading state while checking authentication
   if (loading) {
     return (
@@ -46,6 +74,16 @@ export default function AppLayout() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
+      {/* Onboarding Tutorial */}
+      {showOnboarding && (
+        <OnboardingTutorial onComplete={() => setShowOnboarding(false)} />
+      )}
+
+      {/* Betting Tutorial */}
+      {showBettingTutorial && (
+        <BettingTutorial onClose={() => setShowBettingTutorial(false)} />
+      )}
+
       {/* Sticky header */}
       <Header />
 

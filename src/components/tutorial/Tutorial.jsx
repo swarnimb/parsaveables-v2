@@ -1,141 +1,121 @@
-import { useState, useEffect } from 'react'
-import { ChevronLeft, ChevronRight, X } from 'lucide-react'
+import { useState } from 'react'
+import { ChevronRight } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
-import { useTutorialTracking } from '@/hooks/useTutorialTracking'
+import { onboardingScreens } from './tutorialData'
+import { tutorialAPI } from '@/services/api'
+import { useAuth } from '@/hooks/useAuth'
+import AnimatedFlow from './AnimatedFlow'
 
-export default function Tutorial({ tutorial, trigger, onComplete, autoShow = false }) {
-  const [open, setOpen] = useState(false)
-  const [currentStep, setCurrentStep] = useState(0)
-  const { shouldShow, markCompleted, markSkipped } = useTutorialTracking(tutorial.id)
+/**
+ * OnboardingTutorial Component
+ * Mandatory full-screen tutorial shown on first login after signup
+ * No skip button - must complete all 7 screens
+ */
+export default function OnboardingTutorial({ onComplete }) {
+  const [currentScreen, setCurrentScreen] = useState(0)
+  const { player } = useAuth()
 
-  // Auto-show on first login if autoShow is true
-  useEffect(() => {
-    if (autoShow && shouldShow) {
-      setOpen(true)
-    }
-  }, [autoShow, shouldShow])
+  const screen = onboardingScreens[currentScreen]
+  const isLastScreen = currentScreen === onboardingScreens.length - 1
+  const progress = ((currentScreen + 1) / onboardingScreens.length) * 100
 
-  const step = tutorial.steps[currentStep]
-  const isFirstStep = currentStep === 0
-  const isLastStep = currentStep === tutorial.steps.length - 1
-  const progress = ((currentStep + 1) / tutorial.steps.length) * 100
-
-  const handleNext = () => {
-    if (isLastStep) {
-      setOpen(false)
-      setCurrentStep(0)
-      markCompleted() // Track completion
-      onComplete?.()
+  const handleNext = async () => {
+    if (isLastScreen) {
+      // Mark onboarding as completed in database
+      try {
+        if (player?.id) {
+          await tutorialAPI.completeOnboarding(player.id)
+        }
+        onComplete?.()
+      } catch (error) {
+        console.error('Error completing onboarding:', error)
+        // Still allow user to proceed even if API fails
+        onComplete?.()
+      }
     } else {
-      setCurrentStep(prev => prev + 1)
+      setCurrentScreen(prev => prev + 1)
     }
-  }
-
-  const handlePrevious = () => {
-    if (!isFirstStep) {
-      setCurrentStep(prev => prev - 1)
-    }
-  }
-
-  const handleClose = () => {
-    setOpen(false)
-    setCurrentStep(0)
-  }
-
-  const handleSkip = () => {
-    setOpen(false)
-    setCurrentStep(0)
-    markSkipped() // Track skip
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {trigger}
-      </DialogTrigger>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <div className="flex items-center justify-between">
-            <DialogTitle>{tutorial.title}</DialogTitle>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={handleSkip}
-                className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Skip Tutorial
-              </button>
-              <button
-                onClick={handleClose}
-                className="rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100"
-              >
-                <X className="h-4 w-4" />
-              </button>
+    <Dialog open={true} onOpenChange={() => {}}>
+      <DialogContent
+        className="w-screen h-screen max-w-full max-h-full m-0 p-0 rounded-none"
+        onPointerDownOutside={(e) => e.preventDefault()}
+        onEscapeKeyDown={(e) => e.preventDefault()}
+      >
+        <div className="flex flex-col h-full p-6 sm:p-8 md:p-12">
+          <DialogHeader className="mb-6">
+            <DialogDescription className="text-sm text-muted-foreground">
+              Screen {currentScreen + 1} of {onboardingScreens.length}
+            </DialogDescription>
+            <DialogTitle className="sr-only">
+              Onboarding Tutorial - {screen.title}
+            </DialogTitle>
+          </DialogHeader>
+
+          {/* Progress Bar */}
+          <Progress value={progress} className="mb-8" />
+
+          {/* Screen Content */}
+          <div className="flex-1 flex flex-col items-center justify-center max-w-2xl mx-auto w-full">
+            <div className="text-center space-y-6">
+              {/* Emoji */}
+              <div className="text-8xl sm:text-9xl">{screen.emoji}</div>
+
+              {/* Title */}
+              <h2 className="text-3xl sm:text-4xl font-bold">{screen.title}</h2>
+
+              {/* Content */}
+              <p className="text-lg sm:text-xl text-muted-foreground leading-relaxed max-w-xl">
+                {screen.content}
+              </p>
+
+              {/* Animated Flow (if applicable) */}
+              {screen.showAnimation && (
+                <div className="mt-8">
+                  <AnimatedFlow />
+                </div>
+              )}
             </div>
           </div>
-          <DialogDescription>
-            Step {currentStep + 1} of {tutorial.steps.length}
-          </DialogDescription>
-        </DialogHeader>
 
-        {/* Progress Bar */}
-        <Progress value={progress} className="mb-4" />
+          {/* Navigation */}
+          <div className="flex items-center justify-between pt-6 border-t border-border mt-8">
+            <div className="flex gap-1.5">
+              {onboardingScreens.map((_, idx) => (
+                <div
+                  key={idx}
+                  className={`h-2 w-2 rounded-full transition-colors ${
+                    idx === currentScreen
+                      ? 'bg-primary'
+                      : idx < currentScreen
+                      ? 'bg-primary/50'
+                      : 'bg-muted'
+                  }`}
+                />
+              ))}
+            </div>
 
-        {/* Step Content */}
-        <div className="py-6 px-2">
-          <div className="text-center mb-6">
-            <div className="text-6xl mb-4">{step.icon}</div>
-            <h3 className="text-xl font-bold mb-3">{step.title}</h3>
-            <p className="text-muted-foreground whitespace-pre-line leading-relaxed">
-              {step.content}
-            </p>
+            <Button onClick={handleNext} size="lg">
+              {isLastScreen ? (
+                'Get Started'
+              ) : (
+                <>
+                  Next
+                  <ChevronRight className="h-5 w-5 ml-1" />
+                </>
+              )}
+            </Button>
           </div>
-        </div>
-
-        {/* Navigation */}
-        <div className="flex items-center justify-between pt-4 border-t border-border">
-          <Button
-            variant="outline"
-            onClick={handlePrevious}
-            disabled={isFirstStep}
-          >
-            <ChevronLeft className="h-4 w-4 mr-1" />
-            Previous
-          </Button>
-
-          <div className="flex gap-1">
-            {tutorial.steps.map((_, idx) => (
-              <div
-                key={idx}
-                className={`h-2 w-2 rounded-full transition-colors ${
-                  idx === currentStep
-                    ? 'bg-primary'
-                    : idx < currentStep
-                    ? 'bg-primary/50'
-                    : 'bg-muted'
-                }`}
-              />
-            ))}
-          </div>
-
-          <Button onClick={handleNext}>
-            {isLastStep ? (
-              'Finish'
-            ) : (
-              <>
-                Next
-                <ChevronRight className="h-4 w-4 ml-1" />
-              </>
-            )}
-          </Button>
         </div>
       </DialogContent>
     </Dialog>
