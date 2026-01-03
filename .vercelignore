@@ -1,0 +1,15 @@
+# Podcast generation scripts (run separately, not part of frontend build)
+podcast/node_modules
+podcast/package.json
+podcast/package-lock.json
+podcast/*.mp3
+podcast/*.js
+podcast/*.md
+podcast/assets
+
+# Documentation
+docs/
+
+# Test files
+**/*.test.js
+**/*.test.jsx
