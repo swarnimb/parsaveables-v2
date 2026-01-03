@@ -75,6 +75,7 @@ export default function BottomNav() {
           <NavLink
             key={path}
             to={path}
+            data-tutorial-target={label.toLowerCase()}
             onClick={(e) => {
               if (isDisabled) {
                 e.preventDefault()

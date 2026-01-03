@@ -13,6 +13,7 @@ import { onboardingScreens } from './tutorialData'
 import { tutorialAPI } from '@/services/api'
 import { useAuth } from '@/hooks/useAuth'
 import AnimatedFlow from './AnimatedFlow'
+import TutorialSpotlight from './TutorialSpotlight'
 
 /**
  * OnboardingTutorial Component
@@ -45,6 +46,65 @@ export default function OnboardingTutorial({ onComplete }) {
     }
   }
 
+  // Use spotlight if screen has a target, otherwise full-screen
+  if (screen.spotlightTarget) {
+    return (
+      <TutorialSpotlight
+        target={screen.spotlightTarget}
+        position={screen.spotlightPosition}
+      >
+        <div className="bg-background border border-border rounded-lg shadow-2xl p-6 max-w-md mx-auto">
+          {/* Progress */}
+          <div className="mb-4">
+            <p className="text-xs text-muted-foreground mb-2">
+              Screen {currentScreen + 1} of {onboardingScreens.length}
+            </p>
+            <Progress value={progress} />
+          </div>
+
+          {/* Content */}
+          <div className="text-center space-y-4 mb-6">
+            <div className="text-5xl">{screen.emoji}</div>
+            <h2 className="text-2xl font-bold">{screen.title}</h2>
+            <p className="text-muted-foreground leading-relaxed">
+              {screen.content}
+            </p>
+          </div>
+
+          {/* Navigation */}
+          <div className="flex items-center justify-between">
+            <div className="flex gap-1">
+              {onboardingScreens.map((_, idx) => (
+                <div
+                  key={idx}
+                  className={`h-2 w-2 rounded-full transition-colors ${
+                    idx === currentScreen
+                      ? 'bg-primary'
+                      : idx < currentScreen
+                      ? 'bg-primary/50'
+                      : 'bg-muted'
+                  }`}
+                />
+              ))}
+            </div>
+
+            <Button onClick={handleNext}>
+              {isLastScreen ? (
+                'Get Started'
+              ) : (
+                <>
+                  Next
+                  <ChevronRight className="h-5 w-5 ml-1" />
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      </TutorialSpotlight>
+    )
+  }
+
+  // Full-screen for screens without spotlight
   return (
     <Dialog open={true} onOpenChange={() => {}}>
       <DialogContent

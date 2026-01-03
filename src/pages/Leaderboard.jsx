@@ -139,7 +139,9 @@ export default function Leaderboard() {
         </div>
       ) : (
         <div className="border border-border rounded-lg p-8 text-center">
-          <p className="text-muted-foreground">No data for this event yet.</p>
+          <p className="text-muted-foreground">
+            Nothing to see here yet. Play your first round for this event or change to another season/tournament from the event dropdown.
+          </p>
         </div>
       )}
     </PageContainer>

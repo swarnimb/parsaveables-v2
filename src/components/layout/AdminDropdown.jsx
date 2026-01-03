@@ -58,6 +58,7 @@ export default function AdminDropdown() {
               <Link
                 to="/admin/process-scorecards"
                 onClick={() => setIsOpen(false)}
+                data-tutorial-target="process-scorecard"
               >
                 <motion.div
                   className="flex items-center gap-3 px-4 py-2 rounded-md bg-gradient-to-r from-primary/10 to-primary/5 hover:from-primary/20 hover:to-primary/10 transition-all relative overflow-hidden"

@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { ChevronRight, Check } from 'lucide-react'
+import { ChevronRight, Check, X } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import {
   Dialog,
   DialogContent,
@@ -15,22 +16,22 @@ import { useAuth } from '@/hooks/useAuth'
 
 /**
  * BettingTutorial Component
- * Shown when user tries to access /betting for the first time
- * Includes interest confirmation before blocking access
+ * 5 screens introducing PULP economy with interest confirmation
  */
 export default function BettingTutorial({ onClose }) {
   const [currentScreen, setCurrentScreen] = useState(0)
-  const [showThankYou, setShowThankYou] = useState(false)
+  const [responseType, setResponseType] = useState(null) // 'interested' | 'not-interested'
   const { player } = useAuth()
+  const navigate = useNavigate()
 
   const screen = bettingScreens[currentScreen]
-  const isInterestScreen = screen.isInterestScreen
+  const isInterestScreen = screen?.isInterestScreen
   const isLastScreen = currentScreen === bettingScreens.length - 1
   const progress = ((currentScreen + 1) / bettingScreens.length) * 100
 
   const handleNext = () => {
-    if (isLastScreen || isInterestScreen) {
-      // On interest screen, do nothing - wait for user to choose
+    if (isInterestScreen) {
+      // On interest screen, wait for user to choose
       return
     }
     setCurrentScreen(prev => prev + 1)
@@ -46,42 +47,56 @@ export default function BettingTutorial({ onClose }) {
       console.error('Error confirming betting interest:', error)
     }
 
-    // Show thank you message
-    setShowThankYou(true)
-
-    // Close after 3 seconds
-    setTimeout(() => {
-      onClose?.()
-    }, 3000)
+    setResponseType('interested')
   }
 
-  const handleNotNow = async () => {
-    // Just close without confirming interest
-    // betting_interest_shown is already set when dialog opened
+  const handleNotInterested = () => {
+    // Don't update confirmation, just show chicken message
+    setResponseType('not-interested')
+  }
+
+  const handleGotIt = () => {
+    // Navigate to leaderboard and close
+    navigate('/leaderboard')
     onClose?.()
   }
 
-  // Thank you screen
-  if (showThankYou) {
+  // Response screen (after user chooses)
+  if (responseType) {
+    const isInterested = responseType === 'interested'
+
     return (
       <Dialog open={true} onOpenChange={() => {}}>
         <DialogContent className="max-w-md">
           <div className="flex flex-col items-center justify-center py-12 text-center space-y-6">
-            <div className="h-16 w-16 rounded-full bg-green-500/20 flex items-center justify-center">
-              <Check className="h-8 w-8 text-green-500" />
+            <div className={`h-16 w-16 rounded-full ${isInterested ? 'bg-green-500/20' : 'bg-orange-500/20'} flex items-center justify-center`}>
+              {isInterested ? (
+                <Check className="h-8 w-8 text-green-500" />
+              ) : (
+                <span className="text-4xl">🐔</span>
+              )}
             </div>
             <div className="space-y-2">
-              <h3 className="text-2xl font-bold">Thank You!</h3>
+              <h3 className="text-2xl font-bold">
+                {isInterested ? 'Thank You!' : "Someone's a chicken"}
+              </h3>
               <p className="text-muted-foreground">
-                Thank you for showing interest, your ParSaveables betting economy is coming soon.
+                {isInterested
+                  ? 'Thank you for showing interest, a new betting economy is coming to you shortly.'
+                  : 'No worries, you can check it out later!'}
               </p>
             </div>
+
+            <Button onClick={handleGotIt} size="lg">
+              Got it
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
     )
   }
 
+  // Main tutorial screens
   return (
     <Dialog open={true} onOpenChange={onClose}>
       <DialogContent className="max-w-lg">
@@ -110,6 +125,21 @@ export default function BettingTutorial({ onClose }) {
             <p className="text-muted-foreground leading-relaxed">
               {screen.content}
             </p>
+
+            {/* Advantages Grid (Screen 4) */}
+            {screen.showAdvantages && screen.advantages && (
+              <div className="grid grid-cols-2 gap-3 mt-6 max-w-xs mx-auto">
+                {screen.advantages.map((advantage, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-center gap-2 p-3 rounded-lg bg-muted/50 border border-border"
+                  >
+                    <span className="text-2xl">{advantage.icon}</span>
+                    <span className="text-sm font-medium">{advantage.name}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
@@ -120,16 +150,16 @@ export default function BettingTutorial({ onClose }) {
             <div className="flex gap-3 w-full">
               <Button
                 variant="outline"
-                onClick={handleNotNow}
+                onClick={handleNotInterested}
                 className="flex-1"
               >
-                Not Now
+                Nah, I'm good
               </Button>
               <Button
                 onClick={handleInterested}
                 className="flex-1"
               >
-                I'm Interested
+                I'm interested
               </Button>
             </div>
           ) : (

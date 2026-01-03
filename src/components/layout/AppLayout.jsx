@@ -44,17 +44,20 @@ export default function AppLayout() {
 
   // Intercept betting navigation for tutorial
   useEffect(() => {
-    if (!loading && player && location.pathname === '/betting' && !player.betting_interest_shown) {
-      // Mark betting tutorial as shown in database
+    // Show tutorial if user hasn't confirmed interest (undefined or false)
+    if (!loading && player && location.pathname === '/betting' && player.betting_interest_confirmed !== true) {
+      // Navigate back FIRST to prevent flicker
+      navigate(-1)
+
+      // Mark as shown in database
       tutorialAPI.markBettingInterestShown(player.id).catch(err => {
         console.error('Error marking betting interest shown:', err)
       })
 
-      // Show tutorial
-      setShowBettingTutorial(true)
-
-      // Navigate back immediately
-      navigate(-1)
+      // THEN show tutorial after brief delay
+      setTimeout(() => {
+        setShowBettingTutorial(true)
+      }, 100)
     }
   }, [location.pathname, player, loading, navigate])
 
