@@ -1,6 +1,6 @@
 import { BookOpen, Coins, Trophy, Github, Mail, HelpCircle } from 'lucide-react'
-import Tutorial from '@/components/tutorial/Tutorial'
-import { coreTutorial, pulpTutorial } from '@/components/tutorial/tutorialData'
+import TutorialModal from '@/components/tutorial/TutorialModal'
+import { onboardingScreens, bettingScreens } from '@/components/tutorial/tutorialData'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import PageContainer from '@/components/layout/PageContainer'
@@ -29,17 +29,18 @@ export default function About() {
                   <Trophy className="h-6 w-6 text-blue-600" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-semibold mb-1">Core App Tutorial</h3>
+                  <h3 className="font-semibold mb-1">App Onboarding</h3>
                   <p className="text-sm text-muted-foreground">
-                    Learn the basics: rounds, points, leaderboards, and achievements
+                    Learn how ParSaveables works from scorecard to leaderboard
                   </p>
                 </div>
               </div>
-              <Tutorial
-                tutorial={coreTutorial}
+              <TutorialModal
+                title="Welcome to ParSaveables"
+                screens={onboardingScreens}
                 trigger={
                   <Button className="w-full">
-                    Start Core Tutorial
+                    Start Onboarding
                   </Button>
                 }
               />
@@ -51,17 +52,18 @@ export default function About() {
                   <Coins className="h-6 w-6 text-primary" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-semibold mb-1">PULP Economy Tutorial</h3>
+                  <h3 className="font-semibold mb-1">Betting Preview</h3>
                   <p className="text-sm text-muted-foreground">
-                    Master betting, challenges, and the advantage shop
+                    Preview the upcoming betting and PULP economy features
                   </p>
                 </div>
               </div>
-              <Tutorial
-                tutorial={pulpTutorial}
+              <TutorialModal
+                title="Betting System"
+                screens={bettingScreens}
                 trigger={
                   <Button className="w-full">
-                    Start PULP Tutorial
+                    Learn About Betting
                   </Button>
                 }
               />
