@@ -39,6 +39,7 @@
 | Admin Control Center | COMPLETE (4 tabs: Events, Players, Courses, Rules) |
 | Betting Timer & Lock System | Complete (Countdown timer, auto-reset, cancel/extend) |
 | Toast Notifications | Complete (Shadcn Toast, success/error feedback across all features) |
+| Podcast Episode 1 | Complete (Database script, ElevenLabs generation, Supabase upload) |
 | Git & Deployment | Complete (Vercel deployment, environment variables) |
 
 ---
@@ -98,11 +99,26 @@
    - Fixed Process Scorecard screen cutoff (removed spotlight, kept centered)
    - Reset user email associations for testing (SQL provided)
 
+7. **Podcast Episode 1 Generation**
+   - Created custom script to generate podcast from database script (not Claude API)
+   - Script source: `podcast_scripts` table in database (manually written, 64 dialogue lines)
+   - ElevenLabs voices: Annie (dfeOmy6Uay63tNhyO99j), Hyzer (50y2RdLRjpTShM4ZFm5D)
+   - Generated 64 audio segments using ElevenLabs API (6.8 MB dialogue)
+   - Combined intro (2.85 MB) + dialogue (6.85 MB) + outro (1.10 MB) = 10.8 MB final episode
+   - Uploaded to Supabase Storage: `ParSaveables-EP01.mp3`
+   - Database updated: `podcast_episodes` table (audio_url, is_published, published_at)
+   - Public URL: https://bcovevbtcdsgzbrieiin.supabase.co/storage/v1/object/public/podcast-episodes/ParSaveables-EP01.mp3
+   - Note: Used simple MP3 concatenation (no fade effects) due to FFmpeg installation issue
+
 **Files Created:**
 - src/components/tutorial/TutorialSpotlight.jsx (NEW - spotlight effect)
 - src/components/tutorial/tutorialData.js (NEW - screen content for both tutorials)
 - src/config/features.js (NEW - feature flag config)
 - src/components/betting/ComingSoon.jsx (NEW - coming soon screen)
+- podcast/generate-from-existing-script.js (NEW - generate podcast from database script)
+- podcast/concat-audio-simple.js (NEW - simple MP3 concatenation without FFmpeg)
+- podcast/upload-episode.js (NEW - upload episode to Supabase and update database)
+- podcast/episode 1 script.md (NEW - manually written 64-line dialogue script)
 
 **Files Modified:**
 - src/components/tutorial/Tutorial.jsx (OnboardingTutorial with spotlight)
@@ -264,9 +280,9 @@ Implement different UI states for betting lifecycle:
 - After testing: Reset for production use
 
 ### Priority 4: Podcast Feature
+- ✅ Episode 1 content finalized and generated (uploaded to Supabase)
 - Build Podcast page UI (audio player, episode description)
-- Test /api/generatePodcast endpoint
-- Finalize Episode 1 content
+- Test /api/generatePodcast endpoint for future episodes
 
 ### Priority 5: Polish & Mobile Testing
 - Framer Motion animations polish
@@ -290,8 +306,10 @@ Implement different UI states for betting lifecycle:
 **Phase 5:** Testing & Polish - IN PROGRESS
 - Testing framework complete
 - Admin Control Center COMPLETE
+- Tutorial System COMPLETE
+- Podcast Episode 1 COMPLETE
 - PULP settlement broken (critical)
-- Podcast feature pending
+- Podcast page UI pending
 
 ---
 
