@@ -252,7 +252,7 @@ async function createFinalEpisode(dialoguePath, episodeNumber) {
 async function uploadAudio(audioFilePath, episodeNumber) {
   log('UPLOAD', 'Uploading audio to Supabase Storage...');
 
-  const fileName = `ParSaveables-EP${episodeNumber.toString().padStart(2, '0')}-TEST.mp3`;
+  const fileName = `ParSaveables-EP${episodeNumber.toString().padStart(2, '0')}.mp3`;
   const audioBuffer = fs.readFileSync(audioFilePath);
 
   const { data, error } = await supabase.storage
