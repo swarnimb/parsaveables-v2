@@ -15,6 +15,7 @@ export default function NotificationBell() {
   const [notifications, setNotifications] = useState([])
   const [unreadCount, setUnreadCount] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [playerId, setPlayerId] = useState(null)
 
   useEffect(() => {
     async function fetchNotifications() {
@@ -35,6 +36,8 @@ export default function NotificationBell() {
           return
         }
 
+        setPlayerId(player.id)
+
         // Fetch recent activities for the logged-in player using the INTEGER id
         const { data, error } = await supabase
           .from('activity_feed')
@@ -46,8 +49,9 @@ export default function NotificationBell() {
         if (error) throw error
 
         setNotifications(data || [])
-        // Count unread (in a real app, you'd have an 'is_read' field)
-        setUnreadCount(data?.length || 0)
+        // Count only unread notifications
+        const unread = data?.filter(n => !n.is_read).length || 0
+        setUnreadCount(unread)
       } catch (err) {
         console.error('Error fetching notifications:', err)
       } finally {
@@ -57,6 +61,27 @@ export default function NotificationBell() {
 
     fetchNotifications()
   }, [])
+
+  const markAllAsRead = async () => {
+    if (!playerId || unreadCount === 0) return
+
+    try {
+      // Mark all unread notifications as read
+      const { error } = await supabase
+        .from('activity_feed')
+        .update({ is_read: true })
+        .eq('player_id', playerId)
+        .eq('is_read', false)
+
+      if (error) throw error
+
+      // Update local state
+      setNotifications(notifications.map(n => ({ ...n, is_read: true })))
+      setUnreadCount(0)
+    } catch (err) {
+      console.error('Error marking notifications as read:', err)
+    }
+  }
 
   const getActivityIcon = (type) => {
     switch (type) {
@@ -92,7 +117,7 @@ export default function NotificationBell() {
   }
 
   return (
-    <DropdownMenu>
+    <DropdownMenu onOpenChange={(open) => open && markAllAsRead()}>
       <DropdownMenuTrigger asChild>
         <button
           className="relative p-2 hover:bg-accent rounded-lg transition-colors"
