@@ -285,7 +285,7 @@ export async function createNewRoundNotifications(roundId, courseName, date, eve
       return 0;
     }
 
-    const notificationDescription = `New round added: ${courseName} on ${new Date(date).toLocaleDateString()}`;
+    const notificationDescription = `New round played at ${courseName} on ${new Date(date).toLocaleDateString()}`;
 
     const notifications = allPlayers.map(p => ({
       player_id: p.id,
