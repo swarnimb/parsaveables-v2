@@ -122,20 +122,43 @@ export default function NotificationBell() {
             No notifications yet
           </div>
         ) : (
-          notifications.map((notification) => (
-            <DropdownMenuItem key={notification.id} className="flex items-start gap-3 py-3 cursor-default">
-              <div className="mt-0.5 text-muted-foreground">
-                {getActivityIcon(notification.activity_type)}
-              </div>
-              <div className="flex-1 space-y-1">
-                <p className="text-sm leading-tight">{notification.description}</p>
-                <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                  <Clock className="h-3 w-3" />
-                  {formatTimeAgo(notification.created_at)}
+          notifications.map((notification) => {
+            const isNewRound = notification.event_type === 'new_round' || notification.event_type === 'round_processed';
+
+            if (isNewRound) {
+              return (
+                <Link key={notification.id} to="/rounds">
+                  <DropdownMenuItem className="flex items-start gap-3 py-3 cursor-pointer">
+                    <div className="mt-0.5 text-muted-foreground">
+                      {getActivityIcon(notification.event_type)}
+                    </div>
+                    <div className="flex-1 space-y-1">
+                      <p className="text-sm leading-tight">{notification.description}</p>
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <Clock className="h-3 w-3" />
+                        {formatTimeAgo(notification.created_at)}
+                      </div>
+                    </div>
+                  </DropdownMenuItem>
+                </Link>
+              );
+            }
+
+            return (
+              <DropdownMenuItem key={notification.id} className="flex items-start gap-3 py-3 cursor-default">
+                <div className="mt-0.5 text-muted-foreground">
+                  {getActivityIcon(notification.event_type)}
                 </div>
-              </div>
-            </DropdownMenuItem>
-          ))
+                <div className="flex-1 space-y-1">
+                  <p className="text-sm leading-tight">{notification.description}</p>
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <Clock className="h-3 w-3" />
+                    {formatTimeAgo(notification.created_at)}
+                  </div>
+                </div>
+              </DropdownMenuItem>
+            );
+          })
         )}
 
         <DropdownMenuSeparator />

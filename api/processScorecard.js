@@ -320,39 +320,14 @@ async function processSingleEmail(email, options = {}) {
   logger.info('Round created', { roundId: round.id });
 
   // 10a-2: Create notifications for ALL players about new round
-  logger.info('Creating notifications for all players');
   try {
-    const { data: allPlayers, error: playersError } = await db.supabase
-      .from('registered_players')
-      .select('id, player_name');
-
-    if (playersError) throw playersError;
-
-    if (allPlayers && allPlayers.length > 0) {
-      const notificationDescription = `New round added: ${scorecardData.courseName} on ${new Date(scorecardData.date).toLocaleDateString()}`;
-
-      const notifications = allPlayers.map(p => ({
-        player_id: p.id,
-        event_type: 'new_round',
-        description: notificationDescription,
-        event_data: {
-          round_id: round.id,
-          course_name: scorecardData.courseName,
-          date: scorecardData.date,
-          event_id: event.id,
-          event_name: event.name
-        },
-        is_read: false
-      }));
-
-      const { error: notifError } = await db.supabase
-        .from('activity_feed')
-        .insert(notifications);
-
-      if (notifError) throw notifError;
-
-      logger.info('Notifications created for all players', { count: notifications.length });
-    }
+    await db.createNewRoundNotifications(
+      round.id,
+      scorecardData.courseName,
+      scorecardData.date,
+      event.id,
+      event.name
+    );
   } catch (notifError) {
     logger.error('Failed to create notifications (non-fatal)', {
       error: notifError.message,
@@ -416,27 +391,8 @@ async function processSingleEmail(email, options = {}) {
   await emailService.markAsProcessed(email.id);
   await emailService.addLabel(email.id, 'ParSaveables/Processed');
 
-  // Step 13: Send success notification
-  if (!skipNotifications) {
-    logger.info('Step 13: Sending success notification');
-    try {
-      const senderEmail = extractEmailAddress(email.from);
-      await emailService.sendSuccessNotification(senderEmail, {
-        courseName: scorecardData.courseName,
-        eventName: event.name,
-        playerCount: validPlayers.length,
-        dashboardUrl: 'https://par-saveables.vercel.app'
-      });
-    } catch (error) {
-      logger.error('Failed to send success notification', {
-        error: error.message
-      });
-      // Don't throw - notification failure shouldn't break the flow
-    }
-  }
-
-  // Step 14: Reset betting lock after PULP settlement
-  logger.info('Step 14: Resetting betting lock after PULP settlement');
+  // Step 13: Reset betting lock after PULP settlement
+  logger.info('Step 13: Resetting betting lock after PULP settlement');
   try {
     // Clear betting lock for ALL active events (since admin sets it on all)
     // This ensures consistency: if admin locks all events, processing unlocks all events

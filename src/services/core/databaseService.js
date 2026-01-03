@@ -260,6 +260,61 @@ export async function getActiveEvents() {
   return data;
 }
 
+/**
+ * Create notifications for all players about a new round
+ * @param {number} roundId - Round ID
+ * @param {string} courseName - Course name
+ * @param {string} date - Round date
+ * @param {number} eventId - Event ID
+ * @param {string} eventName - Event name
+ * @returns {Promise<number>} Number of notifications created
+ */
+export async function createNewRoundNotifications(roundId, courseName, date, eventId, eventName) {
+  logger.info('Creating new round notifications', { roundId, courseName });
+
+  try {
+    // Fetch all players
+    const { data: allPlayers, error: playersError } = await supabase
+      .from('registered_players')
+      .select('id, player_name');
+
+    if (playersError) throw playersError;
+
+    if (!allPlayers || allPlayers.length === 0) {
+      logger.warn('No players found to notify');
+      return 0;
+    }
+
+    const notificationDescription = `New round added: ${courseName} on ${new Date(date).toLocaleDateString()}`;
+
+    const notifications = allPlayers.map(p => ({
+      player_id: p.id,
+      event_type: 'new_round',
+      description: notificationDescription,
+      event_data: {
+        round_id: roundId,
+        course_name: courseName,
+        date: date,
+        event_id: eventId,
+        event_name: eventName
+      },
+      is_read: false
+    }));
+
+    const { error: notifError } = await supabase
+      .from('activity_feed')
+      .insert(notifications);
+
+    if (notifError) throw notifError;
+
+    logger.info('Notifications created for all players', { count: notifications.length });
+    return notifications.length;
+  } catch (error) {
+    logger.error('Failed to create notifications', { error: error.message, roundId });
+    throw error;
+  }
+}
+
 export default {
   getRegisteredPlayers,
   findEventByDate,
@@ -270,5 +325,6 @@ export default {
   insertPlayerRounds,
   findCourseByNameOrAlias,
   updateEvent,
-  getActiveEvents
+  getActiveEvents,
+  createNewRoundNotifications
 };

@@ -89,7 +89,7 @@ export default function Login() {
       <div className="max-w-md w-full">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold mb-2">ParSaveables v2</h1>
+          <h1 className="text-3xl font-bold mb-2">ParSaveables</h1>
         </div>
 
         {/* Auth Form */}

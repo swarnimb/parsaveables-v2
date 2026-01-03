@@ -368,6 +368,13 @@ export default function Dashboard() {
 
   return (
     <PageContainer className="container mx-auto px-4 sm:px-6 py-8 max-w-6xl">
+      {/* Greeting */}
+      {player && (
+        <div className="mb-6">
+          <h1 className="text-2xl sm:text-3xl font-bold">Hello, {player.player_name}!</h1>
+        </div>
+      )}
+
       {/* Event Selector */}
       {events.length > 0 && (
         <div className="flex items-center gap-3 mb-6">
