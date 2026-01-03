@@ -63,15 +63,14 @@ export default function NotificationBell() {
       case 'new_round':
       case 'round_processed':
         return <Trophy className="h-4 w-4 text-green-500" />
-      case 'bet_win':
-      case 'bet_loss':
+      case 'bet_won':
+      case 'bet_lost':
         return <Trophy className="h-4 w-4" />
       case 'challenge_issued':
       case 'challenge_accepted':
-      case 'challenge_win':
-      case 'challenge_loss':
+      case 'challenge_resolved':
         return <Swords className="h-4 w-4" />
-      case 'achievement_unlocked':
+      case 'advantage_purchased':
         return <TrendingUp className="h-4 w-4" />
       default:
         return <Bell className="h-4 w-4" />

@@ -4,7 +4,7 @@
 ALTER TABLE activity_feed
 ADD COLUMN IF NOT EXISTS description TEXT;
 
--- Add activity_type for new rounds
+-- Add activity_type for new rounds (remove achievement_unlocked)
 ALTER TABLE activity_feed
 DROP CONSTRAINT IF EXISTS activity_feed_event_type_check;
 
@@ -13,7 +13,6 @@ ADD CONSTRAINT activity_feed_event_type_check
 CHECK (event_type IN (
   'round_processed',
   'new_round',
-  'achievement_unlocked',
   'bet_won',
   'bet_lost',
   'challenge_issued',
@@ -24,7 +23,9 @@ CHECK (event_type IN (
 ));
 
 -- Add RLS policy for inserting activity feed (backend operations)
-CREATE POLICY IF NOT EXISTS "Backend can insert activity feed"
+DROP POLICY IF EXISTS "Backend can insert activity feed" ON activity_feed;
+
+CREATE POLICY "Backend can insert activity feed"
   ON activity_feed FOR INSERT
   WITH CHECK (true);
 

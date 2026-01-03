@@ -5,7 +5,7 @@ import { eventAPI } from '@/services/api'
 import { getCurrentEvent } from '@/utils/seasonUtils'
 import { Card } from '@/components/ui/card'
 import PageContainer from '@/components/layout/PageContainer'
-import { motion, AnimatePresence } from 'framer-motion'
+// Removed Framer Motion imports - causing scroll glitches
 import { SkeletonStats } from '@/components/ui/skeleton'
 
 export default function Dashboard() {
@@ -477,17 +477,9 @@ export default function Dashboard() {
                   onClick={() => setHeadToHeadExpanded(!headToHeadExpanded)}
                   className="cursor-pointer"
                 >
-                  <AnimatePresence mode="wait">
-                    {!headToHeadExpanded ? (
-                      /* Collapsed View - Show Closest Rival Only */
-                      <motion.div
-                        key="collapsed"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.15 }}
-                        className="flex items-center justify-between p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
-                      >
+                  {!headToHeadExpanded ? (
+                    /* Collapsed View - Show Closest Rival Only */
+                    <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
                         <div className="flex items-center gap-2 flex-1">
                           <span className="text-xs text-muted-foreground">vs</span>
                           <p className="font-medium">{closestRival.playerName}</p>
@@ -507,17 +499,10 @@ export default function Dashboard() {
                             )
                           })()}
                         </div>
-                      </motion.div>
+                      </div>
                     ) : (
                       /* Expanded View - Show All Players */
-                      <motion.div
-                        key="expanded"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.15 }}
-                        className="space-y-2"
-                      >
+                      <div className="space-y-2">
                         {/* Header Row */}
                         <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
                           <p className="font-medium text-sm">All Rivals</p>
@@ -548,9 +533,8 @@ export default function Dashboard() {
                               )
                             })}
                         </div>
-                      </motion.div>
+                      </div>
                     )}
-                  </AnimatePresence>
                 </div>
               ) : (
                 <div className="text-center text-muted-foreground py-4">
