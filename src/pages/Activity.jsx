@@ -23,7 +23,14 @@ export default function Activity() {
   useEffect(() => {
     async function fetchPlayer() {
       try {
-        const { data: { user } } = await supabase.auth.getUser()
+        const { data: { user }, error: userError } = await supabase.auth.getUser()
+
+        if (userError || !user) {
+          console.error('No authenticated user found:', userError)
+          setLoading(false)
+          return
+        }
+
         const { data: playerData } = await supabase
           .from('registered_players')
           .select('*')

@@ -15,16 +15,18 @@ export default function AppLayout() {
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [showBettingTutorial, setShowBettingTutorial] = useState(false)
 
-  // Redirect to login if not authenticated and not guest
+  // Handle authentication and route protection in single effect to prevent race conditions
   useEffect(() => {
-    if (!loading && !isAuthenticated && !isGuest) {
-      navigate('/login')
-    }
-  }, [isAuthenticated, isGuest, loading, navigate])
+    if (loading) return // Wait for auth to load
 
-  // Block guests from restricted routes
-  useEffect(() => {
-    if (!loading && isGuest) {
+    // Priority 1: Not authenticated and not guest → redirect to login
+    if (!isAuthenticated && !isGuest) {
+      navigate('/login', { replace: true })
+      return
+    }
+
+    // Priority 2: Guest accessing blocked routes → redirect to leaderboard
+    if (isGuest) {
       const guestBlockedRoutes = ['/betting', '/admin', '/dashboard']
       const isBlocked = guestBlockedRoutes.some(route =>
         location.pathname.startsWith(route)
@@ -34,7 +36,7 @@ export default function AppLayout() {
         navigate('/leaderboard', { replace: true })
       }
     }
-  }, [isGuest, loading, location.pathname, navigate])
+  }, [isAuthenticated, isGuest, loading, location.pathname, navigate])
 
   // Check if onboarding tutorial should be shown
   useEffect(() => {

@@ -21,16 +21,18 @@ import { features } from '@/config/features'
 export default function Betting() {
   const { player } = useAuth()
 
-  // If PULP economy is disabled OR user confirmed interest, show Coming Soon
-  if (!features.pulpEconomy || player?.betting_interest_confirmed) {
-    return <ComingSoon />
-  }
+  // State hooks must be declared before any conditional returns
   const [pulpBalance, setPulpBalance] = useState(null)
   const [transactions, setTransactions] = useState([])
   const [balanceExpanded, setBalanceExpanded] = useState(false)
   const [loading, setLoading] = useState(true)
   const [bettingLockTime, setBettingLockTime] = useState(null)
   const [timeRemaining, setTimeRemaining] = useState(null)
+
+  // If PULP economy is disabled OR user confirmed interest, show Coming Soon
+  if (!features.pulpEconomy || player?.betting_interest_confirmed) {
+    return <ComingSoon />
+  }
 
   // Fetch PULP balance
   useEffect(() => {

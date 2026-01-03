@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Bell, Trophy, Swords, TrendingUp, Clock } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { supabase } from '@/services/supabase'
+import { useAuth } from '@/hooks/useAuth'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,10 +14,10 @@ import {
 import { features } from '@/config/features'
 
 export default function NotificationBell() {
+  const { player } = useAuth()
   const [notifications, setNotifications] = useState([])
   const [unreadCount, setUnreadCount] = useState(0)
   const [loading, setLoading] = useState(true)
-  const [playerId, setPlayerId] = useState(null)
 
   // PULP-related event types to filter out when feature is disabled
   const PULP_EVENT_TYPES = [
@@ -32,26 +33,14 @@ export default function NotificationBell() {
 
   useEffect(() => {
     async function fetchNotifications() {
+      // Use player from useAuth hook instead of redundant auth check
+      if (!player?.id) {
+        setLoading(false)
+        return
+      }
+
       try {
-        const { data: { user } } = await supabase.auth.getUser()
-        if (!user) return
-
-        // First, get the player record to get the INTEGER id
-        const { data: player, error: playerError } = await supabase
-          .from('registered_players')
-          .select('id')
-          .eq('user_id', user.id)
-          .maybeSingle()
-
-        if (playerError) throw playerError
-        if (!player) {
-          setLoading(false)
-          return
-        }
-
-        setPlayerId(player.id)
-
-        // Fetch recent activities for the logged-in player using the INTEGER id
+        // Fetch recent activities for the logged-in player
         const { data, error } = await supabase
           .from('activity_feed')
           .select('*')
@@ -79,17 +68,17 @@ export default function NotificationBell() {
     }
 
     fetchNotifications()
-  }, [])
+  }, [player])
 
   const markAllAsRead = async () => {
-    if (!playerId || unreadCount === 0) return
+    if (!player?.id || unreadCount === 0) return
 
     try {
       // Mark all unread notifications as read
       const { error } = await supabase
         .from('activity_feed')
         .update({ is_read: true })
-        .eq('player_id', playerId)
+        .eq('player_id', player.id)
         .eq('is_read', false)
 
       if (error) throw error

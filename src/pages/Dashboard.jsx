@@ -22,7 +22,13 @@ export default function Dashboard() {
   useEffect(() => {
     async function fetchPlayerData() {
       try {
-        const { data: { user } } = await supabase.auth.getUser()
+        const { data: { user }, error: userError } = await supabase.auth.getUser()
+
+        if (userError || !user) {
+          console.error('No authenticated user found:', userError)
+          setLoading(false)
+          return
+        }
 
         const { data: playerData, error } = await supabase
           .from('registered_players')

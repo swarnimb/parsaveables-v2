@@ -46,16 +46,31 @@ export const authAPI = {
    * Get current session
    */
   getSession: async () => {
-    // Add 3-second timeout to prevent infinite loading on mobile
+    // Add 5-second timeout to prevent infinite loading on mobile
     // Mobile browsers can be slow when returning to the app
     const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('Session fetch timeout')), 3000)
+      setTimeout(() => reject(new Error('Session fetch timeout')), 5000)
     )
     const sessionPromise = supabase.auth.getSession()
 
-    const { data, error } = await Promise.race([sessionPromise, timeoutPromise])
-    if (error) throw error
-    return data.session
+    try {
+      const result = await Promise.race([sessionPromise, timeoutPromise])
+      // If session fetch succeeds, result is {data, error} from Supabase
+      if (result.error) {
+        console.error('Session fetch error:', result.error)
+        return null
+      }
+      return result.data.session
+    } catch (error) {
+      // If timeout wins, error is thrown
+      if (error.message === 'Session fetch timeout') {
+        console.warn('Session fetch timed out after 5s, returning null')
+        return null
+      }
+      // Other errors should be thrown
+      console.error('Unexpected session fetch error:', error)
+      return null
+    }
   },
 
   /**
