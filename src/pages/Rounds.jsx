@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import { roundAPI } from '@/services/api'
 import RoundCard from '@/components/rounds/RoundCard'
 import PageContainer from '@/components/layout/PageContainer'
@@ -7,6 +8,7 @@ import { staggerContainer, staggerItem } from '@/utils/animations'
 import { SkeletonCard } from '@/components/ui/skeleton'
 
 export default function Rounds() {
+  const location = useLocation()
   const [rounds, setRounds] = useState([])
   const [expandedRoundId, setExpandedRoundId] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -21,6 +23,15 @@ export default function Rounds() {
       })
       .finally(() => setLoading(false))
   }, [])
+
+  // Auto-expand round from notification
+  useEffect(() => {
+    if (location.state?.expandRoundId) {
+      setExpandedRoundId(location.state.expandRoundId)
+      // Clear the state so refresh doesn't re-expand
+      window.history.replaceState({}, document.title)
+    }
+  }, [location.state])
 
   const handleToggle = (roundId) => {
     setExpandedRoundId(expandedRoundId === roundId ? null : roundId)

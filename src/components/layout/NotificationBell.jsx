@@ -126,8 +126,13 @@ export default function NotificationBell() {
             const isNewRound = notification.event_type === 'new_round' || notification.event_type === 'round_processed';
 
             if (isNewRound) {
+              const roundId = notification.event_data?.round_id;
               return (
-                <Link key={notification.id} to="/rounds">
+                <Link
+                  key={notification.id}
+                  to="/rounds"
+                  state={{ expandRoundId: roundId }}
+                >
                   <DropdownMenuItem className="flex items-start gap-3 py-3 cursor-pointer">
                     <div className="mt-0.5 text-muted-foreground">
                       {getActivityIcon(notification.event_type)}
