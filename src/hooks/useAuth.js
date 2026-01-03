@@ -21,17 +21,33 @@ export function useAuth() {
       return
     }
 
-    // Check for existing session
-    authAPI.getSession().then((session) => {
-      if (session?.user) {
-        setUser(session.user)
-        // Fetch player profile
-        playerAPI.getPlayerByUserId(session.user.id)
-          .then(setPlayer)
-          .catch(console.error)
+    // Check for existing session with proper error handling
+    const initAuth = async () => {
+      try {
+        const session = await authAPI.getSession()
+        if (session?.user) {
+          setUser(session.user)
+          // Fetch player profile (non-blocking)
+          try {
+            const playerData = await playerAPI.getPlayerByUserId(session.user.id)
+            setPlayer(playerData)
+          } catch (playerError) {
+            console.error('Error fetching player profile:', playerError)
+            // Don't block auth - user can still proceed
+          }
+        }
+      } catch (err) {
+        console.error('Error checking session:', err)
+        // Clear any stale session data
+        setUser(null)
+        setPlayer(null)
+      } finally {
+        // ALWAYS set loading to false, even on error
+        setLoading(false)
       }
-      setLoading(false)
-    })
+    }
+
+    initAuth()
 
     // Subscribe to auth state changes
     const { data: { subscription } } = authAPI.onAuthStateChange(

@@ -77,7 +77,6 @@ button.inline-button,
 /* Prevent horizontal scroll */
 body {
   overflow-x: hidden;
-  position: relative;
 }
 
 /* Improved focus states for mobile */

@@ -319,6 +319,48 @@ async function processSingleEmail(email, options = {}) {
   const round = await db.insertRound(roundData);
   logger.info('Round created', { roundId: round.id });
 
+  // 10a-2: Create notifications for ALL players about new round
+  logger.info('Creating notifications for all players');
+  try {
+    const { data: allPlayers, error: playersError } = await db.supabase
+      .from('registered_players')
+      .select('id, player_name');
+
+    if (playersError) throw playersError;
+
+    if (allPlayers && allPlayers.length > 0) {
+      const notificationDescription = `New round added: ${scorecardData.courseName} on ${new Date(scorecardData.date).toLocaleDateString()}`;
+
+      const notifications = allPlayers.map(p => ({
+        player_id: p.id,
+        event_type: 'new_round',
+        description: notificationDescription,
+        event_data: {
+          round_id: round.id,
+          course_name: scorecardData.courseName,
+          date: scorecardData.date,
+          event_id: event.id,
+          event_name: event.name
+        },
+        is_read: false
+      }));
+
+      const { error: notifError } = await db.supabase
+        .from('activity_feed')
+        .insert(notifications);
+
+      if (notifError) throw notifError;
+
+      logger.info('Notifications created for all players', { count: notifications.length });
+    }
+  } catch (notifError) {
+    logger.error('Failed to create notifications (non-fatal)', {
+      error: notifError.message,
+      roundId: round.id
+    });
+    // Don't throw - notification failure shouldn't break the flow
+  }
+
   // 10b: Insert player rounds
   const playerRoundsData = playersWithPoints.map(player => ({
     round_id: round.id,

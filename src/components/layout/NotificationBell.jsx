@@ -60,6 +60,9 @@ export default function NotificationBell() {
 
   const getActivityIcon = (type) => {
     switch (type) {
+      case 'new_round':
+      case 'round_processed':
+        return <Trophy className="h-4 w-4 text-green-500" />
       case 'bet_win':
       case 'bet_loss':
         return <Trophy className="h-4 w-4" />

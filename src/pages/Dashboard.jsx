@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { Trophy, Calendar, TrendingUp, Award, Target, Swords, ChevronDown, ChevronUp } from 'lucide-react'
 import { supabase } from '@/services/supabase'
 import { eventAPI } from '@/services/api'
@@ -6,7 +6,6 @@ import { getCurrentEvent } from '@/utils/seasonUtils'
 import { Card } from '@/components/ui/card'
 import PageContainer from '@/components/layout/PageContainer'
 import { motion, AnimatePresence } from 'framer-motion'
-import { staggerContainer, staggerItem, cardHover } from '@/utils/animations'
 import { SkeletonStats } from '@/components/ui/skeleton'
 
 export default function Dashboard() {
@@ -272,8 +271,8 @@ export default function Dashboard() {
     calculateHeadToHeadRecords()
   }, [player, selectedEventId, allPlayersStats])
 
-  // Calculate closest rival
-  const getClosestRival = () => {
+  // Calculate closest rival (memoized to prevent re-calculation on every render)
+  const closestRival = useMemo(() => {
     if (!player || allPlayersStats.length === 0) return null
 
     const currentPlayer = allPlayersStats.find(p => p.playerName === player.player_name)
@@ -332,18 +331,16 @@ export default function Dashboard() {
     }
 
     return closestByPoints[0]
-  }
+  }, [player, allPlayersStats])
 
-  const closestRival = getClosestRival()
-
-  // Get head-to-head record from calculated records
-  const getHeadToHeadRecord = (rivalName) => {
+  // Get head-to-head record from calculated records (memoized to prevent re-creation)
+  const getHeadToHeadRecord = useCallback((rivalName) => {
     if (!rivalName || !headToHeadRecords[rivalName]) {
       return { wins: 0, losses: 0, ties: 0 }
     }
 
     return headToHeadRecords[rivalName]
-  }
+  }, [headToHeadRecords])
 
   const getHeadToHeadColor = (wins, losses) => {
     const total = wins + losses
@@ -407,15 +404,9 @@ export default function Dashboard() {
       )}
 
       {playerStats ? (
-        <motion.div
-          className="space-y-6"
-          variants={staggerContainer}
-          initial="initial"
-          animate="animate"
-        >
+        <div className="space-y-6">
           {/* Performance Section */}
-          <motion.div variants={staggerItem}>
-            <Card className="p-6">
+          <Card className="p-6">
               <h3 className="font-semibold mb-4 flex items-center gap-2">
                 <Trophy className="h-5 w-5" />
                 Performance
@@ -447,11 +438,9 @@ export default function Dashboard() {
                 </div>
               </div>
             </Card>
-          </motion.div>
 
           {/* Scoring Section */}
-          <motion.div variants={staggerItem}>
-            <Card className="p-6">
+          <Card className="p-6">
               <h3 className="font-semibold mb-4 flex items-center gap-2">
                 <Target className="h-5 w-5" />
                 Scoring
@@ -475,11 +464,9 @@ export default function Dashboard() {
                 </div>
               </div>
             </Card>
-          </motion.div>
 
           {/* Head-to-Head Section */}
-          <motion.div variants={staggerItem}>
-            <Card className="p-6">
+          <Card className="p-6">
               <h3 className="font-semibold mb-4 flex items-center gap-2">
                 <Swords className="h-5 w-5" />
                 Head-to-Head
@@ -571,8 +558,7 @@ export default function Dashboard() {
                 </div>
               )}
             </Card>
-          </motion.div>
-        </motion.div>
+        </div>
       ) : (
         <Card className="p-8 text-center">
           <p className="text-muted-foreground">No stats available for this event</p>

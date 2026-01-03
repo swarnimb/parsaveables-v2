@@ -46,7 +46,13 @@ export const authAPI = {
    * Get current session
    */
   getSession: async () => {
-    const { data, error } = await supabase.auth.getSession()
+    // Add 10-second timeout to prevent infinite loading
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Session fetch timeout')), 10000)
+    )
+    const sessionPromise = supabase.auth.getSession()
+
+    const { data, error } = await Promise.race([sessionPromise, timeoutPromise])
     if (error) throw error
     return data.session
   },
