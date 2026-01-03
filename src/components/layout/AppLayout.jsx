@@ -46,20 +46,15 @@ export default function AppLayout() {
   useEffect(() => {
     // Show tutorial if user hasn't confirmed interest (undefined or false)
     if (!loading && player && location.pathname === '/betting' && player.betting_interest_confirmed !== true) {
-      // Navigate back FIRST to prevent flicker
-      navigate(-1)
-
       // Mark as shown in database
       tutorialAPI.markBettingInterestShown(player.id).catch(err => {
         console.error('Error marking betting interest shown:', err)
       })
 
-      // THEN show tutorial after brief delay
-      setTimeout(() => {
-        setShowBettingTutorial(true)
-      }, 100)
+      // Show tutorial (it will handle navigation on close)
+      setShowBettingTutorial(true)
     }
-  }, [location.pathname, player, loading, navigate])
+  }, [location.pathname, player, loading])
 
   // Show loading state while checking authentication
   if (loading) {
@@ -84,7 +79,13 @@ export default function AppLayout() {
 
       {/* Betting Tutorial */}
       {showBettingTutorial && (
-        <BettingTutorial onClose={() => setShowBettingTutorial(false)} />
+        <BettingTutorial onClose={() => {
+          setShowBettingTutorial(false)
+          // Navigate away from betting page if still there
+          if (location.pathname === '/betting') {
+            navigate('/leaderboard')
+          }
+        }} />
       )}
 
       {/* Sticky header */}
