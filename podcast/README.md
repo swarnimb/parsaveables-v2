@@ -44,8 +44,8 @@ ANTHROPIC_MODEL=claude-sonnet-4-5-20250929
 
 # ElevenLabs (Two-Host Setup)
 ELEVENLABS_API_KEY=your_elevenlabs_key
-ELEVENLABS_HOST_VOICE_ID=pNInz6obpgDQGcFmaJgB       # Annie (story curator)
-ELEVENLABS_COHOST_VOICE_ID=EXAVITQu4vr4xnSDxMaL    # Hyzer (stats enthusiast)
+ELEVENLABS_HOST_VOICE_ID=hA4zGnmTwX2NQiTRMt7o       # Annie (story curator)
+ELEVENLABS_COHOST_VOICE_ID=50y2RdLRjpTShM4ZFm5D    # Hyzer (stats enthusiast)
 ```
 
 ## Installation

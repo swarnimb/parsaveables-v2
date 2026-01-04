@@ -33,8 +33,8 @@ const config = {
   },
   elevenlabs: {
     apiKey: process.env.ELEVENLABS_API_KEY,
-    hostVoiceId: process.env.ELEVENLABS_HOST_VOICE_ID || 'pNInz6obpgDQGcFmaJgB',
-    cohostVoiceId: process.env.ELEVENLABS_COHOST_VOICE_ID || 'EXAVITQu4vr4xnSDxMaL'
+    hostVoiceId: process.env.ELEVENLABS_HOST_VOICE_ID || 'hA4zGnmTwX2NQiTRMt7o',
+    cohostVoiceId: process.env.ELEVENLABS_COHOST_VOICE_ID || '50y2RdLRjpTShM4ZFm5D'
   }
 };
 
