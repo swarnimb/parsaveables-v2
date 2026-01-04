@@ -671,50 +671,81 @@ async function addIntroOutroMusic(dialoguePath, episodeNumber) {
     return dialoguePath;
   }
 
+  // Temporary processed files
+  const processedIntroPath = path.join(__dirname, `intro-processed-${episodeNumber}.mp3`);
+  const processedOutroPath = path.join(__dirname, `outro-processed-${episodeNumber}.mp3`);
+
   return new Promise((resolve, reject) => {
-    // Create concat file list for ffmpeg
-    const concatListPath = path.join(__dirname, `concat-${episodeNumber}.txt`);
-    const concatContent = `file '${introPath.replace(/\\/g, '/')}'\nfile '${dialoguePath.replace(/\\/g, '/')}'\nfile '${outroPath.replace(/\\/g, '/')}'`;
-    fs.writeFileSync(concatListPath, concatContent);
+    // Step 1: Process intro (5 seconds with fade out from 3-5s)
+    log('AUDIO', 'Processing intro: 5 seconds with fade out from 3-5s');
 
-    ffmpeg()
-      .input(concatListPath)
-      .inputOptions(['-f', 'concat', '-safe', '0'])
-      .audioCodec('libmp3lame')
-      .audioBitrate('192k')
-      // Add fade effects using complex filter
-      .complexFilter([
-        // Intro: fade in from 0s for 2 seconds
-        '[0:a]afade=t=in:st=0:d=2[intro]',
-        // Dialogue: no fade (pass through)
-        '[1:a]acopy[dialogue]',
-        // Outro: fade out starting 3 seconds before end, lasting 3 seconds
-        '[2:a]afade=t=out:st=0:d=3[outro]',
-        // Concatenate all three
-        '[intro][dialogue][outro]concat=n=3:v=0:a=1[out]'
+    ffmpeg(introPath)
+      .duration(5) // Trim to 5 seconds
+      .audioFilters([
+        'afade=t=out:st=3:d=2' // Fade out starting at 3s for 2s duration
       ])
-      .outputOptions(['-map', '[out]'])
-      .output(finalPath)
-      .on('start', (cmd) => {
-        log('AUDIO', 'FFmpeg command started', { command: cmd });
-      })
+      .output(processedIntroPath)
       .on('end', () => {
-        // Clean up concat list file
-        fs.unlinkSync(concatListPath);
+        log('AUDIO', 'Intro processed successfully');
 
-        const stats = fs.statSync(finalPath);
-        log('AUDIO', 'Final audio with intro/outro created', {
-          filePath: finalPath,
-          fileSize: stats.size
-        });
-        resolve(finalPath);
+        // Step 2: Process outro (8 seconds with fade in from 0-4s)
+        log('AUDIO', 'Processing outro: 8 seconds with fade in from 0-4s');
+
+        ffmpeg(outroPath)
+          .duration(8) // Trim to 8 seconds
+          .audioFilters([
+            'afade=t=in:st=0:d=4' // Fade in starting at 0s for 4s duration
+          ])
+          .output(processedOutroPath)
+          .on('end', () => {
+            log('AUDIO', 'Outro processed successfully');
+
+            // Step 3: Concatenate all three files
+            log('AUDIO', 'Concatenating intro + dialogue + outro');
+
+            const concatListPath = path.join(__dirname, `concat-${episodeNumber}.txt`);
+            const concatContent = `file '${processedIntroPath.replace(/\\/g, '/')}'\nfile '${dialoguePath.replace(/\\/g, '/')}'\nfile '${processedOutroPath.replace(/\\/g, '/')}'`;
+            fs.writeFileSync(concatListPath, concatContent);
+
+            ffmpeg()
+              .input(concatListPath)
+              .inputOptions(['-f', 'concat', '-safe', '0'])
+              .audioCodec('libmp3lame')
+              .audioBitrate('192k')
+              .output(finalPath)
+              .on('end', () => {
+                // Clean up temporary files
+                fs.unlinkSync(processedIntroPath);
+                fs.unlinkSync(processedOutroPath);
+                fs.unlinkSync(concatListPath);
+
+                const stats = fs.statSync(finalPath);
+                log('AUDIO', 'Final episode created successfully', {
+                  filePath: finalPath,
+                  fileSize: stats.size
+                });
+
+                resolve(finalPath);
+              })
+              .on('error', (err) => {
+                log('ERROR', 'Concatenation failed', { error: err.message });
+                // Clean up on error
+                if (fs.existsSync(processedIntroPath)) fs.unlinkSync(processedIntroPath);
+                if (fs.existsSync(processedOutroPath)) fs.unlinkSync(processedOutroPath);
+                if (fs.existsSync(concatListPath)) fs.unlinkSync(concatListPath);
+                reject(err);
+              })
+              .run();
+          })
+          .on('error', (err) => {
+            log('ERROR', 'Outro processing failed', { error: err.message });
+            if (fs.existsSync(processedIntroPath)) fs.unlinkSync(processedIntroPath);
+            reject(err);
+          })
+          .run();
       })
       .on('error', (err) => {
-        log('ERROR', 'FFmpeg processing failed', { error: err.message });
-        // Clean up concat list if exists
-        if (fs.existsSync(concatListPath)) {
-          fs.unlinkSync(concatListPath);
-        }
+        log('ERROR', 'Intro processing failed', { error: err.message });
         reject(err);
       })
       .run();
