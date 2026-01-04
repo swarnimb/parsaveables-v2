@@ -7,7 +7,7 @@ All requested changes have been implemented **without using ElevenLabs credits**
 ## ✅ What's Been Configured
 
 ### 1️⃣ **Custom Voices & Names**
-- **Annie** (Host): Voice ID `dfeOmy6Uay63tNhyO99j`
+- **Annie** (Host): Voice ID `hA4zGnmTwX2NQiTRMt7o`
 - **Hyzer** (Co-host): Voice ID `50y2RdLRjpTShM4ZFm5D`
 - Updated in `.env.local`
 - Script now uses "ANNIE:" and "HYZER:" instead of "ALEX:" and "JAMIE:"

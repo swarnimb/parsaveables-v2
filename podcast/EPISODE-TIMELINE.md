@@ -2,7 +2,7 @@
 
 ## 📅 Episode Schedule
 
-### **Episode 1** ✅ (Already Published)
+### **Episode 0** ✅ (Already Published)
 - **Title:** "The Ruckus Until Now"
 - **Period:** 2024-01-01 to 2025-11-29
 - **Type:** Season recap
@@ -178,7 +178,7 @@ For Episode 2 (special recap):
 ## ✅ Summary
 
 **Timeline:**
-1. **Now:** Episode 1 published ✅
+1. **Now:** Episode 0 published ✅
 2. **Early Jan 2026:** You create Episode 2 (special) 🎯
 3. **Feb 1, 2026:** Auto Episode 3 🤖
 4. **Monthly after:** Auto episodes forever 🤖

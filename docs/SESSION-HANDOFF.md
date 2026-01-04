@@ -39,7 +39,7 @@
 | Admin Control Center | COMPLETE (4 tabs: Events, Players, Courses, Rules) |
 | Betting Timer & Lock System | Complete (Countdown timer, auto-reset, cancel/extend) |
 | Toast Notifications | Complete (Shadcn Toast, success/error feedback across all features) |
-| Podcast Episode 1 | Complete (Database script, ElevenLabs generation, Supabase upload) |
+| Podcast Episode 0 | Complete (Database script, ElevenLabs generation, Supabase upload) |
 | Podcast Auto-Generation | Complete (GitHub Actions, intro/outro music, enthusiastic tone) |
 | Git & Deployment | Complete (Vercel deployment, environment variables) |
 
@@ -63,8 +63,8 @@
    - **Commit**: c8ac481
 
 2. **Podcast Script Prompt Update**
-   - **Problem**: Prompt described "dry, deadpan, sarcastic" tone but Episode 1 was enthusiastic sports radio
-   - **Solution**: Rewrote entire prompt to match Episode 1's actual style
+   - **Problem**: Prompt described "dry, deadpan, sarcastic" tone but Episode 0 was enthusiastic sports radio
+   - **Solution**: Rewrote entire prompt to match Episode 0's actual style
      - **Tone**: Changed from deadpan to "enthusiastic sports radio commentary"
      - **Opening**: From "Another month, another round of questionable decisions" to dual welcome + "This is PAR SAVEABLES!"
      - **Structure**: Added 5-act format (Cold Open, Round Recaps, Bets/Challenges, Talking Points, Sign Off)
@@ -166,10 +166,10 @@
    - Fixed Process Scorecard screen cutoff (removed spotlight, kept centered)
    - Reset user email associations for testing (SQL provided)
 
-7. **Podcast Episode 1 Generation**
+7. **Podcast Episode 0 Generation**
    - Created custom script to generate podcast from database script (not Claude API)
    - Script source: `podcast_scripts` table in database (manually written, 64 dialogue lines)
-   - ElevenLabs voices: Annie (dfeOmy6Uay63tNhyO99j), Hyzer (50y2RdLRjpTShM4ZFm5D)
+   - ElevenLabs voices: Annie (hA4zGnmTwX2NQiTRMt7o), Hyzer (50y2RdLRjpTShM4ZFm5D)
    - Generated 64 audio segments using ElevenLabs API (6.8 MB dialogue)
    - Combined intro (2.85 MB) + dialogue (6.85 MB) + outro (1.10 MB) = 10.8 MB final episode
    - Uploaded to Supabase Storage: `ParSaveables-EP01.mp3`
@@ -347,7 +347,7 @@ Implement different UI states for betting lifecycle:
 - After testing: Reset for production use
 
 ### Priority 4: Podcast Feature
-- ✅ Episode 1 content finalized and generated (uploaded to Supabase)
+- ✅ Episode 0 content finalized and generated (uploaded to Supabase)
 - Build Podcast page UI (audio player, episode description)
 - Test /api/generatePodcast endpoint for future episodes
 
@@ -374,7 +374,7 @@ Implement different UI states for betting lifecycle:
 - Testing framework complete
 - Admin Control Center COMPLETE
 - Tutorial System COMPLETE
-- Podcast Episode 1 COMPLETE
+- Podcast Episode 0 COMPLETE
 - PULP settlement broken (critical)
 - Podcast page UI pending
 

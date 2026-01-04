@@ -29,7 +29,7 @@ You need to add these secrets to your GitHub repository:
 | `ANTHROPIC_API_KEY` | `sk-ant-api03-rzzFLJk4tA8eD3N21C9DpFTx...` (your Anthropic key) |
 | `ANTHROPIC_MODEL` | `claude-sonnet-4-5-20250929` |
 | `ELEVENLABS_API_KEY` | `sk_bea21bf387197581aebdb415642e0e5ffb61c8c2fe9ec152` |
-| `ELEVENLABS_HOST_VOICE_ID` | `dfeOmy6Uay63tNhyO99j` (Annie's voice) |
+| `ELEVENLABS_HOST_VOICE_ID` | `hA4zGnmTwX2NQiTRMt7o` (Annie's voice) |
 | `ELEVENLABS_COHOST_VOICE_ID` | `50y2RdLRjpTShM4ZFm5D` (Hyzer's voice) |
 
 ---
