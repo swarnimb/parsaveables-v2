@@ -52,11 +52,11 @@
 [ANNIE]: That's right! We've got two new entrants: Food Zaddy and Scarlet Speedster!
 [HYZER]: Food Zaddy! I love that name already. And Scarlet Speedster sounds like they're gonna bring some serious firepower on the fairways.
 [ANNIE]: New players mean new rivalries, new dynamics, and hopefully some fresh perspectives on beer etiquette.
-[HYZER]: Speaking of which, will that Portlandia trophy ever actually get delivered? Will someone finally break the ace drought?
+[HYZER]: And hopefully we get some answers, will that Portlandia trophy ever actually get delivered? And will the season winner actually get a prize this time that is more than an elevated bed?
 [ANNIE]: Will the mysterious controversy ever be revealed? So many questions heading into the new season!
-[HYZER]: I'm genuinely excited to see what the disc golf gods and the beloved Treesus have in store for this group of degenerates in 2026.
+[HYZER]: I'm genuinely excited to see what the disc golf gods and the beloved Treesus have in store for these degenerates in 2026.
 [ANNIE]: This wraps up 2024-2025 Spectacular Recap!
-[HYZER]: But these guys seem to have just started -
+[HYZER]: But things are just getting started -
 [ANNIE]: -let's see what the season opener has in store for us... 
 [HYZER]: That too on the BEAST Metro! Literal chills...
 [ANNIE]: Until then, keep those discs flying and your beers accounted for—

@@ -404,7 +404,7 @@ async function generateDialogueScript(data, episodeInfo, previousScript, talking
 
 **CRITICAL FORMAT INSTRUCTIONS:**
 - Write this as a DIALOGUE between TWO HOSTS (Annie and Hyzer)
-- Format EVERY LINE as: "ANNIE:" or "HYZER:" followed by what they say
+- Format EVERY LINE as: "[ANNIE]:" or "[HYZER]:" followed by what they say (with square brackets)
 - This is SPORTS RADIO COMMENTARY, not a casual chat - bring energy and enthusiasm!
 - NO narration, NO stage directions, ONLY dialogue
 - Each person should speak 2-5 sentences before the other responds
@@ -526,25 +526,25 @@ ${Object.keys(talkingPoints).length > 0 ? \`**CUSTOM TALKING POINTS (incorporate
 **REQUIRED OPENING STRUCTURE (Lines 1-10 ish):**
 
 1. Dual enthusiastic welcome:
-   HYZER: Welcome folks!
-   ANNIE: Welcome folks!
+   [HYZER]: Welcome folks!
+   [ANNIE]: Welcome folks!
 
 2. Show title announcement + tagline:
-   HYZER: This is PAR SAVEABLES!
-   ANNIE: [Energetic league descriptor - "The world of heavy bags, curses, and pocket beers!"]
+   [HYZER]: This is PAR SAVEABLES!
+   [ANNIE]: [Energetic league descriptor - "The world of heavy bags, curses, and pocket beers!"]
 
 3. Host introductions (character-defining):
-   HYZER: I'm Hyzer, your resident stats nerd who [self-deprecating quirk]—
-   ANNIE: —and I'm Annie, here to [storytelling role]. For those just tuning in, ParSaveables is [brief league description]—
-   HYZER: —we track EVERYTHING! [List exciting things tracked]—
+   [HYZER]: I'm Hyzer, your resident stats nerd who [self-deprecating quirk]—
+   [ANNIE]: —and I'm Annie, here to [storytelling role]. For those just tuning in, ParSaveables is [brief league description]—
+   [HYZER]: —we track EVERYTHING! [List exciting things tracked]—
 
 4. Episode preview (build anticipation):
-   ANNIE: We've got some absolute [doozies/gems/chaos] to cover today. We're talking [period recap].
-   HYZER: [Notable stat or drama hook]
+   [ANNIE]: We've got some absolute [doozies/gems/chaos] to cover today. We're talking [period recap].
+   [HYZER]: [Notable stat or drama hook]
 
 5. Hook/tease (if major story exists):
-   ANNIE: But the REAL story [tease biggest moment]
-   HYZER: [React or build on tease]
+   [ANNIE]: But the REAL story [tease biggest moment]
+   [HYZER]: [React or build on tease]
 
 **CONVERSATION FLOW:**
 
@@ -579,57 +579,57 @@ ${Object.keys(talkingPoints).length > 0 ? \`**CUSTOM TALKING POINTS (incorporate
 **TAG-TEAM STORYTELLING TECHNIQUE:**
 
 Share sentences with dashes:
-ANNIE: So Mike challenged Jake for 50 PULPs, and let me tell you—
-HYZER: —Jake REJECTED it! Paid the cowardice tax!
+[ANNIE]: So Mike challenged Jake for 50 PULPs, and let me tell you—
+[HYZER]: —Jake REJECTED it! Paid the cowardice tax!
 
 Build on each other:
-HYZER: Three rounds this month.
-ANNIE: But here's the kicker—
-HYZER: Two of them were won by the SAME person!
+[HYZER]: Three rounds this month.
+[ANNIE]: But here's the kicker—
+[HYZER]: Two of them were won by the SAME person!
 
 **EXAMPLES OF GOOD DIALOGUE:**
 
 **Stats-Driven Story (No talking points):**
-HYZER: Mike bet 200 PULPs on himself finishing top 3!
-ANNIE: How'd that go?
-HYZER: Eighth place.
-ANNIE: Blessed.
-HYZER: It's par saveable... theoretically.
+[HYZER]: Mike bet 200 PULPs on himself finishing top 3!
+[ANNIE]: How'd that go?
+[HYZER]: Eighth place.
+[ANNIE]: Blessed.
+[HYZER]: It's par saveable... theoretically.
 
 **With Talking Point:**
 TALKING POINT: "Jake's drive on hole 5 hit a tree and bounced into the water"
-ANNIE: Jake's tee shot on hole 5 found a tree.
-HYZER: Classic.
-ANNIE: But wait, it gets better—bounced right into the water.
-HYZER: Treesus works in mysterious ways.
+[ANNIE]: Jake's tee shot on hole 5 found a tree.
+[HYZER]: Classic.
+[ANNIE]: But wait, it gets better—bounced right into the water.
+[HYZER]: Treesus works in mysterious ways.
 
 **Energy & Excitement (Ace):**
 TALKING POINT: "Sarah hit an ace on hole 12 with a forehand"
-HYZER: And then Sarah—oh man—chains on hole 12!
-ANNIE: Wait, ace?
-HYZER: ACE! Forehand, too!
-ANNIE: That's the highlight of the month right there!
+[HYZER]: And then Sarah—oh man—chains on hole 12!
+[ANNIE]: Wait, ace?
+[HYZER]: ACE! Forehand, too!
+[ANNIE]: That's the highlight of the month right there!
 
 **Mystery Building:**
 TALKING POINT: "Controversy during round 3, details TBD"
-ANNIE: And then we had the round 3... situation.
-HYZER: The one we literally cannot discuss.
-ANNIE: Not yet, anyway.
-HYZER: All I'll say is, the league has never seen anything like it.
+[ANNIE]: And then we had the round 3... situation.
+[HYZER]: The one we literally cannot discuss.
+[ANNIE]: Not yet, anyway.
+[HYZER]: All I'll say is, the league has never seen anything like it.
 
 **BAD EXAMPLES (Don't do this):**
 
 ❌ Making stuff up:
-ANNIE: Mike had some clutch 40-foot putts! (NOT IN DATA)
+[ANNIE]: Mike had some clutch 40-foot putts! (NOT IN DATA)
 
-❌ Using bracket fillers:
-HYZER: [laughs] That's rough. (NO BRACKETS)
+❌ Using sound effect fillers:
+[HYZER]: [laughs] That's rough. (NO SOUND EFFECTS IN BRACKETS)
 
 ❌ Deadpan when you should be excited:
-ANNIE: Sarah got an ace. Moving on. (SHOW EXCITEMENT!)
+[ANNIE]: Sarah got an ace. Moving on. (SHOW EXCITEMENT!)
 
 ❌ Over-explaining boring stats:
-HYZER: So the average score was 54.3, which is 2.1 strokes better than last month's 56.4... (TOO MUCH DETAIL)
+[HYZER]: So the average score was 54.3, which is 2.1 strokes better than last month's 56.4... (TOO MUCH DETAIL)
 
 **FINAL CHECKLIST BEFORE WRITING:**
 ✅ Dual welcome + show title
@@ -677,8 +677,8 @@ async function generateDialogueAudio(script, episodeNumber) {
   const audioSegments = [];
 
   for (const line of lines) {
-    // Match "ANNIE:" or "HYZER:" patterns
-    const match = line.match(/^(ANNIE|HYZER):\s*(.+)$/i);
+    // Match "[ANNIE]:" or "[HYZER]:" patterns
+    const match = line.match(/^\[(ANNIE|HYZER)\]:\s*(.+)$/i);
     if (!match) continue;
 
     const [, speaker, text] = match;
