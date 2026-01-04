@@ -400,14 +400,14 @@ function formatChallengesForPrompt(challenges) {
 async function generateDialogueScript(data, episodeInfo, previousScript, talkingPoints) {
   log('SCRIPT', 'Generating two-person dialogue script with Claude...');
 
-  const prompt = `You are creating a fun, engaging TWO-PERSON CONVERSATIONAL podcast episode for ParSaveables, a disc golf league for friends.
+  const prompt = `You are creating an ENTHUSIASTIC, STORY-DRIVEN two-person podcast episode for ParSaveables, a disc golf league where friends compete, bet, and create chaos.
 
 **CRITICAL FORMAT INSTRUCTIONS:**
 - Write this as a DIALOGUE between TWO HOSTS (Annie and Hyzer)
 - Format EVERY LINE as: "ANNIE:" or "HYZER:" followed by what they say
-- Make it feel like a natural conversation with back-and-forth banter
+- This is SPORTS RADIO COMMENTARY, not a casual chat - bring energy and enthusiasm!
 - NO narration, NO stage directions, ONLY dialogue
-- Each person should speak 3-5 sentences before the other responds
+- Each person should speak 2-5 sentences before the other responds
 - Total length: 600-800 words (3-4 minutes when spoken)
 
 **ABSOLUTELY NO NON-WORD FILLERS OR SOUND EFFECTS:**
@@ -417,7 +417,7 @@ async function generateDialogueScript(data, episodeInfo, previousScript, talking
 - NO [pauses], [beat], [silence]
 - NO stage directions or actions in brackets
 - ONLY use actual spoken words that can be read aloud
-- If you want to convey a laugh, write "Ha" or have them say something funny
+- If you want to convey excitement, use exclamation points and energetic language
 - If you want to show a pause, just end the sentence and start a new one
 
 **Episode Context:**
@@ -439,9 +439,9 @@ ${data.leaderboard.slice(0, 5).map((p, i) => `${i + 1}. ${p.player_name}: ${p.to
 
 **Recent Rounds:**
 ${data.rounds.slice(-3).map(r =>
-  `- ${r.date} at ${r.course_name}: ${r.player_rounds?.length || 0} players${
-    r.player_rounds?.[0] ? ` (Winner: ${r.player_rounds.find(pr => pr.rank === 1)?.player_name || 'N/A'})` : ''
-  }`
+  \`- \${r.date} at \${r.course_name}: \${r.player_rounds?.length || 0} players\${
+    r.player_rounds?.[0] ? \` (Winner: \${r.player_rounds.find(pr => pr.rank === 1)?.player_name || 'N/A'})\` : ''
+  }\`
 ).join('\n')}
 
 **Bets This Month:**
@@ -452,19 +452,19 @@ ${formatChallengesForPrompt(data.challenges)}
 
 **Top PULP Transactions:**
 ${data.transactions.slice(0, 5).map(t =>
-  `- ${t.player?.player_name}: ${t.amount > 0 ? '+' : ''}${t.amount} PULPs (${t.description})`
+  \`- \${t.player?.player_name}: \${t.amount > 0 ? '+' : ''}\${t.amount} PULPs (\${t.description})\`
 ).join('\n')}
 
-${previousScript ? `**PREVIOUS EPISODE COVERED:**
-${previousScript.substring(0, 500)}...
+${previousScript ? \`**PREVIOUS EPISODE COVERED:**
+\${previousScript.substring(0, 500)}...
 
-IMPORTANT: Don't repeat topics from the previous episode. Find NEW angles and stories.` : ''}
+IMPORTANT: Don't repeat topics from the previous episode. Find NEW angles and stories.\` : ''}
 
-${Object.keys(talkingPoints).length > 0 ? `**CUSTOM TALKING POINTS (incorporate these naturally):**
-${Object.entries(talkingPoints).map(([category, points]) => {
+${Object.keys(talkingPoints).length > 0 ? \`**CUSTOM TALKING POINTS (incorporate these naturally):**
+\${Object.entries(talkingPoints).map(([category, points]) => {
   if (!Array.isArray(points) || points.length === 0) return '';
-  return `${category.toUpperCase()}:\n${points.map(p => `- ${p}`).join('\n')}`;
-}).filter(Boolean).join('\n\n')}` : ''}
+  return \`\${category.toUpperCase()}:\\n\${points.map(p => \`- \${p}\`).join('\\n')}\`;
+}).filter(Boolean).join('\\n\\n')}\` : ''}
 
 **CRITICAL - What Data You Have:**
 
@@ -474,84 +474,175 @@ ${Object.entries(talkingPoints).map(([category, points]) => {
    - Bet details with predictions (who they picked, wager, won/lost)
    - PULP transactions and leaderboard standings
 
-2. TALKING POINTS - Use ONLY for anecdotal color (if provided):
+2. TALKING POINTS - Use for anecdotal storytelling (if provided):
    - Specific shot details (water hazards, tree hits, clutch putts)
    - Funny moments and on-course incidents
-   - Drama and rivalries
+   - Drama, controversies, and rivalries
    - Any context manually added by user
 
 **DON'T MAKE STUFF UP:**
 - DON'T invent shot details (putts, hazards, etc.) if not in talking points
-- DON'T create drama that isn't in the data
-- DO roast players based on their stats and bet/challenge results
-- DO use talking points to add personality when available
-- If talking points are empty, lean into dry humor about stats
+- DON'T create drama, controversies, or stories that aren't in the data or talking points
+- DO highlight impressive stats and roast poor performances
+- DO use talking points to build narratives and add color commentary
+- If talking points are empty, focus on stats-driven storytelling
+- If data is sparse or boring, acknowledge it and move on
 
-**Tone & Humor Guidelines:**
-- CASUAL - Friends recapping over beers, NOT SportsCenter
-- SARCASTIC & DRY - Roast performances, understate big moments
-- Light roasting of players - friendly mockery, not mean
-- Mix deadpan observations with occasional genuine excitement
-- Use "It's par saveable" when someone recovers from bad performance or has mediocre result
-- Subtly reference "blessings" and "curses" for clutch moments or chokes
-- Self-aware - acknowledge when stats are boring or unimpressive
-- NO forced enthusiasm, NO exclamation points every sentence, NO corporate podcast voice
+**Tone & Style Guidelines:**
 
-**Opening Catchphrase:**
-"Another month, another round of questionable decisions."
+**ENERGY LEVEL:**
+- Enthusiastic sports radio commentary - bring excitement and storytelling flair!
+- Use exclamation points for genuine excitement (aces, wins, upsets, drama)
+- Build anticipation and suspense when telling stories
+- Genuine emotion - celebrate great performances, sympathize with brutal losses
 
-**Conversation Flow (Natural, Not Forced):**
-1. COLD OPEN - Catchphrase, mention the period
-2. ROUND RECAP - Who won, who sucked, notable stats
-3. BET BREAKDOWN - Who bet on what, winners and losers (roast bad predictions)
-4. CHALLENGE DRAMA - Call out cowards who rejected, celebrate winners
-5. PULP ECONOMY - Leaderboard movement, biggest gains/losses
-6. WILDCARD - Funny moment from talking points OR roast boring stats
-7. SIGN OFF - Quick tease or shade someone
+**STORYTELLING APPROACH:**
+- NARRATIVE-FIRST: Stats support stories, not the other way around
+- Build mysteries and intrigue (if talking points mention unresolved drama)
+- Use contrast and irony for comedic effect
+- Tag-team storytelling - complete each other's thoughts mid-sentence
 
-**Example Tone (With Data):**
+**CHARACTER VOICES:**
+- HYZER: Stats enthusiast who gets genuinely excited about numbers and patterns
+- ANNIE: Story curator who connects stats to human drama and context
+- Both: Self-deprecating about the league ("bunch of degenerates"), enthusiastic about the chaos
 
-GOOD (Using stats, no fillers):
-HYZER: Mike bet 200 PULPs on himself finishing top 3.
+**RUNNING GAGS & LEAGUE LINGO:**
+- "The format strikes!" - When point systems create unexpected winners
+- "It's par saveable" - For recoveries or mediocre but salvageable results
+- "Blessed" / "Cursed" - For clutch moments or chokes
+- "Degenerates" - Self-deprecating term for league players
+- "Treesus" - Disc golf deity (use sparingly)
+- "Heavy bags" - Reference to league culture
+- Beer-related chaos - Recurring theme if it appears in talking points
+
+**WHAT TO AVOID:**
+- Deadpan or overly sarcastic delivery
+- Dry, unenthusiastic recaps
+- "Another month, another round of questionable decisions" (OLD opening - don't use)
+- Corporate podcast voice or forced positivity
+- Over-explaining stats - quick dumps, then move to story
+
+**REQUIRED OPENING STRUCTURE (Lines 1-10 ish):**
+
+1. Dual enthusiastic welcome:
+   HYZER: Welcome folks!
+   ANNIE: Welcome folks!
+
+2. Show title announcement + tagline:
+   HYZER: This is PAR SAVEABLES!
+   ANNIE: [Energetic league descriptor - "The world of heavy bags, curses, and pocket beers!"]
+
+3. Host introductions (character-defining):
+   HYZER: I'm Hyzer, your resident stats nerd who [self-deprecating quirk]—
+   ANNIE: —and I'm Annie, here to [storytelling role]. For those just tuning in, ParSaveables is [brief league description]—
+   HYZER: —we track EVERYTHING! [List exciting things tracked]—
+
+4. Episode preview (build anticipation):
+   ANNIE: We've got some absolute [doozies/gems/chaos] to cover today. We're talking [period recap].
+   HYZER: [Notable stat or drama hook]
+
+5. Hook/tease (if major story exists):
+   ANNIE: But the REAL story [tease biggest moment]
+   HYZER: [React or build on tease]
+
+**CONVERSATION FLOW:**
+
+**ACT 1: COLD OPEN & SETUP (Lines 1-15)**
+- Dual welcome + show intro
+- Host character intros
+- Episode preview and hooks
+
+**ACT 2: ROUND RECAPS (Lines 16-40)**
+- 2-3 rounds or story beats
+- Quick stat dump → interesting narrative observation
+- Use "The format strikes!" if point system creates surprises
+- Highlight aces, upsets, dominant performances
+
+**ACT 3: BET & CHALLENGE BREAKDOWN (Lines 41-55)**
+- Who bet on what, winners and losers (roast bad predictions)
+- Challenge outcomes - celebrate winners, roast those who rejected
+- PULP economy movement (leaderboard climbs/falls)
+
+**ACT 4: TALKING POINTS SHOWCASE (Lines 56-70, if provided)**
+- Weave in anecdotal stories from talking points
+- Beer drama, controversies, funny moments
+- Build mysteries (if talking points mention unresolved drama)
+
+**ACT 5: SIGN OFF (Lines 71-80)**
+- Positive forward look (upcoming rounds, new players, teasers)
+- Rhetorical questions (unanswered mysteries, predictions)
+- Catchphrase farewell: "Keep those discs flying and your beers accounted for—"
+- Show tagline: "—and we'll catch you next time on Par Saveables!"
+- Final tagline: "Where the bags are heavy, the language is colorful, and the [league characteristic]!"
+
+**TAG-TEAM STORYTELLING TECHNIQUE:**
+
+Share sentences with dashes:
+ANNIE: So Mike challenged Jake for 50 PULPs, and let me tell you—
+HYZER: —Jake REJECTED it! Paid the cowardice tax!
+
+Build on each other:
+HYZER: Three rounds this month.
+ANNIE: But here's the kicker—
+HYZER: Two of them were won by the SAME person!
+
+**EXAMPLES OF GOOD DIALOGUE:**
+
+**Stats-Driven Story (No talking points):**
+HYZER: Mike bet 200 PULPs on himself finishing top 3!
 ANNIE: How'd that go?
 HYZER: Eighth place.
 ANNIE: Blessed.
+HYZER: It's par saveable... theoretically.
 
-GOOD (With talking point, no fillers):
-TALKING POINT: "Jake's drive hit a tree"
+**With Talking Point:**
+TALKING POINT: "Jake's drive on hole 5 hit a tree and bounced into the water"
 ANNIE: Jake's tee shot on hole 5 found a tree.
-HYZER: Someone must've cursed that throw.
-ANNIE: Or he just threw it at a tree. Hard to tell.
-
-BAD (Making stuff up):
-ANNIE: Mike had some clutch 40-foot putts! ❌ DON'T INVENT THIS
-HYZER: Yeah and that drive was incredible! ❌ DON'T INVENT THIS
-
-BAD (Using non-word fillers):
-ANNIE: Mike bet on himself. [laughs] ❌ NO BRACKETS
-HYZER: [sighs] That's rough. ❌ NO SOUND EFFECTS
-ANNIE: [pauses] Should we tell him? ❌ NO STAGE DIRECTIONS
-
-GOOD (Expressing same thing with words):
-ANNIE: Mike bet on himself. Ha.
-HYZER: That's rough.
-ANNIE: Should we tell him?
-
-**Examples of Good Roasting:**
-
-ANNIE: Sarah challenged Jake for 50 PULPs.
-HYZER: And?
-ANNIE: Jake rejected it. Paid the cowardice tax.
 HYZER: Classic.
+ANNIE: But wait, it gets better—bounced right into the water.
+HYZER: Treesus works in mysterious ways.
 
-HYZER: Mike's down to 10 PULPs on the leaderboard.
-ANNIE: It's par saveable.
-HYZER: I mean, technically he could earn them back... theoretically.
+**Energy & Excitement (Ace):**
+TALKING POINT: "Sarah hit an ace on hole 12 with a forehand"
+HYZER: And then Sarah—oh man—chains on hole 12!
+ANNIE: Wait, ace?
+HYZER: ACE! Forehand, too!
+ANNIE: That's the highlight of the month right there!
 
-**Opening Example:**
-ANNIE: Another month, another round of questionable decisions.
-HYZER: December was... something.
-ANNIE: That's generous.
+**Mystery Building:**
+TALKING POINT: "Controversy during round 3, details TBD"
+ANNIE: And then we had the round 3... situation.
+HYZER: The one we literally cannot discuss.
+ANNIE: Not yet, anyway.
+HYZER: All I'll say is, the league has never seen anything like it.
+
+**BAD EXAMPLES (Don't do this):**
+
+❌ Making stuff up:
+ANNIE: Mike had some clutch 40-foot putts! (NOT IN DATA)
+
+❌ Using bracket fillers:
+HYZER: [laughs] That's rough. (NO BRACKETS)
+
+❌ Deadpan when you should be excited:
+ANNIE: Sarah got an ace. Moving on. (SHOW EXCITEMENT!)
+
+❌ Over-explaining boring stats:
+HYZER: So the average score was 54.3, which is 2.1 strokes better than last month's 56.4... (TOO MUCH DETAIL)
+
+**FINAL CHECKLIST BEFORE WRITING:**
+✅ Dual welcome + show title
+✅ Host character intros
+✅ Episode preview with hooks
+✅ 2-3 story beats from stats/rounds
+✅ Bet & challenge breakdown
+✅ Weave in talking points naturally (if provided)
+✅ Build mysteries (if unresolved drama exists)
+✅ Catchphrase sign-off
+✅ Show tagline at end
+✅ NO brackets, NO made-up details
+✅ Enthusiastic sports radio energy throughout
 
 NOW WRITE THE FULL DIALOGUE (600-800 words, DIALOGUE FORMAT ONLY):`;
 
