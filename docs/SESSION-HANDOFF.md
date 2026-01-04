@@ -1,8 +1,8 @@
 # ParSaveables v2 - Project Dashboard
 
-**Last Updated:** 2026-01-03 (End of Session)
+**Last Updated:** 2026-01-04 (End of Session)
 **Current Phase:** Phase 5 (Testing & Bug Fixes) - IN PROGRESS
-**Status:** Foundation | Auth & Layout | Leaderboard | Rounds | PULP Design | Backend Services | Frontend UI | Season Awareness | UX Enhancements | Testing Framework | Guest Login | Admin Control Center | Tutorial System | Feature Flags COMPLETE
+**Status:** Foundation | Auth & Layout | Leaderboard | Rounds | PULP Design | Backend Services | Frontend UI | Season Awareness | UX Enhancements | Testing Framework | Guest Login | Admin Control Center | Tutorial System | Feature Flags | Podcast System COMPLETE
 
 ---
 
@@ -40,11 +40,78 @@
 | Betting Timer & Lock System | Complete (Countdown timer, auto-reset, cancel/extend) |
 | Toast Notifications | Complete (Shadcn Toast, success/error feedback across all features) |
 | Podcast Episode 1 | Complete (Database script, ElevenLabs generation, Supabase upload) |
+| Podcast Auto-Generation | Complete (GitHub Actions, intro/outro music, enthusiastic tone) |
 | Git & Deployment | Complete (Vercel deployment, environment variables) |
 
 ---
 
-## This Session Summary (2026-01-03 - Latest)
+## This Session Summary (2026-01-04 - Latest)
+
+### Podcast System Refinements
+
+**Work Completed:**
+
+1. **Intro/Outro Music Processing Fix**
+   - **Problem**: Previous implementation used wrong fade directions and no duration trimming
+     - Intro: Faded IN (wrong), used full file length
+     - Outro: Faded OUT (wrong), used full file length
+   - **Solution**: Three-step FFmpeg workflow
+     - Step 1: Process intro → Trim to 5s, fade OUT from 3-5s (2s duration)
+     - Step 2: Process outro → Trim to 8s, fade IN from 0-4s (4s duration)
+     - Step 3: Concatenate intro + dialogue + outro
+   - **File**: `podcast/generate-dialogue-podcast.js` lines 657-753
+   - **Commit**: c8ac481
+
+2. **Podcast Script Prompt Update**
+   - **Problem**: Prompt described "dry, deadpan, sarcastic" tone but Episode 1 was enthusiastic sports radio
+   - **Solution**: Rewrote entire prompt to match Episode 1's actual style
+     - **Tone**: Changed from deadpan to "enthusiastic sports radio commentary"
+     - **Opening**: From "Another month, another round of questionable decisions" to dual welcome + "This is PAR SAVEABLES!"
+     - **Structure**: Added 5-act format (Cold Open, Round Recaps, Bets/Challenges, Talking Points, Sign Off)
+     - **Closing**: Added required catchphrase "Keep those discs flying and your beers accounted for—"
+     - **Character Voices**: Hyzer (stats enthusiast), Annie (story curator)
+     - **Running Gags**: "The format strikes!", "It's par saveable", "Blessed/Cursed", "Degenerates", "Treesus"
+     - **Tag-Team Storytelling**: Dashed interruptions for excitement building
+   - **File**: `podcast/generate-dialogue-podcast.js` lines 403-647
+   - **Commit**: aea36bb
+
+3. **Documentation Updates**
+   - **Updated Files**:
+     - `podcast/README.md` - Comprehensive rewrite with Script Style Guide and Audio Processing sections
+     - `docs/SESSION-HANDOFF.md` - Added this session entry
+     - (More documentation updates to follow)
+
+**Technical Details:**
+
+- **FFmpeg Processing**:
+  - Intro: `ffmpeg(introPath).duration(5).audioFilters(['afade=t=out:st=3:d=2'])`
+  - Outro: `ffmpeg(outroPath).duration(8).audioFilters(['afade=t=in:st=0:d=4'])`
+  - Concatenation: Uses FFmpeg concat demuxer with MP3 192kbps output
+
+- **Script Generation**:
+  - Target: 600-800 words (3-4 minutes when spoken)
+  - Format: Two-host dialogue (Annie: ELEVENLABS_HOST_VOICE_ID, Hyzer: ELEVENLABS_COHOST_VOICE_ID)
+  - No bracket fillers (no [laughs], [sighs], etc.)
+  - Enthusiastic tone with exclamation points for genuine excitement
+
+**What Stayed the Same:**
+
+- All data sources (stats, rounds, bets, challenges, PULP transactions)
+- Talking points functionality for anecdotal color
+- "Don't make stuff up" rules
+- GitHub Actions monthly automation (Feb 1, 2026 first run)
+- ElevenLabs voice IDs (already configured correctly)
+- Database schema
+
+**Files Modified:**
+
+- `podcast/generate-dialogue-podcast.js` (intro/outro function + script prompt)
+- `podcast/README.md` (comprehensive documentation update)
+- `docs/SESSION-HANDOFF.md` (this session entry)
+
+---
+
+## Previous Session Summary (2026-01-03)
 
 ### Tutorial System & Feature Flag Implementation
 

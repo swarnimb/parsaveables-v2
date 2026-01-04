@@ -43,7 +43,7 @@ ParSaveables 2.0 is a disc golf tournament tracking platform for small friend gr
 4. **Betting System**: Predict top 3 finishers, blind betting with admin-controlled lock
 5. **Head-to-Head Challenges**: Lower-ranked can challenge higher-ranked (no cooldown)
 6. **Advantages Shop**: Mulligans, Anti-Mulligans, Cancel, Bag Trump, Shotgun Buddy
-7. **Automated Monthly Podcast**: AI-generated recap of highlights and rivalries
+7. **Automated Monthly Podcast**: AI-generated enthusiastic sports radio commentary with two hosts (Annie & Hyzer), professional intro/outro music, automated via GitHub Actions
 8. **Group Activity Feed**: Real-time notifications for rounds, challenges, betting results
 9. **Guest Login**: Anonymous users can browse leaderboards, rounds, podcast, and community activity (read-only)
 10. **Admin Control Center**: Password-protected CRUD interface for managing events, players, courses, and scoring rules
@@ -146,7 +146,9 @@ ParSaveables 2.0 is a disc golf tournament tracking platform for small friend gr
 │  │                          (gamificationService)       │  │
 │  │                                                        │  │
 │  │  [src/services/] - Standalone Services               │  │
-│  │  - podcastService.js   - Episode generation          │  │
+│  │  - podcastService.js   - Episode generation (unused) │  │
+│  │  Note: Podcast generation runs via GitHub Actions   │  │
+│  │        using podcast/generate-dialogue-podcast.js   │  │
 │  │  - supabase.js         - Supabase client             │  │
 │  │  - api.js              - Frontend API helpers        │  │
 │  └──────────────────────────────────────────────────────┘  │
@@ -947,6 +949,130 @@ parsaveables-v2/
 │    - Activity feed shows new notifications              │
 └─────────────────────────────────────────────────────────┘
 ```
+
+### Monthly Podcast Generation Workflow
+
+**Automation**: GitHub Actions cron job runs monthly (1st of each month at midnight UTC)
+
+```
+┌─────────────────────────────────────────────────────────┐
+│ AUTOMATED MONTHLY PODCAST GENERATION                    │
+│ Triggered: 1st of month at 00:00 UTC via GitHub Actions│
+└─────────────────────────────────────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────────────────┐
+│ 1. Episode Period Calculation                           │
+│    - Fetches last published episode from database       │
+│    - Calculates next monthly period                     │
+│    - Determines episode number                          │
+└────────────────────┬────────────────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────────────────┐
+│ 2. Data Fetching (Last 30 Days)                         │
+│    FROM Supabase:                                       │
+│    - Rounds (dates, courses, winners)                   │
+│    - Player rounds (scores, birdies, eagles, aces)      │
+│    - Bets (predictions, wagers, outcomes)               │
+│    - Challenges (opponents, wagers, outcomes)           │
+│    - PULP transactions (leaderboard movement)           │
+│    - Top PULP holders                                   │
+└────────────────────┬────────────────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────────────────┐
+│ 3. Script Generation via Claude AI                      │
+│    Prompt Configuration:                                │
+│    - Tone: Enthusiastic sports radio commentary         │
+│    - Format: Two-host dialogue (Annie & Hyzer)          │
+│    - Structure: 5-act format                            │
+│      1. Cold Open (dual welcome, show intro)            │
+│      2. Round Recaps (2-3 story beats)                  │
+│      3. Bet & Challenge Breakdown                       │
+│      4. Talking Points (if provided)                    │
+│      5. Sign Off (catchphrase + tagline)                │
+│    - Target: 600-800 words (3-4 minutes)                │
+│    - Output: ANNIE:/HYZER: dialogue format              │
+└────────────────────┬────────────────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────────────────┐
+│ 4. Audio Generation via ElevenLabs                      │
+│    Two-Voice Setup:                                     │
+│    - ANNIE lines → HOST_VOICE_ID (story curator)        │
+│    - HYZER lines → COHOST_VOICE_ID (stats enthusiast)   │
+│    - Model: eleven_turbo_v2_5                           │
+│    - Settings: stability, similarity_boost, style       │
+│    OUTPUT: dialogue-audio.mp3 (~2-3 minutes)            │
+└────────────────────┬────────────────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────────────────┐
+│ 5. Intro/Outro Music Processing (FFmpeg)                │
+│    Three-Step Workflow:                                 │
+│                                                          │
+│    STEP 1: Process Intro                                │
+│    - Source: assets/intro-music.mp3                     │
+│    - Trim to 5 seconds                                  │
+│    - Fade OUT from 3s-5s (2s duration)                  │
+│    - Output: intro-processed.mp3                        │
+│                                                          │
+│    STEP 2: Process Outro                                │
+│    - Source: assets/outro-music.mp3                     │
+│    - Trim to 8 seconds                                  │
+│    - Fade IN from 0s-4s (4s duration)                   │
+│    - Output: outro-processed.mp3                        │
+│                                                          │
+│    STEP 3: Concatenation                                │
+│    - Combine: intro + dialogue + outro                  │
+│    - Codec: libmp3lame, 192kbps                         │
+│    - Cleanup: Remove temp files                         │
+│    OUTPUT: episode-##.mp3 (~3-4 minutes total)          │
+└────────────────────┬────────────────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────────────────┐
+│ 6. Upload to Supabase Storage                           │
+│    - Bucket: podcast-episodes                           │
+│    - Path: ParSaveables-EP##.mp3                        │
+│    - Public URL generated                               │
+└────────────────────┬────────────────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────────────────┐
+│ 7. Database Record Creation                             │
+│    INSERTS INTO:                                        │
+│    - podcast_episodes (episode record, audio_url)       │
+│    - podcast_scripts (dialogue text, no music)          │
+│    - podcast_generation_logs (process tracking)         │
+│                                                          │
+│    Episode marked as published = true                   │
+└────────────────────┬────────────────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────────────────┐
+│ SUCCESS: Episode available at /podcast                  │
+│ - Web player shows latest episode                       │
+│ - Download link available                               │
+│ - Next episode: Following month, 1st at 00:00 UTC       │
+└─────────────────────────────────────────────────────────┘
+```
+
+**Key Files:**
+- `podcast/generate-dialogue-podcast.js` - Main generation script
+- `.github/workflows/monthly-podcast.yml` - GitHub Actions automation
+- `podcast/assets/intro-music.mp3` - Intro music (5s used)
+- `podcast/assets/outro-music.mp3` - Outro music (8s used)
+
+**Environment Variables Required:**
+- `ANTHROPIC_API_KEY` - Claude AI for script generation
+- `ELEVENLABS_API_KEY` - ElevenLabs for audio
+- `ELEVENLABS_HOST_VOICE_ID` - Annie's voice
+- `ELEVENLABS_COHOST_VOICE_ID` - Hyzer's voice
+- `VITE_SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` - Data & storage
+
+**First Episode:** February 1, 2026 at 00:00 UTC
 
 ---
 
