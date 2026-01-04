@@ -94,9 +94,19 @@ async function generateDialogueAudio(script, episodeNumber) {
   let segmentCount = 0;
 
   for (const line of lines) {
+    // Trim line to handle whitespace and line ending issues
+    const trimmedLine = line.trim();
+    if (!trimmedLine) continue;
+
     // Match "[ANNIE]:" or "[HYZER]:" patterns
-    const match = line.match(/^\[(ANNIE|HYZER)\]:\s*(.+)$/i);
-    if (!match) continue;
+    const match = trimmedLine.match(/^\[(ANNIE|HYZER)\]:\s*(.+)$/i);
+    if (!match) {
+      // Log lines that don't match for debugging
+      if (trimmedLine.length > 0 && !trimmedLine.startsWith('#')) {
+        log('WARNING', 'Line did not match pattern', { line: trimmedLine.substring(0, 100) });
+      }
+      continue;
+    }
 
     const [, speaker, text] = match;
     const isAnnie = speaker.toUpperCase().includes('ANNIE');
