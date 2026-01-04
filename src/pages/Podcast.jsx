@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
-import { Play, Pause, Square } from 'lucide-react'
+import { Play, Pause, Square, Sparkles, X } from 'lucide-react'
 import { supabase } from '@/services/supabase'
 import PageContainer from '@/components/layout/PageContainer'
 import { Card } from '@/components/ui/card'
-import { motion } from 'framer-motion'
+import { Badge } from '@/components/ui/badge'
+import { motion, AnimatePresence } from 'framer-motion'
 import { staggerContainer, staggerItem } from '@/utils/animations'
 import { usePodcastNotifications } from '@/hooks/usePodcastNotifications'
 
@@ -13,8 +14,16 @@ export default function Podcast() {
   const [playingEpisodeId, setPlayingEpisodeId] = useState(null)
   const [currentTimes, setCurrentTimes] = useState({})
   const [durations, setDurations] = useState({})
+  const [showBanner, setShowBanner] = useState(false)
   const audioRefs = useRef({})
-  const { markAllAsRead } = usePodcastNotifications()
+  const { unreadCount, markAllAsRead } = usePodcastNotifications()
+
+  // Show banner if there are unread episodes
+  useEffect(() => {
+    if (unreadCount > 0) {
+      setShowBanner(true)
+    }
+  }, [unreadCount])
 
   // Fetch published podcast episodes from database
   useEffect(() => {
@@ -38,9 +47,6 @@ export default function Podcast() {
         }))
 
         setEpisodes(transformedEpisodes)
-
-        // Mark all episodes as read when user visits the page
-        markAllAsRead()
       } catch (err) {
         console.error('Error fetching podcast episodes:', err)
       } finally {
@@ -49,7 +55,7 @@ export default function Podcast() {
     }
 
     fetchEpisodes()
-  }, [markAllAsRead])
+  }, [])
 
   const togglePlay = (episodeId) => {
     const audio = audioRefs.current[episodeId]
@@ -119,6 +125,11 @@ export default function Podcast() {
     return `${mins}:${secs.toString().padStart(2, '0')}`
   }
 
+  const handleDismissBanner = () => {
+    setShowBanner(false)
+    markAllAsRead()
+  }
+
   if (loading) {
     return (
       <PageContainer className="container mx-auto px-4 py-6 max-w-4xl">
@@ -143,6 +154,44 @@ export default function Podcast() {
 
   return (
     <PageContainer className="container mx-auto px-4 py-6 max-w-4xl">
+      {/* New Episode Banner */}
+      <AnimatePresence>
+        {showBanner && unreadCount > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="mb-6"
+          >
+            <Card className="p-4 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border-primary/20">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <Sparkles className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-primary">
+                      New Podcast {unreadCount > 1 ? 'Episodes' : 'Episode'} Available!
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {unreadCount} {unreadCount > 1 ? 'episodes' : 'episode'} you haven't heard yet
+                    </p>
+                  </div>
+                </div>
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={handleDismissBanner}
+                  className="h-8 w-8 rounded-full hover:bg-primary/10 flex items-center justify-center transition-colors"
+                >
+                  <X className="h-4 w-4 text-muted-foreground" />
+                </motion.button>
+              </div>
+            </Card>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Episode List */}
       <motion.div
         className="space-y-4"
