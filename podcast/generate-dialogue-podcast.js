@@ -22,10 +22,14 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import ffmpeg from 'fluent-ffmpeg';
+import ffmpegStatic from 'ffmpeg-static';
 import { promisify } from 'util';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// Set FFmpeg path to use bundled binary
+ffmpeg.setFfmpegPath(ffmpegStatic);
 
 // Load environment variables from parent directory's .env.local
 dotenv.config({ path: path.join(__dirname, '..', '.env.local') });
