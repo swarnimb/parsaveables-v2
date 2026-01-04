@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { Trophy, Calendar, TrendingUp, Award, Target, Swords, ChevronDown, ChevronUp } from 'lucide-react'
-import { supabase } from '@/services/supabase'
+import { useAuth } from '@/hooks/useAuth'
 import { eventAPI } from '@/services/api'
 import { getCurrentEvent } from '@/utils/seasonUtils'
 import { Card } from '@/components/ui/card'
@@ -9,7 +9,7 @@ import PageContainer from '@/components/layout/PageContainer'
 import { SkeletonStats } from '@/components/ui/skeleton'
 
 export default function Dashboard() {
-  const [player, setPlayer] = useState(null)
+  const { player, loading: authLoading } = useAuth()
   const [events, setEvents] = useState([])
   const [selectedEventId, setSelectedEventId] = useState('all')
   const [playerStats, setPlayerStats] = useState(null)
@@ -18,27 +18,19 @@ export default function Dashboard() {
   const [headToHeadExpanded, setHeadToHeadExpanded] = useState(false)
   const [loading, setLoading] = useState(true)
 
-  // Fetch player data and events
+  // Fetch events when auth completes
   useEffect(() => {
-    async function fetchPlayerData() {
+    async function fetchInitialData() {
+      // Wait for auth to load
+      if (authLoading) return
+
+      // Player must exist (provided by useAuth)
+      if (!player) {
+        setLoading(false)
+        return
+      }
+
       try {
-        const { data: { user }, error: userError } = await supabase.auth.getUser()
-
-        if (userError || !user) {
-          console.error('No authenticated user found:', userError)
-          setLoading(false)
-          return
-        }
-
-        const { data: playerData, error } = await supabase
-          .from('registered_players')
-          .select('*')
-          .eq('user_id', user.id)
-          .single()
-
-        if (error) throw error
-        setPlayer(playerData)
-
         // Fetch events and default to current season
         const eventsData = await eventAPI.getAllEvents()
         setEvents(eventsData)
@@ -48,14 +40,14 @@ export default function Dashboard() {
           setSelectedEventId(currentEvent.id)
         }
       } catch (err) {
-        console.error('Error fetching player:', err)
+        console.error('Error fetching events:', err)
       } finally {
         setLoading(false)
       }
     }
 
-    fetchPlayerData()
-  }, [])
+    fetchInitialData()
+  }, [player, authLoading])
 
   // Fetch player stats when event changes
   useEffect(() => {

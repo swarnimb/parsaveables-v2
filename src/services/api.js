@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { queryWithTimeout, authQueryWithTimeout } from './supabaseWithTimeout'
 
 /**
  * Authentication API helpers
@@ -9,10 +10,10 @@ export const authAPI = {
    * Sign in with email and password
    */
   signIn: async (email, password) => {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
+    const { data, error } = await authQueryWithTimeout(
+      () => supabase.auth.signInWithPassword({ email, password }),
+      10000 // 10s timeout for login
+    )
 
     if (error) throw error
     return data
@@ -22,13 +23,14 @@ export const authAPI = {
    * Sign up new user
    */
   signUp: async (email, password, metadata = {}) => {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: metadata,
-      },
-    })
+    const { data, error } = await authQueryWithTimeout(
+      () => supabase.auth.signUp({
+        email,
+        password,
+        options: { data: metadata },
+      }),
+      10000 // 10s timeout for signup
+    )
 
     if (error) throw error
     return data
@@ -38,7 +40,10 @@ export const authAPI = {
    * Sign out current user
    */
   signOut: async () => {
-    const { error } = await supabase.auth.signOut()
+    const { error } = await authQueryWithTimeout(
+      () => supabase.auth.signOut(),
+      5000 // 5s timeout for signout
+    )
     if (error) throw error
   },
 
@@ -46,10 +51,11 @@ export const authAPI = {
    * Get current session
    */
   getSession: async () => {
-    // Let Supabase handle its own timeout - no custom timeout
-    // The useAuth failsafe will handle any hung requests
     try {
-      const { data, error } = await supabase.auth.getSession()
+      const { data, error } = await authQueryWithTimeout(
+        () => supabase.auth.getSession(),
+        6000 // 6s timeout - shorter than useAuth failsafe (8s)
+      )
 
       if (error) {
         console.error('Session fetch error:', error)
@@ -67,7 +73,10 @@ export const authAPI = {
    * Get current user
    */
   getCurrentUser: async () => {
-    const { data, error } = await supabase.auth.getUser()
+    const { data, error } = await authQueryWithTimeout(
+      () => supabase.auth.getUser(),
+      6000 // 6s timeout
+    )
     if (error) throw error
     return data.user
   },
@@ -89,11 +98,14 @@ export const playerAPI = {
    * Get player profile by user_id
    */
   getPlayerByUserId: async (userId) => {
-    const { data, error } = await supabase
-      .from('registered_players')
-      .select('*')
-      .eq('user_id', userId)
-      .single()
+    const { data, error } = await queryWithTimeout(
+      () => supabase
+        .from('registered_players')
+        .select('*')
+        .eq('user_id', userId)
+        .single(),
+      5000 // 5s timeout
+    )
 
     if (error) throw error
     return data
@@ -103,11 +115,14 @@ export const playerAPI = {
    * Get unclaimed players (no user_id assigned yet)
    */
   getUnclaimedPlayers: async () => {
-    const { data, error } = await supabase
-      .from('registered_players')
-      .select('id, player_name')
-      .is('user_id', null)
-      .order('player_name')
+    const { data, error } = await queryWithTimeout(
+      () => supabase
+        .from('registered_players')
+        .select('id, player_name')
+        .is('user_id', null)
+        .order('player_name'),
+      5000 // 5s timeout
+    )
 
     if (error) throw error
     return data
@@ -117,12 +132,15 @@ export const playerAPI = {
    * Link existing player to auth user
    */
   linkPlayerToUser: async (playerId, userId) => {
-    const { data, error } = await supabase
-      .from('registered_players')
-      .update({ user_id: userId })
-      .eq('id', playerId)
-      .select()
-      .single()
+    const { data, error } = await queryWithTimeout(
+      () => supabase
+        .from('registered_players')
+        .update({ user_id: userId })
+        .eq('id', playerId)
+        .select()
+        .single(),
+      5000 // 5s timeout
+    )
 
     if (error) throw error
     return data
@@ -132,14 +150,17 @@ export const playerAPI = {
    * Create player profile after signup (for new players not in v1)
    */
   createPlayer: async (userId, playerData) => {
-    const { data, error } = await supabase
-      .from('registered_players')
-      .insert({
-        user_id: userId,
-        ...playerData,
-      })
-      .select()
-      .single()
+    const { data, error } = await queryWithTimeout(
+      () => supabase
+        .from('registered_players')
+        .insert({
+          user_id: userId,
+          ...playerData,
+        })
+        .select()
+        .single(),
+      5000 // 5s timeout
+    )
 
     if (error) throw error
     return data
@@ -149,12 +170,15 @@ export const playerAPI = {
    * Update player profile
    */
   updatePlayer: async (playerId, updates) => {
-    const { data, error } = await supabase
-      .from('registered_players')
-      .update(updates)
-      .eq('id', playerId)
-      .select()
-      .single()
+    const { data, error } = await queryWithTimeout(
+      () => supabase
+        .from('registered_players')
+        .update(updates)
+        .eq('id', playerId)
+        .select()
+        .single(),
+      5000 // 5s timeout
+    )
 
     if (error) throw error
     return data
@@ -164,10 +188,13 @@ export const playerAPI = {
    * Get all players (basic info only)
    */
   getAllPlayers: async () => {
-    const { data, error } = await supabase
-      .from('registered_players')
-      .select('id, player_name, user_id, active')
-      .order('player_name')
+    const { data, error } = await queryWithTimeout(
+      () => supabase
+        .from('registered_players')
+        .select('id, player_name, user_id, active')
+        .order('player_name'),
+      5000 // 5s timeout
+    )
 
     if (error) throw error
     return data
@@ -183,11 +210,14 @@ export const eventAPI = {
    * Get all events (seasons + tournaments)
    */
   getAllEvents: async () => {
-    const { data, error } = await supabase
-      .from('events')
-      .select('id, name, type, year, start_date, end_date, is_active')
-      .order('year', { ascending: false })
-      .order('start_date', { ascending: false })
+    const { data, error } = await queryWithTimeout(
+      () => supabase
+        .from('events')
+        .select('id, name, type, year, start_date, end_date, is_active')
+        .order('year', { ascending: false })
+        .order('start_date', { ascending: false }),
+      5000 // 5s timeout
+    )
 
     if (error) throw error
     return data
@@ -201,21 +231,27 @@ export const eventAPI = {
    */
   getLeaderboardForEvent: async (eventId) => {
     // First, fetch the event to determine if it's a season or tournament
-    const { data: event, error: eventError } = await supabase
-      .from('events')
-      .select('type')
-      .eq('id', eventId)
-      .single()
+    const { data: event, error: eventError } = await queryWithTimeout(
+      () => supabase
+        .from('events')
+        .select('type')
+        .eq('id', eventId)
+        .single(),
+      5000 // 5s timeout
+    )
 
     if (eventError) throw eventError
 
     const isSeason = event.type === 'season'
 
     // Fetch all player rounds for this event
-    const { data, error } = await supabase
-      .from('player_rounds')
-      .select('player_name, final_total, rank, rank_points, birdie_points, eagle_points, ace_points, birdies, eagles, aces, pars, bogeys, double_bogeys, total_strokes, total_score')
-      .eq('event_id', eventId)
+    const { data, error } = await queryWithTimeout(
+      () => supabase
+        .from('player_rounds')
+        .select('player_name, final_total, rank, rank_points, birdie_points, eagle_points, ace_points, birdies, eagles, aces, pars, bogeys, double_bogeys, total_strokes, total_score')
+        .eq('event_id', eventId),
+      8000 // 8s timeout for potentially large dataset
+    )
 
     if (error) throw error
 
@@ -309,10 +345,13 @@ export const tutorialAPI = {
    * Mark onboarding tutorial as completed
    */
   completeOnboarding: async (playerId) => {
-    const { error } = await supabase
-      .from('registered_players')
-      .update({ onboarding_completed: true })
-      .eq('id', playerId)
+    const { error } = await queryWithTimeout(
+      () => supabase
+        .from('registered_players')
+        .update({ onboarding_completed: true })
+        .eq('id', playerId),
+      5000 // 5s timeout
+    )
 
     if (error) throw error
   },
@@ -321,10 +360,13 @@ export const tutorialAPI = {
    * Mark betting tutorial as shown
    */
   markBettingInterestShown: async (playerId) => {
-    const { error } = await supabase
-      .from('registered_players')
-      .update({ betting_interest_shown: true })
-      .eq('id', playerId)
+    const { error } = await queryWithTimeout(
+      () => supabase
+        .from('registered_players')
+        .update({ betting_interest_shown: true })
+        .eq('id', playerId),
+      5000 // 5s timeout
+    )
 
     if (error) throw error
   },
@@ -333,10 +375,13 @@ export const tutorialAPI = {
    * Confirm user interest in betting feature
    */
   confirmBettingInterest: async (playerId) => {
-    const { error } = await supabase
-      .from('registered_players')
-      .update({ betting_interest_confirmed: true })
-      .eq('id', playerId)
+    const { error } = await queryWithTimeout(
+      () => supabase
+        .from('registered_players')
+        .update({ betting_interest_confirmed: true })
+        .eq('id', playerId),
+      5000 // 5s timeout
+    )
 
     if (error) throw error
   },
@@ -351,19 +396,25 @@ export const roundAPI = {
    * Get all rounds with player count
    */
   getAllRounds: async () => {
-    const { data, error } = await supabase
-      .from('rounds')
-      .select('id, date, course_name, scorecard_image_url, created_at')
+    const { data, error } = await queryWithTimeout(
+      () => supabase
+        .from('rounds')
+        .select('id, date, course_name, scorecard_image_url, created_at'),
+      5000 // 5s timeout
+    )
 
     if (error) throw error
 
     // Get player count for each round
     const roundsWithPlayerCount = await Promise.all(
       data.map(async (round) => {
-        const { count } = await supabase
-          .from('player_rounds')
-          .select('*', { count: 'exact', head: true })
-          .eq('round_id', round.id)
+        const { count } = await queryWithTimeout(
+          () => supabase
+            .from('player_rounds')
+            .select('*', { count: 'exact', head: true })
+            .eq('round_id', round.id),
+          3000 // 3s timeout per round count query
+        )
 
         return {
           ...round,
@@ -385,11 +436,14 @@ export const roundAPI = {
    * Get players for a specific round
    */
   getPlayersForRound: async (roundId) => {
-    const { data, error } = await supabase
-      .from('player_rounds')
-      .select('player_name, final_total, rank, total_score, birdies, eagles, aces')
-      .eq('round_id', roundId)
-      .order('final_total', { ascending: false })
+    const { data, error } = await queryWithTimeout(
+      () => supabase
+        .from('player_rounds')
+        .select('player_name, final_total, rank, total_score, birdies, eagles, aces')
+        .eq('round_id', roundId)
+        .order('final_total', { ascending: false }),
+      5000 // 5s timeout
+    )
 
     if (error) throw error
     return data

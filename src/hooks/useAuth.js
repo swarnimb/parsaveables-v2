@@ -21,66 +21,72 @@ export function useAuth() {
       return
     }
 
-    // Failsafe: Ensure loading never hangs for more than 10 seconds
-    // This should only fire if Supabase is completely unresponsive
-    const failsafeTimeout = setTimeout(() => {
-      console.warn('Auth initialization taking too long (10s), forcing loading to false')
-      setLoading(false)
-    }, 10000)
+    let subscription = null
+    let failsafeTimeout = null
 
-    // Check for existing session with proper error handling
+    // Initialize auth and then subscribe - CRITICAL: Must be sequential
     const initAuth = async () => {
       try {
+        // Failsafe timeout
+        failsafeTimeout = setTimeout(() => {
+          console.warn('Auth initialization taking too long (8s), forcing loading to false')
+          setLoading(false)
+        }, 8000)
+
+        // Step 1: Check for existing session FIRST
         const session = await authAPI.getSession()
+
         if (session?.user) {
           setUser(session.user)
-          // Fetch player profile (non-blocking)
+          // Fetch player profile
           try {
             const playerData = await playerAPI.getPlayerByUserId(session.user.id)
             setPlayer(playerData)
           } catch (playerError) {
             console.error('Error fetching player profile:', playerError)
-            // Don't block auth - user can still proceed
           }
         }
+
+        // Clear failsafe - initial auth completed successfully
+        clearTimeout(failsafeTimeout)
+        setLoading(false)
+
+        // Step 2: ONLY subscribe AFTER initial auth is complete
+        // This prevents race condition where subscription fires during init
+        const { data: subData } = authAPI.onAuthStateChange(
+          async (event, newSession) => {
+            console.log('Auth state changed:', event)
+            setUser(newSession?.user || null)
+
+            if (newSession?.user) {
+              try {
+                const playerData = await playerAPI.getPlayerByUserId(newSession.user.id)
+                setPlayer(playerData)
+              } catch (err) {
+                console.error('Error fetching player profile:', err)
+              }
+            } else {
+              setPlayer(null)
+            }
+          }
+        )
+
+        subscription = subData.subscription
       } catch (err) {
-        console.error('Error checking session:', err)
-        // Clear any stale session data
+        console.error('Error initializing auth:', err)
         setUser(null)
         setPlayer(null)
-      } finally {
-        // Clear failsafe timeout
         clearTimeout(failsafeTimeout)
-        // ALWAYS set loading to false, even on error
         setLoading(false)
       }
     }
 
     initAuth()
 
-    // Subscribe to auth state changes
-    const { data: { subscription } } = authAPI.onAuthStateChange(
-      async (event, session) => {
-        setUser(session?.user || null)
-
-        // Fetch player profile when user signs in
-        if (session?.user) {
-          try {
-            const playerData = await playerAPI.getPlayerByUserId(session.user.id)
-            setPlayer(playerData)
-          } catch (err) {
-            console.error('Error fetching player profile:', err)
-          }
-        } else {
-          setPlayer(null)
-        }
-      }
-    )
-
-    // Cleanup subscription and timeout on unmount
+    // Cleanup
     return () => {
       subscription?.unsubscribe()
-      clearTimeout(failsafeTimeout)
+      if (failsafeTimeout) clearTimeout(failsafeTimeout)
     }
   }, [])
 

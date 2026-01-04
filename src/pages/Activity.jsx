@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { User, Users, Trophy, Swords, Coins, Target, Calendar, Mic2, TrendingUp, TrendingDown, ShoppingCart, Gift, DollarSign, Award, XCircle, Ban } from 'lucide-react'
 import { supabase } from '@/services/supabase'
+import { queryWithTimeout } from '@/services/supabaseWithTimeout'
 import { useAuth } from '@/hooks/useAuth'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card } from '@/components/ui/card'
@@ -12,41 +13,18 @@ import { SkeletonCard } from '@/components/ui/skeleton'
 import { features } from '@/config/features'
 
 export default function Activity() {
-  const { isGuest } = useAuth()
+  const { isGuest, player, loading: authLoading } = useAuth()
   const [activeTab, setActiveTab] = useState(isGuest ? 'community' : 'player')
-  const [player, setPlayer] = useState(null)
   const [playerFeed, setPlayerFeed] = useState([])
   const [communityFeed, setCommunityFeed] = useState([])
   const [loading, setLoading] = useState(true)
 
-  // Fetch current player
+  // Wait for auth to complete
   useEffect(() => {
-    async function fetchPlayer() {
-      try {
-        const { data: { user }, error: userError } = await supabase.auth.getUser()
-
-        if (userError || !user) {
-          console.error('No authenticated user found:', userError)
-          setLoading(false)
-          return
-        }
-
-        const { data: playerData } = await supabase
-          .from('registered_players')
-          .select('*')
-          .eq('user_id', user.id)
-          .single()
-
-        setPlayer(playerData)
-      } catch (err) {
-        console.error('Error fetching player:', err)
-      } finally {
-        setLoading(false)
-      }
+    if (!authLoading) {
+      setLoading(false)
     }
-
-    fetchPlayer()
-  }, [])
+  }, [authLoading])
 
   // Fetch player-specific feed
   useEffect(() => {
@@ -60,36 +38,45 @@ export default function Activity() {
         // Only fetch PULP-related data if feature is enabled
         if (features.pulpEconomy) {
           // Fetch player's recent transactions
-          const { data: transactions } = await supabase
-            .from('pulp_transactions')
-            .select('*')
-            .eq('player_id', player.id)
-            .order('created_at', { ascending: false })
-            .limit(10)
+          const { data: transactions } = await queryWithTimeout(
+            () => supabase
+              .from('pulp_transactions')
+              .select('*')
+              .eq('player_id', player.id)
+              .order('created_at', { ascending: false })
+              .limit(10),
+            5000 // 5s timeout
+          )
 
           // Fetch player's recent bets
-          const { data: bets } = await supabase
-            .from('bets')
-            .select(`
-              *,
-              round:rounds(date, course_name)
-            `)
-            .eq('player_id', player.id)
-            .order('created_at', { ascending: false })
-            .limit(5)
+          const { data: bets } = await queryWithTimeout(
+            () => supabase
+              .from('bets')
+              .select(`
+                *,
+                round:rounds(date, course_name)
+              `)
+              .eq('player_id', player.id)
+              .order('created_at', { ascending: false })
+              .limit(5),
+            5000 // 5s timeout
+          )
 
           // Fetch player's recent challenges (issued or received)
-          const { data: challenges } = await supabase
-            .from('challenges')
-            .select(`
-              *,
-              challenger:registered_players!challenges_challenger_id_fkey(player_name),
-              challenged:registered_players!challenges_challenged_id_fkey(player_name),
-              round:rounds(date, course_name)
-            `)
-            .or(`challenger_id.eq.${player.id},challenged_id.eq.${player.id}`)
-            .order('issued_at', { ascending: false })
-            .limit(5)
+          const { data: challenges } = await queryWithTimeout(
+            () => supabase
+              .from('challenges')
+              .select(`
+                *,
+                challenger:registered_players!challenges_challenger_id_fkey(player_name),
+                challenged:registered_players!challenges_challenged_id_fkey(player_name),
+                round:rounds(date, course_name)
+              `)
+              .or(`challenger_id.eq.${player.id},challenged_id.eq.${player.id}`)
+              .order('issued_at', { ascending: false })
+              .limit(5),
+            5000 // 5s timeout
+          )
 
           transactions?.forEach(txn => {
             feed.push({
@@ -140,11 +127,14 @@ export default function Activity() {
         const feed = []
 
         // Fetch recent rounds (always shown)
-        const { data: rounds } = await supabase
-          .from('rounds')
-          .select('*')
-          .order('date', { ascending: false })
-          .limit(5)
+        const { data: rounds } = await queryWithTimeout(
+          () => supabase
+            .from('rounds')
+            .select('*')
+            .order('date', { ascending: false })
+            .limit(5),
+          5000 // 5s timeout
+        )
 
         rounds?.forEach(round => {
           feed.push({
@@ -158,28 +148,34 @@ export default function Activity() {
         // Only fetch PULP-related data if feature is enabled
         if (features.pulpEconomy) {
           // Fetch recent challenges
-          const { data: challenges } = await supabase
-            .from('challenges')
-            .select(`
-              *,
-              challenger:registered_players!challenges_challenger_id_fkey(player_name),
-              challenged:registered_players!challenges_challenged_id_fkey(player_name),
-              round:rounds(date, course_name)
-            `)
-            .order('issued_at', { ascending: false })
-            .limit(10)
+          const { data: challenges } = await queryWithTimeout(
+            () => supabase
+              .from('challenges')
+              .select(`
+                *,
+                challenger:registered_players!challenges_challenger_id_fkey(player_name),
+                challenged:registered_players!challenges_challenged_id_fkey(player_name),
+                round:rounds(date, course_name)
+              `)
+              .order('issued_at', { ascending: false })
+              .limit(10),
+            5000 // 5s timeout
+          )
 
           // Fetch recent achievement unlocks (simulated - would need achievement_unlocks table)
           // For now, we'll just show recent transactions with achievement types
-          const { data: achievementTxns } = await supabase
-            .from('pulp_transactions')
-            .select(`
-              *,
+          const { data: achievementTxns } = await queryWithTimeout(
+            () => supabase
+              .from('pulp_transactions')
+              .select(`
+                *,
               player:registered_players(player_name)
             `)
             .eq('transaction_type', 'achievement_unlock')
             .order('created_at', { ascending: false })
-            .limit(10)
+            .limit(10),
+            5000 // 5s timeout
+          )
 
           challenges?.forEach(challenge => {
             feed.push({
