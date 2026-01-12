@@ -3,6 +3,7 @@ import { eventAPI } from '@/services/api'
 import { getCurrentEvent } from '@/utils/seasonUtils'
 import PodiumDisplay from '@/components/leaderboard/PodiumDisplay'
 import LeaderboardTable from '@/components/leaderboard/LeaderboardTable'
+import ShareLeaderboardButton from '@/components/leaderboard/ShareLeaderboardButton'
 import PageContainer from '@/components/layout/PageContainer'
 import { SkeletonPodium, SkeletonTable } from '@/components/ui/skeleton'
 
@@ -91,7 +92,7 @@ export default function Leaderboard() {
 
   return (
     <PageContainer className="container mx-auto px-4 sm:px-6 py-8 max-w-6xl">
-      {/* Event Selector */}
+      {/* Event Selector with Share Button */}
       {events.length > 0 && (
         <div className="flex items-center gap-3 mb-8">
           <label htmlFor="event-select" className="text-sm font-medium whitespace-nowrap">
@@ -122,6 +123,12 @@ export default function Leaderboard() {
                 </optgroup>
               )}
             </select>
+
+          {/* Share Button */}
+          <ShareLeaderboardButton
+            players={players}
+            eventName={selectedEvent?.name || 'Leaderboard'}
+          />
         </div>
       )}
 
