@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useRef } from 'react'
 import { Share2, Loader2 } from 'lucide-react'
 import html2canvas from 'html2canvas'
 import ShareableLeaderboard from './ShareableLeaderboard'
@@ -8,84 +8,80 @@ import { useToast } from '@/hooks/use-toast'
  * ShareLeaderboardButton Component
  *
  * Renders a share button that:
- * 1. Pre-generates an image of the leaderboard
+ * 1. Generates image on hover (lazy loading for performance)
  * 2. Uses Web Share API to share (immediate, no user gesture loss)
  */
 export default function ShareLeaderboardButton({ players, eventName }) {
   const [isGenerating, setIsGenerating] = useState(false)
   const [isReady, setIsReady] = useState(false)
   const cachedBlobRef = useRef(null)
+  const generatingRef = useRef(false)
   const { toast } = useToast()
 
-  // Pre-generate image when players or event changes
-  useEffect(() => {
-    if (!players || players.length === 0) {
-      setIsReady(false)
-      cachedBlobRef.current = null
+  const generateImage = async () => {
+    // Prevent duplicate generation
+    if (generatingRef.current || cachedBlobRef.current) {
       return
     }
 
-    let cancelled = false
+    generatingRef.current = true
 
-    const generateImage = async () => {
-      try {
-        // Create a temporary container for the shareable leaderboard
-        const container = document.createElement('div')
-        container.style.position = 'absolute'
-        container.style.left = '-9999px'
-        container.style.top = '0'
-        document.body.appendChild(container)
+    try {
+      // Create a temporary container for the shareable leaderboard
+      const container = document.createElement('div')
+      container.style.position = 'absolute'
+      container.style.left = '-9999px'
+      container.style.top = '0'
+      document.body.appendChild(container)
 
-        // Render the ShareableLeaderboard component into the container
-        const { createRoot } = await import('react-dom/client')
-        const root = createRoot(container)
+      // Render the ShareableLeaderboard component into the container
+      const { createRoot } = await import('react-dom/client')
+      const root = createRoot(container)
 
-        await new Promise((resolve) => {
-          root.render(
-            <div style={{ background: 'white' }}>
-              <ShareableLeaderboard players={players} eventName={eventName} />
-            </div>
-          )
-          // Wait for render
-          setTimeout(resolve, 100)
-        })
+      await new Promise((resolve) => {
+        root.render(
+          <div style={{ background: 'white' }}>
+            <ShareableLeaderboard players={players} eventName={eventName} />
+          </div>
+        )
+        // Wait for render
+        setTimeout(resolve, 150)
+      })
 
-        // Convert to canvas
-        const element = container.querySelector('#shareable-leaderboard')
-        const canvas = await html2canvas(element, {
-          backgroundColor: '#ffffff',
-          scale: 2, // Higher quality
-          logging: false,
-          useCORS: true
-        })
+      // Convert to canvas
+      const element = container.querySelector('#shareable-leaderboard')
+      const canvas = await html2canvas(element, {
+        backgroundColor: '#ffffff',
+        scale: 2, // Higher quality
+        logging: false,
+        useCORS: true
+      })
 
-        // Convert canvas to blob
-        const blob = await new Promise((resolve) => {
-          canvas.toBlob(resolve, 'image/png', 1.0)
-        })
+      // Convert canvas to blob
+      const blob = await new Promise((resolve) => {
+        canvas.toBlob(resolve, 'image/png', 1.0)
+      })
 
-        // Clean up
-        root.unmount()
-        document.body.removeChild(container)
+      // Clean up
+      root.unmount()
+      document.body.removeChild(container)
 
-        if (!cancelled) {
-          cachedBlobRef.current = blob
-          setIsReady(true)
-        }
-      } catch (error) {
-        console.error('Error pre-generating image:', error)
-        if (!cancelled) {
-          setIsReady(false)
-        }
-      }
+      cachedBlobRef.current = blob
+      setIsReady(true)
+    } catch (error) {
+      console.error('Error generating image:', error)
+      setIsReady(false)
+    } finally {
+      generatingRef.current = false
     }
+  }
 
-    generateImage()
-
-    return () => {
-      cancelled = true
+  const handleMouseEnter = () => {
+    // Pre-generate on hover (lazy loading)
+    if (!cachedBlobRef.current && !generatingRef.current && players && players.length > 0) {
+      generateImage()
     }
-  }, [players, eventName])
+  }
 
   const handleShare = async () => {
     if (!players || players.length === 0) {
@@ -97,12 +93,20 @@ export default function ShareLeaderboardButton({ players, eventName }) {
       return
     }
 
-    if (!cachedBlobRef.current || !isReady) {
-      toast({
-        title: 'Please wait',
-        description: 'Image is still being generated...',
-      })
-      return
+    // Generate on first click if not already generated
+    if (!cachedBlobRef.current) {
+      setIsGenerating(true)
+      await generateImage()
+      setIsGenerating(false)
+
+      if (!cachedBlobRef.current) {
+        toast({
+          title: 'Generation failed',
+          description: 'Could not generate leaderboard image.',
+          variant: 'destructive'
+        })
+        return
+      }
     }
 
     setIsGenerating(true)
@@ -166,14 +170,13 @@ export default function ShareLeaderboardButton({ players, eventName }) {
   return (
     <button
       onClick={handleShare}
-      disabled={isGenerating || !isReady || !players || players.length === 0}
+      onMouseEnter={handleMouseEnter}
+      disabled={isGenerating || !players || players.length === 0}
       className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-      title={!isReady ? "Preparing image..." : "Share leaderboard"}
+      title="Share leaderboard"
     >
       {isGenerating ? (
         <Loader2 className="w-4 h-4 animate-spin" />
-      ) : !isReady ? (
-        <Loader2 className="w-4 h-4 animate-spin opacity-50" />
       ) : (
         <Share2 className="w-4 h-4" />
       )}

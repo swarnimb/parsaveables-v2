@@ -25,13 +25,16 @@ export default function ShareableLeaderboard({ players, eventName }) {
       {/* Leaderboard Table */}
       <div className="bg-card rounded-lg border border-border overflow-hidden">
         {/* Table Header */}
-        <div className="grid grid-cols-[50px_1fr_80px_70px_60px_70px] gap-2 bg-muted/50 px-4 py-3 text-xs font-semibold border-b border-border">
-          <div className="text-center">Rank</div>
-          <div>Player</div>
-          <div className="text-right">Points</div>
-          <div className="text-center">Rounds</div>
-          <div className="text-center">Wins</div>
-          <div className="text-center">Podiums</div>
+        <div
+          className="grid grid-cols-[50px_1fr_80px_70px_60px_70px] gap-2 bg-muted/50 px-4 border-b border-border"
+          style={{ paddingTop: '14px', paddingBottom: '14px', lineHeight: '1.5' }}
+        >
+          <div className="text-center text-xs font-semibold">Rank</div>
+          <div className="text-xs font-semibold">Player</div>
+          <div className="text-right text-xs font-semibold">Points</div>
+          <div className="text-center text-xs font-semibold">Rounds</div>
+          <div className="text-center text-xs font-semibold">Wins</div>
+          <div className="text-center text-xs font-semibold">Podiums</div>
         </div>
 
         {/* Table Body */}
@@ -43,12 +46,13 @@ export default function ShareableLeaderboard({ players, eventName }) {
             return (
               <div
                 key={`${player.id}-${index}`}
-                className={`grid grid-cols-[50px_1fr_80px_70px_60px_70px] gap-2 px-4 py-3 text-sm ${
+                className={`grid grid-cols-[50px_1fr_80px_70px_60px_70px] gap-2 px-4 ${
                   isTopThree ? 'bg-primary/5' : ''
                 }`}
+                style={{ paddingTop: '14px', paddingBottom: '14px', lineHeight: '1.5' }}
               >
                 {/* Rank */}
-                <div className="text-center font-bold">
+                <div className="text-center font-bold" style={{ lineHeight: '1.5' }}>
                   {rank === 1 && <span className="text-yellow-500">🥇</span>}
                   {rank === 2 && <span className="text-gray-400">🥈</span>}
                   {rank === 3 && <span className="text-amber-600">🥉</span>}
@@ -56,19 +60,29 @@ export default function ShareableLeaderboard({ players, eventName }) {
                 </div>
 
                 {/* Player Name */}
-                <div className="font-medium truncate">{player.player_name}</div>
+                <div className="font-medium text-sm" style={{ lineHeight: '1.5', overflow: 'visible' }}>
+                  {player.player_name}
+                </div>
 
                 {/* Points */}
-                <div className="text-right font-semibold">{player.total_points || 0}</div>
+                <div className="text-right font-semibold text-sm" style={{ lineHeight: '1.5' }}>
+                  {player.total_points || 0}
+                </div>
 
                 {/* Rounds */}
-                <div className="text-center text-muted-foreground">{player.rounds_played || 0}</div>
+                <div className="text-center text-muted-foreground text-sm" style={{ lineHeight: '1.5' }}>
+                  {player.rounds_played || 0}
+                </div>
 
                 {/* Wins */}
-                <div className="text-center text-muted-foreground">{player.wins || 0}</div>
+                <div className="text-center text-muted-foreground text-sm" style={{ lineHeight: '1.5' }}>
+                  {player.wins || 0}
+                </div>
 
                 {/* Podiums */}
-                <div className="text-center text-muted-foreground">{player.podiums || 0}</div>
+                <div className="text-center text-muted-foreground text-sm" style={{ lineHeight: '1.5' }}>
+                  {player.podiums || 0}
+                </div>
               </div>
             )
           })}
