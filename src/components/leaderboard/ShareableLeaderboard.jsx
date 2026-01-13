@@ -15,9 +15,9 @@ export default function ShareableLeaderboard({ players, eventName }) {
     >
       {/* Header */}
       <div className="text-center mb-6">
-        <div className="flex items-center justify-center gap-2 mb-2">
-          <Trophy className="w-6 h-6 text-primary" />
-          <h2 className="text-2xl font-bold">ParSaveables</h2>
+        <div className="flex items-center justify-center gap-2 mb-2" style={{ alignItems: 'center' }}>
+          <Trophy className="w-6 h-6 text-primary" style={{ flexShrink: 0 }} />
+          <h2 className="text-2xl font-bold" style={{ lineHeight: 1, marginTop: '2px' }}>ParSaveables</h2>
         </div>
         <p className="text-sm text-muted-foreground">{eventName}</p>
       </div>
@@ -91,7 +91,7 @@ export default function ShareableLeaderboard({ players, eventName }) {
 
       {/* Footer */}
       <div className="text-center mt-4 text-xs text-muted-foreground">
-        parsaveables.com
+        parsaveables.vercel.app
       </div>
     </div>
   )
