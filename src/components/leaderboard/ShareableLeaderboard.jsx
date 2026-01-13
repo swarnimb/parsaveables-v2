@@ -1,5 +1,3 @@
-import { Trophy } from 'lucide-react'
-
 /**
  * ShareableLeaderboard Component
  *
@@ -16,7 +14,11 @@ export default function ShareableLeaderboard({ players, eventName }) {
       {/* Header */}
       <div className="text-center mb-6">
         <div className="flex items-center justify-center gap-2 mb-2" style={{ alignItems: 'center' }}>
-          <Trophy className="w-6 h-6 text-primary" style={{ flexShrink: 0, marginBottom: '3px' }} />
+          <img
+            src="/branding-logo.jpeg"
+            alt="ParSaveables Logo"
+            style={{ height: '28px', width: 'auto', flexShrink: 0 }}
+          />
           <h2 className="text-2xl font-bold" style={{ lineHeight: 1 }}>ParSaveables</h2>
         </div>
         <p className="text-sm text-muted-foreground">{eventName}</p>
