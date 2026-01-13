@@ -244,7 +244,7 @@ export const eventAPI = {
 
     const isSeason = event.type === 'season'
 
-    // Fetch the list of players selected for this event
+    // Fetch the list of players selected for this event (if any)
     const { data: eventPlayers, error: eventPlayersError } = await queryWithTimeout(
       () => supabase
         .from('event_players')
@@ -255,22 +255,24 @@ export const eventAPI = {
 
     if (eventPlayersError) throw eventPlayersError
 
-    // If no players are assigned to this event, return empty array
-    if (!eventPlayers || eventPlayers.length === 0) {
-      console.log('No players assigned to this event')
-      return []
+    // Build the query for player rounds
+    let query = supabase
+      .from('player_rounds')
+      .select('player_name, player_id, final_total, rank, rank_points, birdie_points, eagle_points, ace_points, birdies, eagles, aces, pars, bogeys, double_bogeys, total_strokes, total_score')
+      .eq('event_id', eventId)
+
+    // Only filter by player_id if players are explicitly assigned to this event
+    if (eventPlayers && eventPlayers.length > 0) {
+      const playerIds = eventPlayers.map(ep => ep.player_id)
+      console.log('Player IDs assigned to this event:', playerIds)
+      query = query.in('player_id', playerIds)
+    } else {
+      console.log('No players explicitly assigned - showing all players who played')
     }
 
-    const playerIds = eventPlayers.map(ep => ep.player_id)
-    console.log('Player IDs for this event:', playerIds)
-
-    // Fetch player rounds for this event, filtered by selected players only
+    // Fetch player rounds
     const { data, error } = await queryWithTimeout(
-      () => supabase
-        .from('player_rounds')
-        .select('player_name, player_id, final_total, rank, rank_points, birdie_points, eagle_points, ace_points, birdies, eagles, aces, pars, bogeys, double_bogeys, total_strokes, total_score')
-        .eq('event_id', eventId)
-        .in('player_id', playerIds), // Filter by selected players
+      () => query,
       8000 // 8s timeout for potentially large dataset
     )
 
