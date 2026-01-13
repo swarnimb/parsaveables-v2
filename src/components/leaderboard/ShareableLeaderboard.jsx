@@ -24,12 +24,12 @@ export default function ShareableLeaderboard({ players, eventName }) {
           className="grid grid-cols-[45px_217px_50px_50px_50px_50px] gap-2 bg-muted/50 px-4 border-b border-border"
           style={{ height: '40px' }}
         >
-          <div className="text-center text-xs font-semibold" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Rank</div>
-          <div className="text-xs font-semibold" style={{ display: 'flex', alignItems: 'center' }}>Player</div>
-          <div className="text-center text-xs font-semibold" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Points</div>
-          <div className="text-center text-xs font-semibold" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Rounds</div>
-          <div className="text-center text-xs font-semibold" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Wins</div>
-          <div className="text-center text-xs font-semibold" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Podiums</div>
+          <div className="text-center text-xs font-semibold" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>Rank</div>
+          <div className="text-xs font-semibold" style={{ display: 'flex', alignItems: 'center', height: '100%' }}>Player</div>
+          <div className="text-center text-xs font-semibold" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>Points</div>
+          <div className="text-center text-xs font-semibold" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>Rounds</div>
+          <div className="text-center text-xs font-semibold" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>Wins</div>
+          <div className="text-center text-xs font-semibold" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>Podiums</div>
         </div>
 
         {/* Table Body */}
@@ -47,7 +47,7 @@ export default function ShareableLeaderboard({ players, eventName }) {
                 style={{ height: '48px' }}
               >
                 {/* Rank */}
-                <div className="text-center font-bold" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div className="text-center font-bold" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
                   {rank === 1 && <span className="text-yellow-500">🥇</span>}
                   {rank === 2 && <span className="text-gray-400">🥈</span>}
                   {rank === 3 && <span className="text-amber-600">🥉</span>}
@@ -55,27 +55,27 @@ export default function ShareableLeaderboard({ players, eventName }) {
                 </div>
 
                 {/* Player Name */}
-                <div className="font-medium text-sm" style={{ display: 'flex', alignItems: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <div className="font-medium text-sm" style={{ display: 'flex', alignItems: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', height: '100%' }}>
                   {player.player_name}
                 </div>
 
                 {/* Points */}
-                <div className="font-semibold text-sm" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div className="font-semibold text-sm" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
                   {player.total_points || 0}
                 </div>
 
                 {/* Rounds */}
-                <div className="text-muted-foreground text-sm" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div className="text-muted-foreground text-sm" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
                   {player.rounds_played || 0}
                 </div>
 
                 {/* Wins */}
-                <div className="text-muted-foreground text-sm" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div className="text-muted-foreground text-sm" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
                   {player.wins || 0}
                 </div>
 
                 {/* Podiums */}
-                <div className="text-muted-foreground text-sm" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div className="text-muted-foreground text-sm" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
                   {player.podiums || 0}
                 </div>
               </div>
