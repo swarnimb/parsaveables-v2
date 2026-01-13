@@ -2,18 +2,20 @@ import { useState, useRef } from 'react'
 import { Share2, Loader2 } from 'lucide-react'
 import html2canvas from 'html2canvas'
 import ShareableLeaderboard from './ShareableLeaderboard'
+import ShareLeaderboardModal from './ShareLeaderboardModal'
 import { useToast } from '@/hooks/use-toast'
 
 /**
  * ShareLeaderboardButton Component
  *
  * Renders a share button that:
- * 1. Generates image on hover (lazy loading for performance)
- * 2. Uses Web Share API to share (immediate, no user gesture loss)
+ * 1. Generates image on first click (shows spinner during generation)
+ * 2. Opens modal with image preview and Share button
+ * 3. Share button in modal opens native share sheet (fresh user gesture!)
  */
 export default function ShareLeaderboardButton({ players, eventName }) {
   const [isGenerating, setIsGenerating] = useState(false)
-  const [isReady, setIsReady] = useState(false)
+  const [showModal, setShowModal] = useState(false)
   const cachedBlobRef = useRef(null)
   const generatingRef = useRef(false)
   const { toast } = useToast()
@@ -67,19 +69,10 @@ export default function ShareLeaderboardButton({ players, eventName }) {
       document.body.removeChild(container)
 
       cachedBlobRef.current = blob
-      setIsReady(true)
     } catch (error) {
       console.error('Error generating image:', error)
-      setIsReady(false)
     } finally {
       generatingRef.current = false
-    }
-  }
-
-  const handleMouseEnter = () => {
-    // Pre-generate on hover (lazy loading)
-    if (!cachedBlobRef.current && !generatingRef.current && players && players.length > 0) {
-      generateImage()
     }
   }
 
@@ -93,73 +86,31 @@ export default function ShareLeaderboardButton({ players, eventName }) {
       return
     }
 
-    // Generate on first click if not already generated
-    if (!cachedBlobRef.current) {
-      setIsGenerating(true)
-      await generateImage()
-      setIsGenerating(false)
-
-      if (!cachedBlobRef.current) {
-        toast({
-          title: 'Generation failed',
-          description: 'Could not generate leaderboard image.',
-          variant: 'destructive'
-        })
-        return
-      }
-    }
-
     setIsGenerating(true)
 
     try {
-      const blob = cachedBlobRef.current
-      const file = new File([blob], `${eventName}-leaderboard.png`, { type: 'image/png' })
+      // Generate image if not cached (show spinner during generation)
+      if (!cachedBlobRef.current) {
+        await generateImage()
 
-      // Check if Web Share API is available and can share files
-      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-        // Share immediately - user gesture is preserved!
-        await navigator.share({
-          files: [file],
-          title: `${eventName} - Leaderboard`,
-          text: `Check out the ${eventName} leaderboard on ParSaveables!`
-        })
-
-        // Only show success toast after user completes share
-        toast({
-          title: 'Shared successfully!',
-          description: 'Leaderboard image shared.'
-        })
-      } else {
-        // Fallback: Download the image
-        const url = URL.createObjectURL(blob)
-        const link = document.createElement('a')
-        link.href = url
-        link.download = `${eventName}-leaderboard.png`
-        document.body.appendChild(link)
-        link.click()
-        document.body.removeChild(link)
-
-        // Small delay to ensure download starts
-        await new Promise(resolve => setTimeout(resolve, 100))
-        URL.revokeObjectURL(url)
-
-        toast({
-          title: 'Downloaded!',
-          description: 'Leaderboard saved to your device. Share it from your Photos/Gallery.',
-          duration: 4000
-        })
+        if (!cachedBlobRef.current) {
+          toast({
+            title: 'Generation failed',
+            description: 'Could not generate leaderboard image.',
+            variant: 'destructive'
+          })
+          return
+        }
       }
+
+      // Open modal with image preview
+      setShowModal(true)
     } catch (error) {
-      console.error('Error sharing leaderboard:', error)
-
-      // Don't show error toast if user simply cancelled
-      if (error.name === 'AbortError') {
-        return
-      }
+      console.error('Error generating leaderboard:', error)
 
       toast({
-        title: 'Share failed',
-        description: error.message || 'Could not share leaderboard image.',
+        title: 'Generation failed',
+        description: error.message || 'Could not generate leaderboard image.',
         variant: 'destructive'
       })
     } finally {
@@ -168,19 +119,33 @@ export default function ShareLeaderboardButton({ players, eventName }) {
   }
 
   return (
-    <button
-      onClick={handleShare}
-      onMouseEnter={handleMouseEnter}
-      disabled={isGenerating || !players || players.length === 0}
-      className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-      title="Share leaderboard"
-    >
-      {isGenerating ? (
-        <Loader2 className="w-4 h-4 animate-spin" />
-      ) : (
-        <Share2 className="w-4 h-4" />
-      )}
-      <span className="hidden sm:inline">Share</span>
-    </button>
+    <>
+      <button
+        onClick={handleShare}
+        disabled={isGenerating || !players || players.length === 0}
+        className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        title={isGenerating ? "Generating image..." : "Share leaderboard"}
+      >
+        {isGenerating ? (
+          <>
+            <Loader2 className="w-4 h-4 animate-spin" />
+            <span className="hidden sm:inline text-xs">Generating...</span>
+          </>
+        ) : (
+          <>
+            <Share2 className="w-4 h-4" />
+            <span className="hidden sm:inline">Share</span>
+          </>
+        )}
+      </button>
+
+      {/* Share Modal */}
+      <ShareLeaderboardModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        imageBlob={cachedBlobRef.current}
+        eventName={eventName}
+      />
+    </>
   )
 }
