@@ -13,13 +13,13 @@ export default function ShareableLeaderboard({ players, eventName }) {
     >
       {/* Header */}
       <div className="text-center mb-6">
-        <div className="flex items-center justify-center gap-2 mb-2" style={{ alignItems: 'center' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '8px' }}>
           <img
             src="/branding-logo.jpeg"
             alt="ParSaveables Logo"
-            style={{ height: '28px', width: 'auto', flexShrink: 0 }}
+            style={{ height: '28px', width: 'auto', flexShrink: 0, display: 'block' }}
           />
-          <h2 className="text-2xl font-bold" style={{ lineHeight: 1 }}>ParSaveables</h2>
+          <h2 className="text-2xl font-bold" style={{ lineHeight: 1, margin: 0 }}>ParSaveables</h2>
         </div>
         <p className="text-sm text-muted-foreground">{eventName}</p>
       </div>

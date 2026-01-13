@@ -255,10 +255,10 @@ export const eventAPI = {
 
     if (eventPlayersError) throw eventPlayersError
 
-    // Build the query for player rounds
+    // Build the query for player rounds with registered_players join
     let query = supabase
       .from('player_rounds')
-      .select('player_name, player_id, final_total, rank, rank_points, birdie_points, eagle_points, ace_points, birdies, eagles, aces, pars, bogeys, double_bogeys, total_strokes, total_score')
+      .select('player_id, registered_players!inner(player_name), final_total, rank, rank_points, birdie_points, eagle_points, ace_points, birdies, eagles, aces, pars, bogeys, double_bogeys, total_strokes, total_score')
       .eq('event_id', eventId)
 
     // Only filter by player_id if players are explicitly assigned to this event
@@ -286,7 +286,7 @@ export const eventAPI = {
     const playerRounds = {} // Track individual round scores for top 10 logic
 
     data.forEach(round => {
-      const name = round.player_name
+      const name = round.registered_players.player_name
       if (!playerStats[name]) {
         playerStats[name] = {
           player_name: name,
