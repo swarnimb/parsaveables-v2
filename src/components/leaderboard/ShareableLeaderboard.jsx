@@ -21,7 +21,7 @@ export default function ShareableLeaderboard({ players, eventName }) {
       <div className="bg-card rounded-lg border border-border overflow-hidden">
         {/* Table Header */}
         <div
-          className="grid grid-cols-[50px_250px_60px_60px_60px_60px] gap-3 bg-muted/50 px-4 border-b border-border"
+          className="grid grid-cols-[45px_217px_50px_50px_50px_50px] gap-2 bg-muted/50 px-4 border-b border-border"
           style={{ height: '40px' }}
         >
           <div className="text-center text-xs font-semibold" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Rank</div>
@@ -41,7 +41,7 @@ export default function ShareableLeaderboard({ players, eventName }) {
             return (
               <div
                 key={`${player.id}-${index}`}
-                className={`grid grid-cols-[50px_250px_60px_60px_60px_60px] gap-3 px-4 ${
+                className={`grid grid-cols-[45px_217px_50px_50px_50px_50px] gap-2 px-4 ${
                   isTopThree ? 'bg-primary/5' : ''
                 }`}
                 style={{ height: '48px' }}
