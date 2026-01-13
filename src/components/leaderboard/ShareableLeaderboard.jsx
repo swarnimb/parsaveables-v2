@@ -17,7 +17,7 @@ export default function ShareableLeaderboard({ players, eventName }) {
           <img
             src="/branding-logo.jpeg"
             alt="ParSaveables Logo"
-            style={{ height: '28px', width: 'auto', flexShrink: 0, display: 'block' }}
+            style={{ height: '28px', width: 'auto', flexShrink: 0, display: 'block', transform: 'translateY(2px)' }}
           />
           <h2 className="text-2xl font-bold" style={{ lineHeight: 1, margin: 0 }}>ParSaveables</h2>
         </div>
