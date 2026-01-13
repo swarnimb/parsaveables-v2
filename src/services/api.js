@@ -244,12 +244,33 @@ export const eventAPI = {
 
     const isSeason = event.type === 'season'
 
-    // Fetch all player rounds for this event
+    // Fetch the list of players selected for this event
+    const { data: eventPlayers, error: eventPlayersError } = await queryWithTimeout(
+      () => supabase
+        .from('event_players')
+        .select('player_id')
+        .eq('event_id', eventId),
+      5000 // 5s timeout
+    )
+
+    if (eventPlayersError) throw eventPlayersError
+
+    // If no players are assigned to this event, return empty array
+    if (!eventPlayers || eventPlayers.length === 0) {
+      console.log('No players assigned to this event')
+      return []
+    }
+
+    const playerIds = eventPlayers.map(ep => ep.player_id)
+    console.log('Player IDs for this event:', playerIds)
+
+    // Fetch player rounds for this event, filtered by selected players only
     const { data, error } = await queryWithTimeout(
       () => supabase
         .from('player_rounds')
-        .select('player_name, final_total, rank, rank_points, birdie_points, eagle_points, ace_points, birdies, eagles, aces, pars, bogeys, double_bogeys, total_strokes, total_score')
-        .eq('event_id', eventId),
+        .select('player_name, player_id, final_total, rank, rank_points, birdie_points, eagle_points, ace_points, birdies, eagles, aces, pars, bogeys, double_bogeys, total_strokes, total_score')
+        .eq('event_id', eventId)
+        .in('player_id', playerIds), // Filter by selected players
       8000 // 8s timeout for potentially large dataset
     )
 
