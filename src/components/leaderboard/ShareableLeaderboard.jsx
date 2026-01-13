@@ -21,8 +21,8 @@ export default function ShareableLeaderboard({ players, eventName }) {
       <div className="bg-card rounded-lg border border-border overflow-hidden">
         {/* Table Header */}
         <div
-          className="grid grid-cols-[60px_1fr_80px_80px_80px_80px] gap-3 bg-muted/50 px-4 border-b border-border"
-          style={{ paddingTop: '12px', paddingBottom: '12px' }}
+          className="grid grid-cols-[50px_250px_60px_60px_60px_60px] gap-3 bg-muted/50 px-4 border-b border-border"
+          style={{ height: '40px' }}
         >
           <div className="text-center text-xs font-semibold" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Rank</div>
           <div className="text-xs font-semibold" style={{ display: 'flex', alignItems: 'center' }}>Player</div>
@@ -41,10 +41,10 @@ export default function ShareableLeaderboard({ players, eventName }) {
             return (
               <div
                 key={`${player.id}-${index}`}
-                className={`grid grid-cols-[60px_1fr_80px_80px_80px_80px] gap-3 px-4 ${
+                className={`grid grid-cols-[50px_250px_60px_60px_60px_60px] gap-3 px-4 ${
                   isTopThree ? 'bg-primary/5' : ''
                 }`}
-                style={{ paddingTop: '16px', paddingBottom: '16px' }}
+                style={{ height: '48px' }}
               >
                 {/* Rank */}
                 <div className="text-center font-bold" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -55,7 +55,7 @@ export default function ShareableLeaderboard({ players, eventName }) {
                 </div>
 
                 {/* Player Name */}
-                <div className="font-medium text-sm" style={{ display: 'flex', alignItems: 'center', overflow: 'visible' }}>
+                <div className="font-medium text-sm" style={{ display: 'flex', alignItems: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {player.player_name}
                 </div>
 
