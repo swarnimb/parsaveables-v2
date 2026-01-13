@@ -13,14 +13,7 @@ export default function ShareableLeaderboard({ players, eventName }) {
     >
       {/* Header */}
       <div className="text-center mb-6">
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '8px' }}>
-          <img
-            src="/branding-logo.jpeg"
-            alt="ParSaveables Logo"
-            style={{ height: '28px', width: 'auto', flexShrink: 0, display: 'block', transform: 'translateY(2px)' }}
-          />
-          <h2 className="text-2xl font-bold" style={{ lineHeight: 1, margin: 0 }}>ParSaveables</h2>
-        </div>
+        <h2 className="text-2xl font-bold mb-2">ParSaveables</h2>
         <p className="text-sm text-muted-foreground">{eventName}</p>
       </div>
 
@@ -28,15 +21,15 @@ export default function ShareableLeaderboard({ players, eventName }) {
       <div className="bg-card rounded-lg border border-border overflow-hidden">
         {/* Table Header */}
         <div
-          className="grid grid-cols-[50px_1fr_80px_70px_60px_70px] gap-2 bg-muted/50 px-4 border-b border-border"
-          style={{ paddingTop: '14px', paddingBottom: '14px', lineHeight: '1.5' }}
+          className="grid grid-cols-[60px_1fr_80px_80px_80px_80px] gap-3 bg-muted/50 px-4 border-b border-border"
+          style={{ paddingTop: '12px', paddingBottom: '12px' }}
         >
-          <div className="text-center text-xs font-semibold">Rank</div>
-          <div className="text-xs font-semibold">Player</div>
-          <div className="text-right text-xs font-semibold">Points</div>
-          <div className="text-center text-xs font-semibold">Rounds</div>
-          <div className="text-center text-xs font-semibold">Wins</div>
-          <div className="text-center text-xs font-semibold">Podiums</div>
+          <div className="text-center text-xs font-semibold" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Rank</div>
+          <div className="text-xs font-semibold" style={{ display: 'flex', alignItems: 'center' }}>Player</div>
+          <div className="text-center text-xs font-semibold" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Points</div>
+          <div className="text-center text-xs font-semibold" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Rounds</div>
+          <div className="text-center text-xs font-semibold" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Wins</div>
+          <div className="text-center text-xs font-semibold" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Podiums</div>
         </div>
 
         {/* Table Body */}
@@ -48,13 +41,13 @@ export default function ShareableLeaderboard({ players, eventName }) {
             return (
               <div
                 key={`${player.id}-${index}`}
-                className={`grid grid-cols-[50px_1fr_80px_70px_60px_70px] gap-2 px-4 ${
+                className={`grid grid-cols-[60px_1fr_80px_80px_80px_80px] gap-3 px-4 ${
                   isTopThree ? 'bg-primary/5' : ''
                 }`}
-                style={{ paddingTop: '14px', paddingBottom: '14px', lineHeight: '1.5' }}
+                style={{ paddingTop: '16px', paddingBottom: '16px' }}
               >
                 {/* Rank */}
-                <div className="text-center font-bold" style={{ lineHeight: '1.5' }}>
+                <div className="text-center font-bold" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {rank === 1 && <span className="text-yellow-500">🥇</span>}
                   {rank === 2 && <span className="text-gray-400">🥈</span>}
                   {rank === 3 && <span className="text-amber-600">🥉</span>}
@@ -62,27 +55,27 @@ export default function ShareableLeaderboard({ players, eventName }) {
                 </div>
 
                 {/* Player Name */}
-                <div className="font-medium text-sm" style={{ lineHeight: '1.5', overflow: 'visible' }}>
+                <div className="font-medium text-sm" style={{ display: 'flex', alignItems: 'center', overflow: 'visible' }}>
                   {player.player_name}
                 </div>
 
                 {/* Points */}
-                <div className="text-right font-semibold text-sm" style={{ lineHeight: '1.5' }}>
+                <div className="font-semibold text-sm" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {player.total_points || 0}
                 </div>
 
                 {/* Rounds */}
-                <div className="text-center text-muted-foreground text-sm" style={{ lineHeight: '1.5' }}>
+                <div className="text-muted-foreground text-sm" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {player.rounds_played || 0}
                 </div>
 
                 {/* Wins */}
-                <div className="text-center text-muted-foreground text-sm" style={{ lineHeight: '1.5' }}>
+                <div className="text-muted-foreground text-sm" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {player.wins || 0}
                 </div>
 
                 {/* Podiums */}
-                <div className="text-center text-muted-foreground text-sm" style={{ lineHeight: '1.5' }}>
+                <div className="text-muted-foreground text-sm" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {player.podiums || 0}
                 </div>
               </div>
