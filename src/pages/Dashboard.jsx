@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { Trophy, Calendar, TrendingUp, Award, Target, Swords, ChevronDown, ChevronUp } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
+import { supabase } from '@/services/supabase'
 import { eventAPI } from '@/services/api'
 import { getCurrentEvent } from '@/utils/seasonUtils'
 import { Card } from '@/components/ui/card'

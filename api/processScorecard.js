@@ -132,39 +132,25 @@ export async function processNewScorecards(options = {}) {
     throw error;
   }
 }
-
 /**
- * Process a single email with scorecard
- * Executes the complete 12-step workflow
+ * Process a single image from an email
+ * Handles steps 2b through 11 for one scorecard image
  *
- * @param {Object} email - Email object from emailService
- * @param {Object} options - Processing options
- * @returns {Promise<Object>} Processing result
+ * @param {Object} scorecardImage - Image object with imageUrl, filename, etc.
+ * @param {number} imageIndex - Index of this image in the email (for logging)
+ * @param {number} totalImages - Total number of images in the email (for logging)
+ * @returns {Promise<Object>} Processing result for this image
  */
-async function processSingleEmail(email, options = {}) {
-  const { skipNotifications = false } = options;
-
-  logger.info('Starting single email processing', { emailId: email.id });
-
-  // Step 2: Extract images from email
-  logger.info('Step 2: Extracting images');
-  const images = await emailService.getImageAttachments(email);
-
-  if (images.length === 0) {
-    throw new Error('No images found in email');
-  }
-
-  logger.info(`Found ${images.length} images`);
-
-  // Use the first image (assuming one scorecard per email)
-  const scorecardImage = images[0];
+async function processSingleImage(scorecardImage, imageIndex, totalImages) {
+  logger.info(`Processing image ${imageIndex + 1} of ${totalImages}`, {
+    filename: scorecardImage.filename
+  });
 
   // Step 2b: Upload image to Supabase Storage (before Claude Vision)
   logger.info('Step 2b: Uploading scorecard image to Supabase Storage');
   let scorecardImageUrl = null;
 
   try {
-    // Generate unique filename (will use actual data after extraction)
     const tempFilename = storageService.generateScorecardFilename(
       'temp',
       new Date().toISOString().split('T')[0]
@@ -177,7 +163,6 @@ async function processSingleEmail(email, options = {}) {
 
     logger.info('Scorecard image uploaded', { url: scorecardImageUrl });
   } catch (uploadError) {
-    // Log error but continue (image upload is not critical for processing)
     logger.warn('Failed to upload scorecard image, continuing without it', {
       error: uploadError.message
     });
@@ -232,7 +217,6 @@ async function processSingleEmail(email, options = {}) {
       processedData.players
     );
 
-    // Log what we got back for debugging
     logger.info('Player validation result', {
       hasMatched: !!playerValidation?.matched,
       hasUnmatched: !!playerValidation?.unmatched,
@@ -247,12 +231,10 @@ async function processSingleEmail(email, options = {}) {
     throw new Error(`Player validation failed: ${error.message}`);
   }
 
-  // Defensive check for expected structure
   if (!playerValidation || typeof playerValidation !== 'object') {
     throw new Error('Player validation returned invalid result');
   }
 
-  // Log warnings for fuzzy matches and unmatched players
   if (playerValidation.warnings && playerValidation.warnings.length > 0) {
     logger.warn('Player validation warnings', {
       count: playerValidation.warnings.length,
@@ -260,7 +242,6 @@ async function processSingleEmail(email, options = {}) {
     });
   }
 
-  // Use matched players only
   const validPlayers = playerValidation.matched || [];
 
   if (validPlayers.length === 0) {
@@ -301,11 +282,10 @@ async function processSingleEmail(email, options = {}) {
   // Step 10: Store in Supabase
   logger.info('Step 10: Storing data in Supabase');
 
-  // 10a: Insert round
   const roundData = {
     date: scorecardData.date,
     time: scorecardData.time || null,
-    course_name: configuration.course.course_name, // Use matched canonical name
+    course_name: configuration.course.course_name,
     layout_name: scorecardData.layoutName || null,
     location: scorecardData.location || null,
     temperature: scorecardData.temperature || null,
@@ -313,13 +293,12 @@ async function processSingleEmail(email, options = {}) {
     course_multiplier: configuration.course.multiplier,
     event_id: event.id,
     event_type: event.type,
-    scorecard_image_url: scorecardImageUrl // Add uploaded image URL
+    scorecard_image_url: scorecardImageUrl
   };
 
   const round = await db.insertRound(roundData);
   logger.info('Round created', { roundId: round.id });
 
-  // 10a-2: Create notifications for ALL players about new round
   try {
     await db.createNewRoundNotifications(
       round.id,
@@ -333,13 +312,11 @@ async function processSingleEmail(email, options = {}) {
       error: notifError.message,
       roundId: round.id
     });
-    // Don't throw - notification failure shouldn't break the flow
   }
 
-  // 10b: Insert player rounds
   const playerRoundsData = playersWithPoints.map(player => ({
     round_id: round.id,
-    player_id: player.playerId, // Foreign key to registered_players
+    player_id: player.playerId,
     player_name: player.registeredName || player.name,
     rank: player.rank,
     total_strokes: player.totalStrokes,
@@ -383,7 +360,66 @@ async function processSingleEmail(email, options = {}) {
       error: error.message,
       roundId: round.id
     });
-    // Don't throw - gamification failure shouldn't break the scorecard flow
+  }
+
+  return {
+    round,
+    playerRounds,
+    event,
+    scorecardData,
+    playerValidation,
+    configuration,
+    gamificationResults
+  };
+}
+
+/**
+ * Process a single email with scorecard(s)
+ * Processes ALL images in the email, each as a separate round
+ *
+ * @param {Object} email - Email object from emailService
+ * @param {Object} options - Processing options
+ * @returns {Promise<Object>} Processing result with array of rounds
+ */
+async function processSingleEmail(email, options = {}) {
+  const { skipNotifications = false } = options;
+
+  logger.info('Starting single email processing', { emailId: email.id });
+
+  // Step 2: Extract images from email
+  logger.info('Step 2: Extracting images');
+  const images = await emailService.getImageAttachments(email);
+
+  if (images.length === 0) {
+    throw new Error('No images found in email');
+  }
+
+  logger.info(`Found ${images.length} image(s) to process`);
+
+  // Process each image as a separate round
+  const processedRounds = [];
+  const failedImages = [];
+
+  for (let i = 0; i < images.length; i++) {
+    try {
+      const result = await processSingleImage(images[i], i, images.length);
+      processedRounds.push(result);
+    } catch (error) {
+      logger.error(`Failed to process image ${i + 1} of ${images.length}`, {
+        filename: images[i].filename,
+        error: error.message
+      });
+      failedImages.push({
+        index: i,
+        filename: images[i].filename,
+        error: error.message
+      });
+    }
+  }
+
+  // If no images processed successfully, throw error
+  if (processedRounds.length === 0) {
+    throw new Error(`All ${images.length} image(s) failed to process`);
   }
 
   // Step 12: Mark email as processed
@@ -391,11 +427,9 @@ async function processSingleEmail(email, options = {}) {
   await emailService.markAsProcessed(email.id);
   await emailService.addLabel(email.id, 'ParSaveables/Processed');
 
-  // Step 13: Reset betting lock after PULP settlement
+  // Step 13: Reset betting lock after PULP settlement (once per email)
   logger.info('Step 13: Resetting betting lock after PULP settlement');
   try {
-    // Clear betting lock for ALL active events (since admin sets it on all)
-    // This ensures consistency: if admin locks all events, processing unlocks all events
     const activeEvents = await db.getActiveEvents();
 
     if (activeEvents && activeEvents.length > 0) {
@@ -405,42 +439,38 @@ async function processSingleEmail(email, options = {}) {
           logger.info('Betting lock reset for event', {
             eventId: evt.id,
             eventName: evt.name,
-            previousLockTime: evt.betting_lock_time,
-            roundId: round.id
+            previousLockTime: evt.betting_lock_time
           });
         }
       }
       logger.info('All active events betting locks cleared', {
-        roundId: round.id,
-        eventsCleared: activeEvents.filter(e => e.betting_lock_time).length,
-        pulpSettled: gamificationResults ? 'yes' : 'attempted'
+        eventsCleared: activeEvents.filter(e => e.betting_lock_time).length
       });
     } else {
       logger.info('No active events found to reset betting lock');
     }
   } catch (error) {
     logger.error('Failed to reset betting lock (non-fatal)', {
-      error: error.message,
-      roundId: round.id
+      error: error.message
     });
-    // Don't throw - lock reset failure shouldn't break the flow
   }
 
-  logger.info('Single email processing complete', {
+  logger.info('Email processing complete', {
     emailId: email.id,
-    roundId: round.id,
-    playerCount: playerRounds.length
+    imagesProcessed: processedRounds.length,
+    imagesFailed: failedImages.length,
+    roundIds: processedRounds.map(r => r.round.id)
   });
 
   return {
     emailId: email.id,
-    round: round,
-    playerRounds: playerRounds,
-    event: event,
-    scorecardData: scorecardData,
-    playerValidation: playerValidation,
-    configuration: configuration,
-    gamificationResults: gamificationResults
+    rounds: processedRounds,
+    failedImages: failedImages,
+    stats: {
+      totalImages: images.length,
+      successful: processedRounds.length,
+      failed: failedImages.length
+    }
   };
 }
 
