@@ -1,11 +1,68 @@
 import * as db from './databaseService.js';
 import { createLogger } from '../../utils/logger.js';
+import { createRequire } from 'module';
+
+// Use createRequire for JSON imports (Node.js ES module compatibility)
+const require = createRequire(import.meta.url);
+const emojiData = require('unicode-emoji-json');
 
 const logger = createLogger('PlayerService');
 
+// Regex to match emoji characters
+const emojiRegex = /[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]|[\u{1F600}-\u{1F64F}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]/gu;
+
+/**
+ * Decode emojis in a string to their Unicode names
+ * e.g., "🐦🐦🧺" → "bird bird basket"
+ *
+ * @param {string} text - Text potentially containing emojis
+ * @returns {string} Text with emojis replaced by their names
+ */
+function decodeEmojis(text) {
+  if (!text || typeof text !== 'string') {
+    return '';
+  }
+
+  // Find all emojis in the text
+  const emojis = text.match(emojiRegex) || [];
+
+  if (emojis.length === 0) {
+    return text; // No emojis, return as-is
+  }
+
+  // Build decoded string
+  let decoded = text;
+  for (const emoji of emojis) {
+    const emojiInfo = emojiData[emoji];
+    if (emojiInfo && emojiInfo.name) {
+      // Replace emoji with its name (e.g., 🐦 → "bird")
+      decoded = decoded.replace(emoji, ` ${emojiInfo.name} `);
+    } else {
+      // Unknown emoji, remove it
+      decoded = decoded.replace(emoji, ' ');
+    }
+  }
+
+  // Clean up extra spaces
+  return decoded.replace(/\s+/g, ' ').trim();
+}
+
+/**
+ * Check if a string contains emojis
+ *
+ * @param {string} text - Text to check
+ * @returns {boolean} True if contains emojis
+ */
+function containsEmojis(text) {
+  if (!text || typeof text !== 'string') {
+    return false;
+  }
+  return emojiRegex.test(text);
+}
+
 /**
  * Normalize name for fuzzy matching
- * Removes special characters, converts to lowercase, trims whitespace
+ * Decodes emojis to their names, then normalizes
  *
  * @param {string} name - Player name to normalize
  * @returns {string} Normalized name
@@ -14,10 +71,14 @@ function normalizeName(name) {
   if (!name || typeof name !== 'string') {
     return '';
   }
-  return name
+
+  // First decode any emojis to their text names
+  const decodedName = decodeEmojis(name);
+
+  return decodedName
     .toLowerCase()
     .trim()
-    .replace(/[^a-z0-9\s]/g, '') // Remove special chars
+    .replace(/[^a-z0-9\s]/g, '') // Remove special chars (non-alpha)
     .replace(/\s+/g, ' '); // Collapse multiple spaces
 }
 
@@ -33,12 +94,18 @@ function calculateSimilarity(name1, name2) {
   const norm1 = normalizeName(name1);
   const norm2 = normalizeName(name2);
 
+  // If either name is empty after normalization, no match possible
+  if (norm1.length === 0 || norm2.length === 0) {
+    // Only return 1.0 if BOTH are empty (edge case)
+    return (norm1.length === 0 && norm2.length === 0) ? 1.0 : 0.0;
+  }
+
   // Exact match after normalization
   if (norm1 === norm2) {
     return 1.0;
   }
 
-  // Check if one contains the other
+  // Check if one contains the other (safe now since neither is empty)
   if (norm1.includes(norm2) || norm2.includes(norm1)) {
     return 0.9;
   }
@@ -54,10 +121,6 @@ function calculateSimilarity(name1, name2) {
   // Calculate Levenshtein-like similarity
   const longer = norm1.length > norm2.length ? norm1 : norm2;
   const shorter = norm1.length > norm2.length ? norm2 : norm1;
-
-  if (longer.length === 0) {
-    return 1.0;
-  }
 
   const editDistance = levenshteinDistance(longer, shorter);
   return (longer.length - editDistance) / longer.length;
