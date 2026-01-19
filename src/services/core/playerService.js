@@ -162,8 +162,49 @@ function levenshteinDistance(str1, str2) {
 }
 
 /**
+ * Check if a name matches any player's aliases
+ * Returns the matched player or null
+ *
+ * @param {string} inputName - Name to search for
+ * @param {string} normalizedInput - Normalized version of the name (for emoji decoding)
+ * @param {Array<Object>} registeredPlayers - List of registered players with aliases
+ * @returns {Object|null} Matched player or null
+ */
+function findPlayerByAlias(inputName, normalizedInput, registeredPlayers) {
+  for (const player of registeredPlayers) {
+    const aliases = player.aliases || [];
+
+    // Check if input name matches any alias (case-insensitive)
+    for (const alias of aliases) {
+      const normalizedAlias = normalizeName(alias);
+
+      // Check exact match with original input
+      if (alias.toLowerCase() === inputName.toLowerCase()) {
+        return player;
+      }
+
+      // Check match with normalized input (handles emoji decoding)
+      if (normalizedAlias === normalizedInput) {
+        return player;
+      }
+
+      // Check if normalized alias contains or is contained by normalized input
+      if (normalizedAlias && normalizedInput) {
+        if (normalizedAlias === normalizedInput ||
+            (normalizedInput.length >= 3 && normalizedAlias.includes(normalizedInput)) ||
+            (normalizedAlias.length >= 3 && normalizedInput.includes(normalizedAlias))) {
+          return player;
+        }
+      }
+    }
+  }
+
+  return null;
+}
+
+/**
  * Validate and match player names from scorecard against registered players
- * Returns matched players with similarity scores
+ * First checks aliases, then falls back to fuzzy matching
  *
  * @param {Array<Object>} scorecardPlayers - Players from scorecard with {name, ...}
  * @returns {Promise<Object>} Object with {matched, unmatched, warnings}
@@ -180,8 +221,31 @@ export async function validatePlayers(scorecardPlayers) {
 
   for (const scorecardPlayer of scorecardPlayers) {
     const inputName = scorecardPlayer.name;
+    const normalizedInput = normalizeName(inputName);
 
-    // Find best match from registered players
+    // Step 1: Check aliases first (highest priority)
+    const aliasMatch = findPlayerByAlias(inputName, normalizedInput, registeredPlayers);
+
+    if (aliasMatch) {
+      matched.push({
+        ...scorecardPlayer,
+        playerId: aliasMatch.id,
+        registeredName: aliasMatch.player_name,
+        matchScore: 1.0,
+        matchType: 'alias'
+      });
+
+      logger.info('Player matched via alias', {
+        input: inputName,
+        normalizedInput: normalizedInput,
+        registered: aliasMatch.player_name,
+        score: '1.00'
+      });
+
+      continue; // Skip fuzzy matching for this player
+    }
+
+    // Step 2: Fall back to fuzzy matching
     let bestMatch = null;
     let bestScore = 0;
 
@@ -210,7 +274,8 @@ export async function validatePlayers(scorecardPlayers) {
         ...scorecardPlayer,
         playerId: bestMatch.id,
         registeredName: bestMatch.player_name,
-        matchScore: bestScore
+        matchScore: bestScore,
+        matchType: 'exact'
       });
 
       logger.info('Player matched', {
@@ -224,7 +289,8 @@ export async function validatePlayers(scorecardPlayers) {
         ...scorecardPlayer,
         playerId: bestMatch.id,
         registeredName: bestMatch.player_name,
-        matchScore: bestScore
+        matchScore: bestScore,
+        matchType: 'fuzzy'
       });
 
       warnings.push({

@@ -22,7 +22,8 @@ export default function PlayersTab() {
   const [deleteDialog, setDeleteDialog] = useState({ open: false, player: null })
   const [removeDialog, setRemoveDialog] = useState({ open: false, player: null })
   const [formData, setFormData] = useState({
-    player_name: ''
+    player_name: '',
+    aliases: ''
   })
   const [error, setError] = useState('')
 
@@ -100,15 +101,21 @@ export default function PlayersTab() {
   const handleCreate = () => {
     setError('')
     setFormData({
-      player_name: ''
+      player_name: '',
+      aliases: ''
     })
     setEditDialog({ open: true, player: null })
   }
 
   const handleEdit = (player) => {
     setError('')
+    // Convert aliases array to comma-separated string for editing
+    const aliasesString = Array.isArray(player.aliases)
+      ? player.aliases.join(', ')
+      : ''
     setFormData({
-      player_name: player.player_name
+      player_name: player.player_name,
+      aliases: aliasesString
     })
     setEditDialog({ open: true, player })
   }
@@ -124,8 +131,14 @@ export default function PlayersTab() {
         return
       }
 
+      // Convert comma-separated aliases string to array
+      const aliasesArray = formData.aliases
+        ? formData.aliases.split(',').map(a => a.trim()).filter(a => a.length > 0)
+        : []
+
       const updateData = {
-        player_name: formData.player_name
+        player_name: formData.player_name,
+        aliases: aliasesArray
       }
 
       if (editDialog.player) {
@@ -305,7 +318,14 @@ export default function PlayersTab() {
           {players.map((player) => (
             <Card key={player.id} className="p-4">
               <div className="flex items-center justify-between">
-                <h3 className="font-medium">{player.player_name}</h3>
+                <div>
+                  <h3 className="font-medium">{player.player_name}</h3>
+                  {player.aliases && player.aliases.length > 0 && (
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Aliases: {player.aliases.join(', ')}
+                    </p>
+                  )}
+                </div>
 
                 <div className="flex items-center gap-2">
                   <Button
@@ -363,9 +383,23 @@ export default function PlayersTab() {
                 id="player_name"
                 value={formData.player_name}
                 onChange={(e) => setFormData({ ...formData, player_name: e.target.value })}
-                placeholder="John Doe"
+                placeholder="John Doe or 🐦🐦🧺"
                 className="mt-1.5"
               />
+            </div>
+
+            <div>
+              <Label htmlFor="aliases">Aliases (comma-separated)</Label>
+              <Input
+                id="aliases"
+                value={formData.aliases}
+                onChange={(e) => setFormData({ ...formData, aliases: e.target.value })}
+                placeholder="bird bird basket, Bird, EdgarGalindo"
+                className="mt-1.5"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Names used to match this player from scorecards (e.g., decoded emojis, nicknames)
+              </p>
             </div>
 
             {error && (
