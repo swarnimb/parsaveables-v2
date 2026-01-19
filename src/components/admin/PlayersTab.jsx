@@ -389,16 +389,15 @@ export default function PlayersTab() {
             </div>
 
             <div>
-              <Label htmlFor="aliases">Aliases (comma-separated)</Label>
+              <Label htmlFor="aliases">Human Name</Label>
               <Input
                 id="aliases"
                 value={formData.aliases}
                 onChange={(e) => setFormData({ ...formData, aliases: e.target.value })}
-                placeholder="bird bird basket, Bird, EdgarGalindo"
                 className="mt-1.5"
               />
               <p className="text-xs text-muted-foreground mt-1">
-                Names used to match this player from scorecards (e.g., decoded emojis, nicknames)
+                The name shown on scorecards that should match to this player
               </p>
             </div>
 
