@@ -22,8 +22,7 @@ export default function PlayersTab() {
   const [deleteDialog, setDeleteDialog] = useState({ open: false, player: null })
   const [removeDialog, setRemoveDialog] = useState({ open: false, player: null })
   const [formData, setFormData] = useState({
-    player_name: '',
-    aliases: ''
+    player_name: ''
   })
   const [error, setError] = useState('')
 
@@ -101,21 +100,15 @@ export default function PlayersTab() {
   const handleCreate = () => {
     setError('')
     setFormData({
-      player_name: '',
-      aliases: ''
+      player_name: ''
     })
     setEditDialog({ open: true, player: null })
   }
 
   const handleEdit = (player) => {
     setError('')
-    // Convert aliases array to comma-separated string for editing
-    const aliasesString = Array.isArray(player.aliases)
-      ? player.aliases.join(', ')
-      : ''
     setFormData({
-      player_name: player.player_name,
-      aliases: aliasesString
+      player_name: player.player_name
     })
     setEditDialog({ open: true, player })
   }
@@ -131,14 +124,8 @@ export default function PlayersTab() {
         return
       }
 
-      // Convert comma-separated aliases string to array
-      const aliasesArray = formData.aliases
-        ? formData.aliases.split(',').map(a => a.trim()).filter(a => a.length > 0)
-        : []
-
       const updateData = {
-        player_name: formData.player_name,
-        aliases: aliasesArray
+        player_name: formData.player_name
       }
 
       if (editDialog.player) {
@@ -386,19 +373,6 @@ export default function PlayersTab() {
                 placeholder="John Doe or 🐦🐦🧺"
                 className="mt-1.5"
               />
-            </div>
-
-            <div>
-              <Label htmlFor="aliases">Human Name</Label>
-              <Input
-                id="aliases"
-                value={formData.aliases}
-                onChange={(e) => setFormData({ ...formData, aliases: e.target.value })}
-                className="mt-1.5"
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                The name shown on scorecards that should match to this player
-              </p>
             </div>
 
             {error && (
