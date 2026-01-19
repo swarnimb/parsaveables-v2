@@ -162,7 +162,7 @@ function levenshteinDistance(str1, str2) {
 }
 
 /**
- * Check if a name matches any player's aliases
+ * Check if a name matches any player's aliases (EXACT match only)
  * Returns the matched player or null
  *
  * @param {string} inputName - Name to search for
@@ -174,27 +174,17 @@ function findPlayerByAlias(inputName, normalizedInput, registeredPlayers) {
   for (const player of registeredPlayers) {
     const aliases = player.aliases || [];
 
-    // Check if input name matches any alias (case-insensitive)
     for (const alias of aliases) {
       const normalizedAlias = normalizeName(alias);
 
-      // Check exact match with original input
+      // Exact match with original input (case-insensitive)
       if (alias.toLowerCase() === inputName.toLowerCase()) {
         return player;
       }
 
-      // Check match with normalized input (handles emoji decoding)
-      if (normalizedAlias === normalizedInput) {
+      // Exact match with normalized input (handles emoji decoding)
+      if (normalizedAlias && normalizedInput && normalizedAlias === normalizedInput) {
         return player;
-      }
-
-      // Check if normalized alias contains or is contained by normalized input
-      if (normalizedAlias && normalizedInput) {
-        if (normalizedAlias === normalizedInput ||
-            (normalizedInput.length >= 3 && normalizedAlias.includes(normalizedInput)) ||
-            (normalizedAlias.length >= 3 && normalizedInput.includes(normalizedAlias))) {
-          return player;
-        }
       }
     }
   }
