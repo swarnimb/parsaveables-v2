@@ -1,6 +1,6 @@
 # ParSaveables v2 - Project Dashboard
 
-**Last Updated:** 2026-01-04 (End of Session)
+**Last Updated:** 2026-01-19 (End of Session)
 **Current Phase:** Phase 5 (Testing & Bug Fixes) - IN PROGRESS
 **Status:** Foundation | Auth & Layout | Leaderboard | Rounds | PULP Design | Backend Services | Frontend UI | Season Awareness | UX Enhancements | Testing Framework | Guest Login | Admin Control Center | Tutorial System | Feature Flags | Podcast System COMPLETE
 
@@ -10,7 +10,7 @@
 
 | Area | Status |
 |------|--------|
-| Documentation | Complete & Updated (Jan 3, 2026) |
+| Documentation | Complete & Updated (Jan 19, 2026) |
 | Project Setup | Complete (Vite, Tailwind v3, Shadcn, Radix UI) |
 | Folder Structure | Complete (core/, gamification/ organized) |
 | Supabase Client | Configured & Connected |
@@ -45,7 +45,42 @@
 
 ---
 
-## This Session Summary (2026-01-04 - Latest)
+## This Session Summary (2026-01-19 - Latest)
+
+### Player Alias Matching Bug Fix
+
+**Problem:**
+Two players with similar names were being confused by the scorecard processing:
+- **BigBirdie** - a registered player name
+- **🐦🐦🧺** - another player whose emoji name decodes to "bird bird basket"
+
+The system was incorrectly matching the emoji player to BigBirdie (or vice versa), causing one player to be counted twice.
+
+**Root Cause:**
+The `findPlayerByAlias` function in `src/services/core/playerService.js` had **partial matching logic** that checked if one name *contained* the other:
+```javascript
+// OLD CODE (problematic):
+if (normalizedAlias.includes(normalizedInput) ||
+    normalizedInput.includes(normalizedAlias)) {
+  return player;
+}
+```
+
+This caused false positives because both "bigbirdie" and "bird bird basket" contain the word "bird".
+
+**Solution:**
+Changed alias matching to **EXACT matches only**:
+- Case-insensitive exact match on original input
+- Exact match on normalized input (for emoji decoding)
+
+**Files Modified:**
+- `src/services/core/playerService.js` - Removed partial matching, now exact only
+
+**Commit:** 5a3b430
+
+---
+
+## Previous Session Summary (2026-01-04)
 
 ### Podcast System Refinements
 
