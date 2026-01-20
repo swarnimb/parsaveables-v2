@@ -464,7 +464,7 @@ export const roundAPI = {
         .from('player_rounds')
         .select('player_name, final_total, rank, total_score, birdies, eagles, aces')
         .eq('round_id', roundId)
-        .order('final_total', { ascending: false }),
+        .order('rank', { ascending: true }),
       5000 // 5s timeout
     )
 

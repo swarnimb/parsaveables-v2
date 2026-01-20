@@ -131,8 +131,8 @@ export default function RoundCard({ round, isExpanded, onToggle }) {
                         >
                           <div className="flex items-center gap-3 flex-1 min-w-0">
                             {/* Rank */}
-                            <span className={`text-sm font-bold min-w-[24px] ${isWinner ? 'text-yellow-600' : 'text-muted-foreground'}`}>
-                              {isWinner ? '🏆' : `#${index + 1}`}
+                            <span className={`text-sm font-bold min-w-[24px] ${player.rank === 1 ? 'text-yellow-600' : 'text-muted-foreground'}`}>
+                              {player.rank === 1 ? '🏆' : `#${player.rank}`}
                             </span>
 
                             {/* Player Name */}
