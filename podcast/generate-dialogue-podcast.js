@@ -404,253 +404,192 @@ function formatChallengesForPrompt(challenges) {
 }
 
 // ============================================================================
+// STEP 3B: BUILD PLAYER PROFILES & FORMAT HELPERS
+// ============================================================================
+
+function buildPlayerProfiles(rounds) {
+  const profiles = {};
+
+  rounds.forEach(round => {
+    const playerCount = round.player_rounds?.length || 0;
+    round.player_rounds?.forEach(pr => {
+      if (!profiles[pr.player_name]) {
+        profiles[pr.player_name] = {
+          roundsPlayed: 0, wins: 0, podiums: 0, lastPlaces: 0,
+          totalScore: 0, bestFinish: Infinity, worstFinish: 0,
+          totalBirdies: 0, totalEagles: 0, totalAces: 0,
+          rankHistory: [], scoreHistory: []
+        };
+      }
+      const p = profiles[pr.player_name];
+      p.roundsPlayed++;
+      if (pr.rank === 1) p.wins++;
+      if (pr.rank <= 3) p.podiums++;
+      if (pr.rank === playerCount) p.lastPlaces++;
+      p.totalScore += pr.total_score || 0;
+      p.bestFinish = Math.min(p.bestFinish, pr.rank);
+      p.worstFinish = Math.max(p.worstFinish, pr.rank);
+      p.totalBirdies += pr.birdies || 0;
+      p.totalEagles += pr.eagles || 0;
+      p.totalAces += pr.aces || 0;
+      p.rankHistory.push(pr.rank);
+      p.scoreHistory.push(pr.total_score);
+    });
+  });
+
+  Object.entries(profiles).forEach(([name, p]) => {
+    p.avgScore = (p.totalScore / p.roundsPlayed).toFixed(1);
+    p.avgFinish = (p.rankHistory.reduce((a, b) => a + b, 0) / p.roundsPlayed).toFixed(1);
+
+    // Trend: compare first half avg rank to second half
+    if (p.rankHistory.length >= 2) {
+      const mid = Math.floor(p.rankHistory.length / 2);
+      const firstAvg = p.rankHistory.slice(0, mid).reduce((a, b) => a + b, 0) / mid;
+      const secondAvg = p.rankHistory.slice(mid).reduce((a, b) => a + b, 0) / (p.rankHistory.length - mid);
+      if (secondAvg < firstAvg - 0.5) p.trend = 'improving';
+      else if (secondAvg > firstAvg + 0.5) p.trend = 'declining';
+      else p.trend = 'steady';
+    } else {
+      p.trend = 'too few rounds';
+    }
+
+    // Consistency: stdev of ranks
+    const mean = p.rankHistory.reduce((a, b) => a + b, 0) / p.rankHistory.length;
+    const variance = p.rankHistory.reduce((sum, r) => sum + Math.pow(r - mean, 2), 0) / p.rankHistory.length;
+    p.consistency = Math.sqrt(variance).toFixed(1);
+
+    // Streak: consecutive same finishes
+    p.currentStreak = null;
+    if (p.rankHistory.length >= 2) {
+      const lastRank = p.rankHistory[p.rankHistory.length - 1];
+      let streak = 1;
+      for (let i = p.rankHistory.length - 2; i >= 0; i--) {
+        if (p.rankHistory[i] === lastRank) streak++;
+        else break;
+      }
+      if (streak >= 2) p.currentStreak = `${streak}x rank ${lastRank}`;
+    }
+  });
+
+  return profiles;
+}
+
+function formatRoundsForPrompt(rounds) {
+  return rounds.map((r, i) => {
+    const sorted = [...(r.player_rounds || [])].sort((a, b) => a.rank - b.rank);
+    const results = sorted.map(pr => {
+      const highlights = [];
+      if (pr.aces > 0) highlights.push(`${pr.aces} ace${pr.aces > 1 ? 's' : ''}`);
+      if (pr.eagles > 0) highlights.push(`${pr.eagles} eagle${pr.eagles > 1 ? 's' : ''}`);
+      if (pr.birdies > 0) highlights.push(`${pr.birdies} birdie${pr.birdies > 1 ? 's' : ''}`);
+      const extra = highlights.length > 0 ? ` (${highlights.join(', ')})` : '';
+      return `  ${pr.rank}. ${pr.player_name} - ${pr.total_score}${extra}`;
+    }).join('\n');
+    return `Round ${i + 1} at ${r.course_name}:\n${results}`;
+  }).join('\n\n');
+}
+
+function formatPlayerProfilesForPrompt(profiles) {
+  return Object.entries(profiles)
+    .sort((a, b) => parseFloat(a[1].avgFinish) - parseFloat(b[1].avgFinish))
+    .map(([name, p]) => {
+      const parts = [
+        `${name}: ${p.roundsPlayed} rounds, avg finish ${p.avgFinish}, avg score ${p.avgScore}`,
+        `  Wins: ${p.wins}, Podiums: ${p.podiums}, Last places: ${p.lastPlaces}`,
+        `  Birdies: ${p.totalBirdies}, Eagles: ${p.totalEagles}, Aces: ${p.totalAces}`,
+        `  Ranks: [${p.rankHistory.join(', ')}] | Trend: ${p.trend} | Consistency: ${p.consistency}`
+      ];
+      if (p.currentStreak) parts.push(`  Streak: ${p.currentStreak}`);
+      return parts.join('\n');
+    }).join('\n\n');
+}
+
+// ============================================================================
 // STEP 4: GENERATE TWO-PERSON DIALOGUE SCRIPT
 // ============================================================================
 
 async function generateDialogueScript(data, episodeInfo, previousScript, talkingPoints) {
   log('SCRIPT', 'Generating two-person dialogue script with Claude...');
 
-  const prompt = `You are creating an ENTHUSIASTIC, STORY-DRIVEN two-person podcast episode for ParSaveables, a disc golf league where friends compete, bet, and create chaos.
+  const playerProfiles = buildPlayerProfiles(data.rounds);
 
-**CRITICAL FORMAT INSTRUCTIONS:**
-- Write this as a DIALOGUE between TWO HOSTS (Annie and Hyzer)
-- Format EVERY LINE as: "[ANNIE]:" or "[HYZER]:" followed by what they say (with square brackets)
-- This is SPORTS RADIO COMMENTARY, not a casual chat - bring energy and enthusiasm!
-- NO narration, NO stage directions, ONLY dialogue
-- Each person should speak 2-5 sentences before the other responds
-- Total length: 600-800 words (3-4 minutes when spoken)
+  const prompt = `You are writing a two-person podcast episode for ParSaveables, a disc golf league where friends compete and create chaos.
 
-**ABSOLUTELY NO NON-WORD FILLERS OR SOUND EFFECTS:**
-- NO [laughs], [chuckles], [giggles]
-- NO [gasps], [sighs], [groans]
-- NO [whistles], [claps], [snaps]
-- NO [pauses], [beat], [silence]
-- NO stage directions or actions in brackets
-- ONLY use actual spoken words that can be read aloud
-- If you want to convey excitement, use exclamation points and energetic language
-- If you want to show a pause, just end the sentence and start a new one
+**FORMAT RULES:**
+- Every line: [ANNIE]: or [HYZER]: followed by spoken dialogue
+- NO narration, NO stage directions, NO brackets except speaker tags
+- NO [laughs], [sighs], [pauses], [chuckles] or any non-spoken text in brackets
+- Use exclamation points and energetic language to convey emotion instead
+- Each speaker: 1-4 sentences per turn
+- Total: 800-1200 words
 
-**Episode Context:**
-- Episode ${episodeInfo.episodeNumber}
-- Period: ${episodeInfo.periodStart} to ${episodeInfo.periodEnd}
-- Type: ${episodeInfo.type}
+**CHARACTERS:**
+- ANNIE: The storyteller. Connects stats to narratives, builds drama, gives every player their moment.
+- HYZER: The stats nerd. Pulls out numbers, spots patterns, gets genuinely excited about data.
+- Both are casual, like two friends who watched every round. Think sports bar recap, not ESPN desk.
+- They complete each other's sentences with dashes, react to each other, light roasting and banter throughout.
+
+**EPISODE ${episodeInfo.episodeNumber}** | ${episodeInfo.type}
 ${data.newEvents.length > 0 ? `
-**NEW EVENTS STARTING THIS PERIOD:**
-${data.newEvents.map(e => `- ${e.name} (${e.type}) kicked off on ${e.start_date}`).join('\n')}
-This is a big deal! Hype up the start of ${data.newEvents.map(e => e.name).join(' and ')} with fun, excitement, and humor. Treat it like opening day!
+NEW THIS PERIOD: ${data.newEvents.map(e => `${e.name} (${e.type}) started`).join(', ')}
+This is opening day! Hype up the new ${data.newEvents.map(e => e.type).join('/')} with excitement and humor.
 ` : ''}
-**Statistics:**
-- Rounds Played: ${data.stats.totalRounds}
-- Unique Players: ${data.stats.totalPlayers}
-- Total Challenges: ${data.stats.totalChallenges} (${data.stats.challengesAccepted} accepted)
-- Total Bets Placed: ${data.stats.totalBets}
-${data.stats.mostAces > 0 ? `- Most Aces: ${data.stats.topAcePlayer} with ${data.stats.mostAces} aces!` : ''}
-${data.stats.mostBirdies > 0 ? `- Most Birdies: ${data.stats.topBirdiePlayer} with ${data.stats.mostBirdies} birdies` : ''}
+OVERVIEW: ${data.stats.totalRounds} rounds, ${data.stats.totalPlayers} players
+${data.stats.mostAces > 0 ? `Aces leader: ${data.stats.topAcePlayer} with ${data.stats.mostAces}` : 'No aces this period'}
+${data.stats.mostBirdies > 0 ? `Birdies leader: ${data.stats.topBirdiePlayer} with ${data.stats.mostBirdies}` : ''}
 
-**Recent Rounds:**
-${data.rounds.slice(-3).map(r =>
-  `- ${r.date} at ${r.course_name}: ${r.player_rounds?.length || 0} players${
-    r.player_rounds?.[0] ? ` (Winner: ${r.player_rounds.find(pr => pr.rank === 1)?.player_name || 'N/A'})` : ''
-  }`
-).join('\n')}
+**ROUND-BY-ROUND RESULTS:**
+${formatRoundsForPrompt(data.rounds)}
 
-**Bets This Month:**
-${formatBetsForPrompt(data.bets)}
+**PLAYER PROFILES (cross-round analysis):**
+${formatPlayerProfilesForPrompt(playerProfiles)}
 
-**Challenges This Month:**
-${formatChallengesForPrompt(data.challenges)}
+${previousScript ? `PREVIOUS EPISODE (don't repeat these topics):
+${previousScript.substring(0, 400)}` : ''}
 
-${previousScript ? `**PREVIOUS EPISODE COVERED:**
-${previousScript.substring(0, 500)}...
-
-IMPORTANT: Don't repeat topics from the previous episode. Find NEW angles and stories.` : ''}
-
-${Object.keys(talkingPoints).length > 0 ? `**CUSTOM TALKING POINTS (incorporate these naturally):**
+${Object.keys(talkingPoints).length > 0 ? `TALKING POINTS (weave these in naturally during relevant round discussions):
 ${Object.entries(talkingPoints).map(([category, points]) => {
   if (!Array.isArray(points) || points.length === 0) return '';
-  return `${category.toUpperCase()}:\n${points.map(p => `- ${p}`).join('\n')}`;
-}).filter(Boolean).join('\n\n')}` : ''}
+  return `${category}: ${points.join(' | ')}`;
+}).filter(Boolean).join('\n')}` : ''}
 
-**CRITICAL - What Data You Have:**
+**HOW TO COVER THE ROUNDS:**
+1. Cover ALL ${data.stats.totalRounds} rounds — don't skip any. But don't just read results like a spreadsheet.
+2. For each round, find the STORY: Was it an upset? A blowout? A tight finish? Did someone choke? Did someone surge from the bottom?
+3. Spotlight EVERY player at least once across the episode. Use the player profiles:
+   - Who's on a hot streak or cold streak?
+   - Who's been finishing in the same position repeatedly?
+   - Who's improving round over round? Who's declining?
+   - Who's the most consistent? Who's the most volatile?
+   - Who's quietly solid in the middle of the pack?
+   - Who had a great birdie/eagle/ace day?
+4. Don't read dates — reference courses naturally ("back at Metro", "the Fox Run round").
+5. Don't go round-by-round in a mechanical order if it doesn't flow well. Group by storylines if that's more interesting.
 
-1. STATS & RANKINGS - Use for objective facts:
-   - Who won rounds, their scores, birdies/eagles/aces
-   - Challenge outcomes with full details (who challenged who, wager, outcome)
-   - Bet details with predictions (who they picked, wager, won/lost)
-   - Leaderboard standings
+**BANTER & GAGS:**
+Sprinkle these naturally THROUGHOUT the episode (don't concentrate them):
+- "It's par saveable" — for mediocre but salvageable performances
+- "Treesus" — disc golf deity, use 1-2 times max
+- "Blessed" / "Cursed" — for clutch moments or chokes
+- Light roasting of bottom finishers (respectful but funny)
+- Quick reactions between hosts after revealing a stat or result
+- Tag-team storytelling: complete each other's sentences with dashes
 
-2. TALKING POINTS - Use for anecdotal storytelling (if provided):
-   - Specific shot details (water hazards, tree hits, clutch putts)
-   - Funny moments and on-course incidents
-   - Drama, controversies, and rivalries
-   - Any context manually added by user
+**STRUCTURE:**
+- Quick welcome (2-3 lines max, not a whole production)
+- Dive into rounds and player stories (the bulk of the episode)
+- Brief sign-off (2-3 lines, natural "see you next time")
+- Let the conversation flow naturally — no rigid acts or forced segments
 
-**DON'T MAKE STUFF UP:**
-- DON'T invent shot details (putts, hazards, etc.) if not in talking points
-- DON'T create drama, controversies, or stories that aren't in the data or talking points
-- DO highlight impressive stats and roast poor performances
-- DO use talking points to build narratives and add color commentary
-- If talking points are empty, focus on stats-driven storytelling
-- If data is sparse or boring, acknowledge it and move on
+**WHAT NOT TO DO:**
+- Don't invent shot details, putts, or incidents not in the data or talking points
+- Don't read "on January 15th at Fox Run, Player X scored 52" — that's a database dump
+- Don't only talk about winners — mid-pack and bottom players are just as interesting
+- Don't concentrate all banter at the start or end — distribute it throughout
+- Don't pad with filler — if a round was uneventful, say so and move on
+- Don't use sound effects or stage directions in brackets
 
-**Tone & Style Guidelines:**
-
-**ENERGY LEVEL:**
-- Enthusiastic sports radio commentary - bring excitement and storytelling flair!
-- Use exclamation points for genuine excitement (aces, wins, upsets, drama)
-- Build anticipation and suspense when telling stories
-- Genuine emotion - celebrate great performances, sympathize with brutal losses
-
-**STORYTELLING APPROACH:**
-- NARRATIVE-FIRST: Stats support stories, not the other way around
-- Build mysteries and intrigue (if talking points mention unresolved drama)
-- Use contrast and irony for comedic effect
-- Tag-team storytelling - complete each other's thoughts mid-sentence
-- NEW SEASON/TOURNAMENT OPENER: If the rounds include the FIRST round of a new season or tournament, make it a big deal! Hype up the fresh start, joke about preseason predictions already being wrong, welcome everyone back with energy and humor. Treat it like opening day - new hopes, new rivalries, same degenerates.
-
-**CHARACTER VOICES:**
-- HYZER: Stats enthusiast who gets genuinely excited about numbers and patterns
-- ANNIE: Story curator who connects stats to human drama and context
-- Both: Self-deprecating about the league ("bunch of degenerates"), enthusiastic about the chaos
-
-**RUNNING GAGS & LEAGUE LINGO:**
-- "The format strikes!" - When point systems create unexpected winners
-- "It's par saveable" - For recoveries or mediocre but salvageable results
-- "Blessed" / "Cursed" - For clutch moments or chokes
-- "Degenerates" - Self-deprecating term for league players
-- "Treesus" - Disc golf deity (use sparingly)
-- "Heavy bags" - Reference to league culture
-- Beer-related chaos - Recurring theme if it appears in talking points
-
-**WHAT TO AVOID:**
-- Deadpan or overly sarcastic delivery
-- Dry, unenthusiastic recaps
-- "Another month, another round of questionable decisions" (OLD opening - don't use)
-- Corporate podcast voice or forced positivity
-- Over-explaining stats - quick dumps, then move to story
-
-**REQUIRED OPENING STRUCTURE (Lines 1-10 ish):**
-
-1. Dual enthusiastic welcome:
-   [HYZER]: Welcome folks!
-   [ANNIE]: Welcome folks!
-
-2. Show title announcement + tagline:
-   [HYZER]: This is PAR SAVEABLES!
-   [ANNIE]: [Energetic league descriptor - "The world of heavy bags, curses, and pocket beers!"]
-
-3. Host introductions (character-defining):
-   [HYZER]: I'm Hyzer, your resident stats nerd who [self-deprecating quirk]—
-   [ANNIE]: —and I'm Annie, here to [storytelling role]. For those just tuning in, ParSaveables is [brief league description]—
-   [HYZER]: —we track EVERYTHING! [List exciting things tracked]—
-
-4. Episode preview (build anticipation):
-   [ANNIE]: We've got some absolute [doozies/gems/chaos] to cover today. We're talking [period recap].
-   [HYZER]: [Notable stat or drama hook]
-
-5. Hook/tease (if major story exists):
-   [ANNIE]: But the REAL story [tease biggest moment]
-   [HYZER]: [React or build on tease]
-
-**CONVERSATION FLOW:**
-
-**ACT 1: COLD OPEN & SETUP (Lines 1-15)**
-- Dual welcome + show intro
-- Host character intros
-- Episode preview and hooks
-
-**ACT 2: ROUND RECAPS (Lines 16-40)**
-- 2-3 rounds or story beats
-- Quick stat dump → interesting narrative observation
-- Use "The format strikes!" if point system creates surprises
-- Highlight aces, upsets, dominant performances
-
-**ACT 3: BET & CHALLENGE BREAKDOWN (Lines 41-55)**
-- Who bet on what, winners and losers (roast bad predictions)
-- Challenge outcomes - celebrate winners, roast those who rejected
-- Leaderboard movement (climbs/falls)
-
-**ACT 4: TALKING POINTS SHOWCASE (Lines 56-70, if provided)**
-- Weave in anecdotal stories from talking points
-- Beer drama, controversies, funny moments
-- Build mysteries (if talking points mention unresolved drama)
-
-**ACT 5: SIGN OFF (Lines 71-80)**
-- Positive forward look (upcoming rounds, new players, teasers)
-- Rhetorical questions (unanswered mysteries, predictions)
-- Catchphrase farewell: "Keep those discs flying and your beers accounted for—"
-- Show tagline: "—and we'll catch you next time on Par Saveables!"
-- Final tagline: "Where the bags are heavy, the language is colorful, and the [league characteristic]!"
-
-**TAG-TEAM STORYTELLING TECHNIQUE:**
-
-Share sentences with dashes:
-[ANNIE]: So Mike challenged Jake, and let me tell you—
-[HYZER]: —Jake REJECTED it! Paid the cowardice tax!
-
-Build on each other:
-[HYZER]: Three rounds this month.
-[ANNIE]: But here's the kicker—
-[HYZER]: Two of them were won by the SAME person!
-
-**EXAMPLES OF GOOD DIALOGUE:**
-
-**Stats-Driven Story (No talking points):**
-[HYZER]: Mike bet on himself finishing top 3!
-[ANNIE]: How'd that go?
-[HYZER]: Eighth place.
-[ANNIE]: Blessed.
-[HYZER]: It's par saveable... theoretically.
-
-**With Talking Point:**
-TALKING POINT: "Jake's drive on hole 5 hit a tree and bounced into the water"
-[ANNIE]: Jake's tee shot on hole 5 found a tree.
-[HYZER]: Classic.
-[ANNIE]: But wait, it gets better—bounced right into the water.
-[HYZER]: Treesus works in mysterious ways.
-
-**Energy & Excitement (Ace):**
-TALKING POINT: "Sarah hit an ace on hole 12 with a forehand"
-[HYZER]: And then Sarah—oh man—chains on hole 12!
-[ANNIE]: Wait, ace?
-[HYZER]: ACE! Forehand, too!
-[ANNIE]: That's the highlight of the month right there!
-
-**Mystery Building:**
-TALKING POINT: "Controversy during round 3, details TBD"
-[ANNIE]: And then we had the round 3... situation.
-[HYZER]: The one we literally cannot discuss.
-[ANNIE]: Not yet, anyway.
-[HYZER]: All I'll say is, the league has never seen anything like it.
-
-**BAD EXAMPLES (Don't do this):**
-
-❌ Making stuff up:
-[ANNIE]: Mike had some clutch 40-foot putts! (NOT IN DATA)
-
-❌ Using sound effect fillers:
-[HYZER]: [laughs] That's rough. (NO SOUND EFFECTS IN BRACKETS)
-
-❌ Deadpan when you should be excited:
-[ANNIE]: Sarah got an ace. Moving on. (SHOW EXCITEMENT!)
-
-❌ Over-explaining boring stats:
-[HYZER]: So the average score was 54.3, which is 2.1 strokes better than last month's 56.4... (TOO MUCH DETAIL)
-
-**FINAL CHECKLIST BEFORE WRITING:**
-✅ Dual welcome + show title
-✅ Host character intros
-✅ Episode preview with hooks
-✅ 2-3 story beats from stats/rounds
-✅ Bet & challenge breakdown
-✅ Weave in talking points naturally (if provided)
-✅ Build mysteries (if unresolved drama exists)
-✅ Catchphrase sign-off
-✅ Show tagline at end
-✅ NO brackets, NO made-up details
-✅ Enthusiastic sports radio energy throughout
-
-NOW WRITE THE FULL DIALOGUE (600-800 words, DIALOGUE FORMAT ONLY):`;
+NOW WRITE THE FULL DIALOGUE:`;
 
   const message = await anthropic.messages.create({
     model: config.anthropic.model,
@@ -932,7 +871,7 @@ async function createEpisode(episodeInfo, script, audioUrl) {
       word_count: wordCount,
       estimated_duration_minutes: estimatedDuration,
       generated_by: 'claude-sonnet-4-5',
-      status: 'published'
+      status: 'approved'
     });
 
   if (scriptError) {

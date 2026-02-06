@@ -9,29 +9,18 @@
       "general_notes": ["Anything else worth mentioning"]
     }
   },
-  "episode_2": {
-    "highlights": [
-      "Add your 2025 season highlights here",
-      "Notable performances from last 2 rounds",
-      "Season champions and top performers"
-    ],
-    "rivalries": [
-      "Any ongoing feuds from 2025",
-      "Challenge history between rivals"
-    ],
+  "episode_1": {
+    "highlights": [],
+    "rivalries": [],
     "funny_moments": [
-      "Memorable moments from 2025",
-      "Funny incidents from recent rounds"
+      "At Bible Ridge, Bird's shot crash lands onto Shogun's forehead. We can debate all day long if it was deliberate or accidental but Shogun got a huge bump on his head"
     ],
-    "pulp_notes": [
-      "PULP economy stats for 2025",
-      "Biggest wins/losses of the season",
-      "How the new PULP system will work in 2026"
-    ],
+    "pulp_notes": [],
     "general_notes": [
-      "Welcome new players joining in 2026",
-      "Preview of 2026 season changes",
-      "Any rule updates or new features"
+      "Welcome to season 2026",
+      "Wild choice to pick the East Metro course as the season opener",
+      "Same rules as 2025, but with a bigger roster",
+      "Had to play through a couple very windy rounds in the first month of the season"
     ]
   }
 }
