@@ -147,9 +147,7 @@ async function determineEpisodePeriod() {
   const periodStart = new Date(lastEnd);
   periodStart.setDate(periodStart.getDate() + 1);
 
-  const periodEnd = new Date(periodStart);
-  periodEnd.setMonth(periodEnd.getMonth() + 1);
-  periodEnd.setDate(periodEnd.getDate() - 1); // Last day of the month period
+  const periodEnd = new Date(); // Always cover up to today
 
   return {
     periodStart: periodStart.toISOString().split('T')[0],
@@ -247,7 +245,14 @@ async function fetchComprehensiveData(periodStart, periodEnd) {
     .order('total_pulps', { ascending: false })
     .limit(10);
 
-  // 6. Calculate statistics
+  // 6. Fetch events (seasons/tournaments) that started during this period
+  const { data: newEvents } = await supabase
+    .from('events')
+    .select('name, type, start_date')
+    .gte('start_date', periodStart)
+    .lte('start_date', periodEnd);
+
+  // 7. Calculate statistics
   const stats = calculateStats(rounds, challenges, bets, transactions);
 
   return {
@@ -256,6 +261,7 @@ async function fetchComprehensiveData(periodStart, periodEnd) {
     bets: bets || [],
     transactions: transactions || [],
     leaderboard: leaderboard || [],
+    newEvents: newEvents || [],
     stats
   };
 }
@@ -428,18 +434,18 @@ async function generateDialogueScript(data, episodeInfo, previousScript, talking
 - Episode ${episodeInfo.episodeNumber}
 - Period: ${episodeInfo.periodStart} to ${episodeInfo.periodEnd}
 - Type: ${episodeInfo.type}
-
+${data.newEvents.length > 0 ? `
+**NEW EVENTS STARTING THIS PERIOD:**
+${data.newEvents.map(e => `- ${e.name} (${e.type}) kicked off on ${e.start_date}`).join('\n')}
+This is a big deal! Hype up the start of ${data.newEvents.map(e => e.name).join(' and ')} with fun, excitement, and humor. Treat it like opening day!
+` : ''}
 **Statistics:**
 - Rounds Played: ${data.stats.totalRounds}
 - Unique Players: ${data.stats.totalPlayers}
 - Total Challenges: ${data.stats.totalChallenges} (${data.stats.challengesAccepted} accepted)
 - Total Bets Placed: ${data.stats.totalBets}
-- Total PULPs Wagered: ${data.stats.totalWagered}
 ${data.stats.mostAces > 0 ? `- Most Aces: ${data.stats.topAcePlayer} with ${data.stats.mostAces} aces!` : ''}
 ${data.stats.mostBirdies > 0 ? `- Most Birdies: ${data.stats.topBirdiePlayer} with ${data.stats.mostBirdies} birdies` : ''}
-
-**Top PULP Holders:**
-${data.leaderboard.slice(0, 5).map((p, i) => `${i + 1}. ${p.player_name}: ${p.total_pulps} PULPs`).join('\n')}
 
 **Recent Rounds:**
 ${data.rounds.slice(-3).map(r =>
@@ -453,11 +459,6 @@ ${formatBetsForPrompt(data.bets)}
 
 **Challenges This Month:**
 ${formatChallengesForPrompt(data.challenges)}
-
-**Top PULP Transactions:**
-${data.transactions.slice(0, 5).map(t =>
-  `- ${t.player?.player_name}: ${t.amount > 0 ? '+' : ''}${t.amount} PULPs (${t.description})`
-).join('\n')}
 
 ${previousScript ? `**PREVIOUS EPISODE COVERED:**
 ${previousScript.substring(0, 500)}...
@@ -476,7 +477,7 @@ ${Object.entries(talkingPoints).map(([category, points]) => {
    - Who won rounds, their scores, birdies/eagles/aces
    - Challenge outcomes with full details (who challenged who, wager, outcome)
    - Bet details with predictions (who they picked, wager, won/lost)
-   - PULP transactions and leaderboard standings
+   - Leaderboard standings
 
 2. TALKING POINTS - Use for anecdotal storytelling (if provided):
    - Specific shot details (water hazards, tree hits, clutch putts)
@@ -505,6 +506,7 @@ ${Object.entries(talkingPoints).map(([category, points]) => {
 - Build mysteries and intrigue (if talking points mention unresolved drama)
 - Use contrast and irony for comedic effect
 - Tag-team storytelling - complete each other's thoughts mid-sentence
+- NEW SEASON/TOURNAMENT OPENER: If the rounds include the FIRST round of a new season or tournament, make it a big deal! Hype up the fresh start, joke about preseason predictions already being wrong, welcome everyone back with energy and humor. Treat it like opening day - new hopes, new rivalries, same degenerates.
 
 **CHARACTER VOICES:**
 - HYZER: Stats enthusiast who gets genuinely excited about numbers and patterns
@@ -566,7 +568,7 @@ ${Object.entries(talkingPoints).map(([category, points]) => {
 **ACT 3: BET & CHALLENGE BREAKDOWN (Lines 41-55)**
 - Who bet on what, winners and losers (roast bad predictions)
 - Challenge outcomes - celebrate winners, roast those who rejected
-- PULP economy movement (leaderboard climbs/falls)
+- Leaderboard movement (climbs/falls)
 
 **ACT 4: TALKING POINTS SHOWCASE (Lines 56-70, if provided)**
 - Weave in anecdotal stories from talking points
@@ -583,7 +585,7 @@ ${Object.entries(talkingPoints).map(([category, points]) => {
 **TAG-TEAM STORYTELLING TECHNIQUE:**
 
 Share sentences with dashes:
-[ANNIE]: So Mike challenged Jake for 50 PULPs, and let me tell you—
+[ANNIE]: So Mike challenged Jake, and let me tell you—
 [HYZER]: —Jake REJECTED it! Paid the cowardice tax!
 
 Build on each other:
@@ -594,7 +596,7 @@ Build on each other:
 **EXAMPLES OF GOOD DIALOGUE:**
 
 **Stats-Driven Story (No talking points):**
-[HYZER]: Mike bet 200 PULPs on himself finishing top 3!
+[HYZER]: Mike bet on himself finishing top 3!
 [ANNIE]: How'd that go?
 [HYZER]: Eighth place.
 [ANNIE]: Blessed.
@@ -922,7 +924,7 @@ async function createEpisode(episodeInfo, script, audioUrl) {
   const wordCount = script.split(/\s+/).length;
   const estimatedDuration = Math.round(wordCount / 150); // ~150 words per minute
 
-  await supabase
+  const { error: scriptError } = await supabase
     .from('podcast_scripts')
     .insert({
       episode_id: episode.id,
@@ -932,6 +934,10 @@ async function createEpisode(episodeInfo, script, audioUrl) {
       generated_by: 'claude-sonnet-4-5',
       status: 'published'
     });
+
+  if (scriptError) {
+    log('ERROR', 'Failed to save podcast script', { error: scriptError.message, details: scriptError });
+  }
 
   log('DATABASE', 'Episode and script created successfully', {
     episodeId: episode.id,
