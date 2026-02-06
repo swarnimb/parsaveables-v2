@@ -443,9 +443,9 @@ ${data.leaderboard.slice(0, 5).map((p, i) => `${i + 1}. ${p.player_name}: ${p.to
 
 **Recent Rounds:**
 ${data.rounds.slice(-3).map(r =>
-  \`- \${r.date} at \${r.course_name}: \${r.player_rounds?.length || 0} players\${
-    r.player_rounds?.[0] ? \` (Winner: \${r.player_rounds.find(pr => pr.rank === 1)?.player_name || 'N/A'})\` : ''
-  }\`
+  `- ${r.date} at ${r.course_name}: ${r.player_rounds?.length || 0} players${
+    r.player_rounds?.[0] ? ` (Winner: ${r.player_rounds.find(pr => pr.rank === 1)?.player_name || 'N/A'})` : ''
+  }`
 ).join('\n')}
 
 **Bets This Month:**
@@ -456,19 +456,19 @@ ${formatChallengesForPrompt(data.challenges)}
 
 **Top PULP Transactions:**
 ${data.transactions.slice(0, 5).map(t =>
-  \`- \${t.player?.player_name}: \${t.amount > 0 ? '+' : ''}\${t.amount} PULPs (\${t.description})\`
+  `- ${t.player?.player_name}: ${t.amount > 0 ? '+' : ''}${t.amount} PULPs (${t.description})`
 ).join('\n')}
 
-${previousScript ? \`**PREVIOUS EPISODE COVERED:**
-\${previousScript.substring(0, 500)}...
+${previousScript ? `**PREVIOUS EPISODE COVERED:**
+${previousScript.substring(0, 500)}...
 
-IMPORTANT: Don't repeat topics from the previous episode. Find NEW angles and stories.\` : ''}
+IMPORTANT: Don't repeat topics from the previous episode. Find NEW angles and stories.` : ''}
 
-${Object.keys(talkingPoints).length > 0 ? \`**CUSTOM TALKING POINTS (incorporate these naturally):**
-\${Object.entries(talkingPoints).map(([category, points]) => {
+${Object.keys(talkingPoints).length > 0 ? `**CUSTOM TALKING POINTS (incorporate these naturally):**
+${Object.entries(talkingPoints).map(([category, points]) => {
   if (!Array.isArray(points) || points.length === 0) return '';
-  return \`\${category.toUpperCase()}:\\n\${points.map(p => \`- \${p}\`).join('\\n')}\`;
-}).filter(Boolean).join('\\n\\n')}\` : ''}
+  return `${category.toUpperCase()}:\n${points.map(p => `- ${p}`).join('\n')}`;
+}).filter(Boolean).join('\n\n')}` : ''}
 
 **CRITICAL - What Data You Have:**
 
