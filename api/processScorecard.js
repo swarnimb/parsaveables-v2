@@ -81,7 +81,7 @@ export async function processNewScorecards(options = {}) {
 
         logger.info('Email processed successfully', {
           emailId: email.id,
-          roundId: result.round.id
+          roundIds: result.rounds.map(r => r.round.id)
         });
       } catch (error) {
         logger.error('Failed to process email', {
