@@ -19,9 +19,29 @@ export function calculatePoints(rankedPlayers, configuration) {
   const { config } = configuration.pointsSystem;
   const { course } = configuration;
 
+  // Build tied rank → averaged points lookup
+  const tiedRankPointsMap = new Map();
+  const rankGroups = new Map();
+  for (const player of rankedPlayers) {
+    if (!rankGroups.has(player.rank)) {
+      rankGroups.set(player.rank, 0);
+    }
+    rankGroups.set(player.rank, rankGroups.get(player.rank) + 1);
+  }
+  for (const [rank, count] of rankGroups) {
+    if (count > 1) {
+      const spannedRanks = Array.from({ length: count }, (_, i) => rank + i);
+      const averaged = calculateTiedRankPoints(spannedRanks, config.rank_points);
+      tiedRankPointsMap.set(rank, parseFloat(averaged.toFixed(2)));
+      logger.info('Tied rank points averaged', { rank, count, spannedRanks, averaged });
+    }
+  }
+
   const playersWithPoints = rankedPlayers.map((player) => {
-    // 1. Calculate rank points
-    const rankPoints = calculateRankPoints(player.rank, config.rank_points);
+    // 1. Calculate rank points (use averaged if tied)
+    const rankPoints = tiedRankPointsMap.has(player.rank)
+      ? tiedRankPointsMap.get(player.rank)
+      : calculateRankPoints(player.rank, config.rank_points);
 
     // 2. Calculate performance points
     const performancePoints = calculatePerformancePoints(player, config.performance_points);

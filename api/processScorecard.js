@@ -76,12 +76,18 @@ export async function processNewScorecards(options = {}) {
 
         const result = await processSingleEmail(email, { skipNotifications });
 
-        results.processed.push(result);
-        results.stats.successful++;
+        if (result.rounds.length > 0) {
+          results.processed.push(result);
+          results.stats.successful++;
+        } else {
+          results.skipped.push(result);
+          results.stats.skipped++;
+        }
 
-        logger.info('Email processed successfully', {
+        logger.info('Email processed', {
           emailId: email.id,
-          roundIds: result.rounds.map(r => r.round.id)
+          roundIds: result.rounds.map(r => r.round.id),
+          skippedImages: result.skippedImages?.length || 0
         });
       } catch (error) {
         logger.error('Failed to process email', {
@@ -174,6 +180,10 @@ async function processSingleImage(scorecardImage, imageIndex, totalImages) {
 
   // Step 4: Validate scorecard data
   logger.info('Step 4: Validating scorecard data');
+  if (!scorecardData.valid && scorecardData.reason?.includes('minimum 4 required')) {
+    logger.info('Scorecard skipped: too few players', { reason: scorecardData.reason });
+    return { skipped: true, reason: scorecardData.reason };
+  }
   if (!scorecardData.valid) {
     throw new Error(scorecardData.reason || 'Invalid scorecard');
   }
@@ -399,11 +409,20 @@ async function processSingleEmail(email, options = {}) {
   // Process each image as a separate round
   const processedRounds = [];
   const failedImages = [];
+  const skippedImages = [];
 
   for (let i = 0; i < images.length; i++) {
     try {
       const result = await processSingleImage(images[i], i, images.length);
-      processedRounds.push(result);
+      if (result.skipped) {
+        skippedImages.push({
+          index: i,
+          filename: images[i].filename,
+          reason: result.reason
+        });
+      } else {
+        processedRounds.push(result);
+      }
     } catch (error) {
       logger.error(`Failed to process image ${i + 1} of ${images.length}`, {
         filename: images[i].filename,
@@ -417,47 +436,58 @@ async function processSingleEmail(email, options = {}) {
     }
   }
 
-  // If no images processed successfully, throw error
-  if (processedRounds.length === 0) {
+  // If no images processed successfully and none were skipped, throw error
+  if (processedRounds.length === 0 && skippedImages.length === 0) {
     throw new Error(`All ${images.length} image(s) failed to process`);
   }
 
   // Step 12: Mark email as processed
   logger.info('Step 12: Marking email as processed');
   await emailService.markAsProcessed(email.id);
-  await emailService.addLabel(email.id, 'ParSaveables/Processed');
 
-  // Step 13: Reset betting lock after PULP settlement (once per email)
-  logger.info('Step 13: Resetting betting lock after PULP settlement');
-  try {
-    const activeEvents = await db.getActiveEvents();
+  // Label based on results: processed > skipped > error
+  if (processedRounds.length > 0) {
+    await emailService.addLabel(email.id, 'ParSaveables/Processed');
+  } else {
+    await emailService.addLabel(email.id, 'ParSaveables/Skipped');
+  }
 
-    if (activeEvents && activeEvents.length > 0) {
-      for (const evt of activeEvents) {
-        if (evt.betting_lock_time) {
-          await db.updateEvent(evt.id, { betting_lock_time: null });
-          logger.info('Betting lock reset for event', {
-            eventId: evt.id,
-            eventName: evt.name,
-            previousLockTime: evt.betting_lock_time
-          });
+  // Step 13: Reset betting lock after PULP settlement (only if rounds were processed)
+  if (processedRounds.length === 0) {
+    logger.info('Step 13: Skipping betting lock reset (no rounds processed)');
+  } else {
+    logger.info('Step 13: Resetting betting lock after PULP settlement');
+    try {
+      const activeEvents = await db.getActiveEvents();
+
+      if (activeEvents && activeEvents.length > 0) {
+        for (const evt of activeEvents) {
+          if (evt.betting_lock_time) {
+            await db.updateEvent(evt.id, { betting_lock_time: null });
+            logger.info('Betting lock reset for event', {
+              eventId: evt.id,
+              eventName: evt.name,
+              previousLockTime: evt.betting_lock_time
+            });
+          }
         }
+        logger.info('All active events betting locks cleared', {
+          eventsCleared: activeEvents.filter(e => e.betting_lock_time).length
+        });
+      } else {
+        logger.info('No active events found to reset betting lock');
       }
-      logger.info('All active events betting locks cleared', {
-        eventsCleared: activeEvents.filter(e => e.betting_lock_time).length
+    } catch (error) {
+      logger.error('Failed to reset betting lock (non-fatal)', {
+        error: error.message
       });
-    } else {
-      logger.info('No active events found to reset betting lock');
     }
-  } catch (error) {
-    logger.error('Failed to reset betting lock (non-fatal)', {
-      error: error.message
-    });
   }
 
   logger.info('Email processing complete', {
     emailId: email.id,
     imagesProcessed: processedRounds.length,
+    imagesSkipped: skippedImages.length,
     imagesFailed: failedImages.length,
     roundIds: processedRounds.map(r => r.round.id)
   });
@@ -465,10 +495,12 @@ async function processSingleEmail(email, options = {}) {
   return {
     emailId: email.id,
     rounds: processedRounds,
+    skippedImages: skippedImages,
     failedImages: failedImages,
     stats: {
       totalImages: images.length,
       successful: processedRounds.length,
+      skipped: skippedImages.length,
       failed: failedImages.length
     }
   };

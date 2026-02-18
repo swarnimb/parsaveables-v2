@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { FileText, CheckCircle, XCircle } from 'lucide-react'
+import { FileText, CheckCircle, XCircle, AlertTriangle } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import PageContainer from '@/components/layout/PageContainer'
@@ -21,6 +21,7 @@ export default function ProcessScorecards() {
   const [currentStep, setCurrentStep] = useState(0)
   const [progress, setProgress] = useState(0)
   const [completed, setCompleted] = useState(false)
+  const [skipped, setSkipped] = useState(null)
   const [error, setError] = useState(null)
 
   const simulateProcessing = async () => {
@@ -34,6 +35,7 @@ export default function ProcessScorecards() {
   const handleProcessScorecards = async () => {
     setLoading(true)
     setCompleted(false)
+    setSkipped(null)
     setError(null)
     setCurrentStep(0)
     setProgress(0)
@@ -59,7 +61,20 @@ export default function ProcessScorecards() {
         throw new Error(data.error || 'Failed to process scorecards')
       }
 
-      setCompleted(true)
+      // Check for skipped scorecards
+      const allSkipped = [
+        ...(data.results?.skipped || []).flatMap(e => e.skippedImages || []),
+        ...(data.results?.processed || []).flatMap(e => e.skippedImages || [])
+      ]
+
+      if (allSkipped.length > 0 && (data.results?.stats?.successful || 0) === 0) {
+        setSkipped(allSkipped)
+      } else {
+        setCompleted(true)
+        if (allSkipped.length > 0) {
+          setSkipped(allSkipped)
+        }
+      }
     } catch (err) {
       setError(err.message)
     } finally {
@@ -76,7 +91,7 @@ export default function ProcessScorecards() {
         <div className="relative z-10 flex flex-col items-center">
           {/* Main Button / Status Display */}
           <AnimatePresence mode="wait">
-            {!loading && !completed && !error && (
+            {!loading && !completed && !skipped && !error && (
               <motion.button
                 key="button"
                 initial={{ scale: 0.9, opacity: 0, rotateY: -15 }}
@@ -212,16 +227,63 @@ export default function ProcessScorecards() {
                   <p className="text-xl font-bold text-green-600 mb-2">
                     Scorecard processed, points updated, and bets resolved
                   </p>
+                  {skipped && skipped.length > 0 && (
+                    <div className="mt-2 mb-3 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+                      <div className="flex items-center justify-center gap-2 text-amber-600 mb-1">
+                        <AlertTriangle className="h-4 w-4" />
+                        <span className="text-sm font-semibold">Some rounds skipped</span>
+                      </div>
+                      {skipped.map((s, i) => (
+                        <p key={i} className="text-xs text-muted-foreground">{s.reason}</p>
+                      ))}
+                    </div>
+                  )}
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => {
                       setCompleted(false)
+                      setSkipped(null)
                       setProgress(0)
                     }}
                     className="mt-4 px-6 py-2 rounded-lg bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-colors"
                   >
                     Process Another
+                  </motion.button>
+                </div>
+              </motion.div>
+            )}
+
+            {!completed && skipped && !error && (
+              <motion.div
+                key="skipped"
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                className="flex flex-col items-center"
+              >
+                <div className="relative w-48 h-48 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 shadow-2xl flex items-center justify-center mb-6">
+                  <AlertTriangle className="h-24 w-24 text-white" strokeWidth={2} />
+                </div>
+
+                <div className="text-center max-w-md">
+                  <p className="text-xl font-bold text-amber-600 mb-2">
+                    Round skipped
+                  </p>
+                  {skipped.map((s, i) => (
+                    <p key={i} className="text-sm text-muted-foreground">
+                      {s.reason}
+                    </p>
+                  ))}
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => {
+                      setSkipped(null)
+                      setProgress(0)
+                    }}
+                    className="mt-4 px-6 py-2 rounded-lg bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-colors"
+                  >
+                    Try Again
                   </motion.button>
                 </div>
               </motion.div>
