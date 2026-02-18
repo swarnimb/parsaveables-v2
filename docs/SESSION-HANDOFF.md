@@ -1,6 +1,6 @@
 # ParSaveables v2 - Project Dashboard
 
-**Last Updated:** 2026-01-19 (End of Session)
+**Last Updated:** 2026-02-17 (End of Session)
 **Current Phase:** Phase 5 (Testing & Bug Fixes) - IN PROGRESS
 **Status:** Foundation | Auth & Layout | Leaderboard | Rounds | PULP Design | Backend Services | Frontend UI | Season Awareness | UX Enhancements | Testing Framework | Guest Login | Admin Control Center | Tutorial System | Feature Flags | Podcast System COMPLETE
 
@@ -10,7 +10,7 @@
 
 | Area | Status |
 |------|--------|
-| Documentation | Complete & Updated (Jan 19, 2026) |
+| Documentation | Complete & Updated (Feb 17, 2026) |
 | Project Setup | Complete (Vite, Tailwind v3, Shadcn, Radix UI) |
 | Folder Structure | Complete (core/, gamification/ organized) |
 | Supabase Client | Configured & Connected |
@@ -45,7 +45,40 @@
 
 ---
 
-## This Session Summary (2026-01-19 - Latest)
+## This Session Summary (2026-02-17 - Latest)
+
+### DeeMaj Player Registration & Round Backfill
+
+**Problem:**
+DeeMaj played in 4 rounds but wasn't in the `registered_players` table, so their scores were dropped during scorecard processing (player matching couldn't find them). Existing players' ranks already accounted for DeeMaj's position since ranking happens before unregistered player filtering.
+
+**Solution:**
+Ran a one-time SQL script directly in Supabase SQL Editor (no code changes needed):
+
+1. **Registered DeeMaj** in `registered_players` (active=TRUE, 40 PULPs starting balance)
+2. **Linked to event 11** (Season 2026) via `event_players` junction table
+3. **Inserted 4 `player_rounds` rows** with confirmed scoring data:
+
+| Date | Course | Multiplier | Rank | Strokes | Score | Birdies | Raw Pts | Final Pts |
+|------|--------|-----------|------|---------|-------|---------|---------|-----------|
+| Jan 10 | Austin Ridge Bible Church | 2.5x | 6th | 81 | +21 | 1 | 3 | 7.5 |
+| Jan 17 | Bartholomew Park | 1.5x | 7th | 75 | +21 | 1 | 3 | 4.5 |
+| Jan 31 | MetCenter | 2.0x | 7th | 92 | +25 | 0 | 2 | 4.0 |
+| Feb 14 | Lil G | 1.0x | 4th | 70 | +16 | 0 | 2 | 2.0 |
+
+**Result:** DeeMaj now appears on the leaderboard with **18.0 total points** across 4 rounds.
+
+**What was NOT done:**
+- No PULP gamification backfill (starts fresh with 40 PULPs)
+- No re-processing of scorecard images
+- No changes to existing player data or ranks
+- SQL script deleted after execution (not committed)
+
+**Schema note:** `registered_players` uses `active` (BOOLEAN) column, not `status` (TEXT).
+
+---
+
+## Previous Session Summary (2026-01-19)
 
 ### Player Alias Matching Bug Fix
 
