@@ -114,6 +114,8 @@ The Control Center is a password-protected admin interface accessible via Admin 
 - **Starting Balance**: 100 PULPs per player
 - **Advantages**: One per type limit (no stacking), expire at 11:59 PM same day
 - **Betting Lock**: Admin sets `events.betting_lock_time`, system prevents new bets after lock
+- **Minimum 4 Players**: Scorecards with <4 players are skipped gracefully (no error email, labeled `ParSaveables/Skipped`). Betting lock is NOT reset for skipped-only emails.
+- **Tied Rank Point Averaging**: When players share a rank (all 4 tie-breakers fail), their rank points are averaged across the positions they span (e.g., 2 tied for 2nd → avg of 2nd+3rd place points)
 - **Expandable UI**: Leaderboard rows expand to show detailed stats (accordion behavior)
 - **Mobile-First**: Thumb-friendly design, smooth animations, premium feel
 - **Cost Control**: Stay under $5/month operational cost

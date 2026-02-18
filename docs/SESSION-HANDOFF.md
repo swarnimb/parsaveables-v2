@@ -1,6 +1,6 @@
 # ParSaveables v2 - Project Dashboard
 
-**Last Updated:** 2026-02-17 (End of Session)
+**Last Updated:** 2026-02-18 (End of Session)
 **Current Phase:** Phase 5 (Testing & Bug Fixes) - IN PROGRESS
 **Status:** Foundation | Auth & Layout | Leaderboard | Rounds | PULP Design | Backend Services | Frontend UI | Season Awareness | UX Enhancements | Testing Framework | Guest Login | Admin Control Center | Tutorial System | Feature Flags | Podcast System COMPLETE
 
@@ -10,7 +10,7 @@
 
 | Area | Status |
 |------|--------|
-| Documentation | Complete & Updated (Feb 17, 2026) |
+| Documentation | Complete & Updated (Feb 18, 2026) |
 | Project Setup | Complete (Vite, Tailwind v3, Shadcn, Radix UI) |
 | Folder Structure | Complete (core/, gamification/ organized) |
 | Supabase Client | Configured & Connected |
@@ -45,7 +45,51 @@
 
 ---
 
-## This Session Summary (2026-02-17 - Latest)
+## This Session Summary (2026-02-18 - Latest)
+
+### Minimum 4 Players Skip + Tied Rank Point Averaging
+
+**Two scorecard processing fixes:**
+
+#### 1. Minimum 4 Players — Skip Gracefully
+
+**Problem:** Scorecards with fewer than 4 players triggered error emails and `ParSaveables/Error` labels. The `visionService.js` correctly returned `{valid: false}` for <4 players, but `processScorecard.js` treated ALL invalid results as errors.
+
+**Solution:** Added a skip path in the processing pipeline:
+- `processSingleImage()` — detects "minimum 4 required" reason and returns `{skipped: true}` instead of throwing
+- `processSingleEmail()` — tracks `skippedImages[]`, labels email `ParSaveables/Skipped` (not Error), does NOT send error email, does NOT reset betting lock
+- `processNewScorecards()` — routes emails with 0 processed rounds to `results.skipped[]`
+- `ProcessScorecards.jsx` — shows amber UI state (AlertTriangle icon) for skipped rounds
+
+**Label logic per email:**
+- All images succeed → `ParSaveables/Processed`
+- All images skipped → `ParSaveables/Skipped`
+- Mix of success + skipped → `ParSaveables/Processed`
+- All images fail → `ParSaveables/Error` (existing behavior)
+
+#### 2. Tied Rank Point Averaging
+
+**Problem:** When players tie on all 4 tie-breakers (same total score, birdies, pars, earliest birdie), both received full rank points for their shared position instead of averaging. The `calculateTiedRankPoints()` function existed in `pointsService.js` but was never called.
+
+**Solution:** Wired `calculateTiedRankPoints()` into `calculatePoints()`:
+- Before the `.map()` loop, groups players by rank to detect ties
+- For tied groups (count > 1), computes spanned rank positions and calls `calculateTiedRankPoints()`
+- Stores averaged values in a Map, used during point calculation
+
+**Example:** Config `{1: 10, 2: 7, 3: 5, default: 2}`
+- 2 players tied for 2nd → span ranks [2, 3] → avg = (7 + 5) / 2 = **6 pts each**
+- 3 players tied for 1st → span ranks [1, 2, 3] → avg = (10 + 7 + 5) / 3 = **7.33 pts each**
+
+**Files Modified:**
+- `api/processScorecard.js` — skip logic in 3 functions + betting lock guard
+- `src/pages/admin/ProcessScorecards.jsx` — amber skipped UI state
+- `src/services/core/pointsService.js` — tied rank averaging wired into calculatePoints()
+
+**Commit:** cad0c53
+
+---
+
+## Previous Session Summary (2026-02-17)
 
 ### DeeMaj Player Registration & Round Backfill
 

@@ -1,6 +1,6 @@
 # ParSaveables 2.0 - System Architecture
 
-**Last Updated:** 2026-01-03
+**Last Updated:** 2026-02-18
 **Version:** 2.0 (PULP Economy Edition)
 **Status:** Backend & Frontend Complete - Season Aware - Guest Login - Admin Control Center Complete - Tutorial System Complete - Feature Flags - Testing Phase
 
@@ -745,7 +745,7 @@ Located in `src/services/core/`:
 4. **eventService.js** (82 lines) - Season/tournament assignment
 5. **playerService.js** (250 lines) - Fuzzy name matching
 6. **configService.js** (164 lines) - Config loader
-7. **pointsService.js** (167 lines) - Points calculation
+7. **pointsService.js** (187 lines) - Points calculation + tied rank averaging
 8. **databaseService.js** (227 lines) - Supabase CRUD
 
 ### PULP Services (4 Services + Master Orchestrator)
@@ -929,6 +929,8 @@ parsaveables-v2/
 │ 5. Scorecard Processing API Call                        │
 │    POST /api/processScorecard                           │
 │    12-Step Core Workflow                                │
+│    Note: <4 player scorecards skipped gracefully        │
+│    (labeled ParSaveables/Skipped, no error email)       │
 └────────────────────┬────────────────────────────────────┘
                      │
                      ▼
@@ -1261,6 +1263,10 @@ npm run build
 23. Guest login system (read-only access)
 24. Testing framework (Vitest + React Testing Library)
 25. Event player management (junction table, checkboxes in event creation)
+
+### Recent Fixes (2026-02-18)
+26. Minimum 4 players skip logic (graceful skip instead of error email)
+27. Tied rank point averaging (calculateTiedRankPoints wired into calculatePoints)
 
 ### Known Issues
 
