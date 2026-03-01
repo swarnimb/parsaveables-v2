@@ -328,12 +328,14 @@ export default function Pulps() {
         {/* Blessings */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
           <Accordion type="single" collapsible>
-            <AccordionItem value="blessings" className="relative border-2 border-blue-500/20 rounded-xl bg-gradient-to-br from-blue-500/5 to-background overflow-hidden">
-              {!windowOpen && <Badge variant="outline" className="absolute top-2 left-3 z-10 text-[0.65rem] py-0 px-1.5 leading-tight">inactive</Badge>}
+            <AccordionItem value="blessings" className={`relative border-2 rounded-xl bg-gradient-to-br overflow-hidden transition-colors duration-300 ${windowOpen ? 'border-blue-500/20 from-blue-500/5 to-background' : 'border-muted/40 from-muted/10 to-background'}`}>
+              <Badge variant="outline" className={`absolute top-2 left-3 z-10 text-[0.65rem] py-0 px-1.5 leading-tight transition-colors duration-300 ${windowOpen ? 'border-blue-500/40 text-blue-600' : 'border-muted text-muted-foreground'}`}>
+                {windowOpen ? 'active' : 'inactive'}
+              </Badge>
               <AccordionTrigger className="hover:no-underline px-6 pt-6 pb-4">
                 <div className="flex items-center gap-4 w-full">
-                  <div className="h-12 w-12 rounded-full bg-blue-500/20 flex items-center justify-center shrink-0">
-                    <Target className="h-6 w-6 text-blue-600" />
+                  <div className={`h-12 w-12 rounded-full flex items-center justify-center shrink-0 transition-colors duration-300 ${windowOpen ? 'bg-blue-500/20' : 'bg-muted/30'}`}>
+                    <Target className={`h-6 w-6 transition-colors duration-300 ${windowOpen ? 'text-blue-600' : 'text-muted-foreground'}`} />
                   </div>
                   <div className="flex-1 text-left min-w-0">
                     <h3 className="text-lg font-bold">Give a Blessing</h3>
@@ -356,12 +358,14 @@ export default function Pulps() {
         {/* Challenges */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
           <Accordion type="single" collapsible>
-            <AccordionItem value="challenges" className="relative border-2 border-red-500/20 rounded-xl bg-gradient-to-br from-red-500/5 to-background overflow-hidden">
-              {!windowOpen && <Badge variant="outline" className="absolute top-2 left-3 z-10 text-[0.65rem] py-0 px-1.5 leading-tight">inactive</Badge>}
+            <AccordionItem value="challenges" className={`relative border-2 rounded-xl bg-gradient-to-br overflow-hidden transition-colors duration-300 ${windowOpen ? 'border-red-500/20 from-red-500/5 to-background' : 'border-muted/40 from-muted/10 to-background'}`}>
+              <Badge variant="outline" className={`absolute top-2 left-3 z-10 text-[0.65rem] py-0 px-1.5 leading-tight transition-colors duration-300 ${windowOpen ? 'border-red-500/40 text-red-600' : 'border-muted text-muted-foreground'}`}>
+                {windowOpen ? 'active' : 'inactive'}
+              </Badge>
               <AccordionTrigger className="hover:no-underline px-6 pt-6 pb-4">
                 <div className="flex items-center gap-4 w-full">
-                  <div className="h-12 w-12 rounded-full bg-red-500/20 flex items-center justify-center shrink-0">
-                    <Swords className="h-6 w-6 text-red-600" />
+                  <div className={`h-12 w-12 rounded-full flex items-center justify-center shrink-0 transition-colors duration-300 ${windowOpen ? 'bg-red-500/20' : 'bg-muted/30'}`}>
+                    <Swords className={`h-6 w-6 transition-colors duration-300 ${windowOpen ? 'text-red-600' : 'text-muted-foreground'}`} />
                   </div>
                   <div className="flex-1 text-left min-w-0">
                     <h3 className="text-lg font-bold">Challenge a Rival</h3>
@@ -384,12 +388,14 @@ export default function Pulps() {
         {/* Advantages */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
           <Accordion type="single" collapsible>
-            <AccordionItem value="advantages" className="relative border-2 border-amber-500/20 rounded-xl bg-gradient-to-br from-amber-500/5 to-background overflow-hidden">
-              {!windowOpen && <Badge variant="outline" className="absolute top-2 left-3 z-10 text-[0.65rem] py-0 px-1.5 leading-tight">inactive</Badge>}
+            <AccordionItem value="advantages" className={`relative border-2 rounded-xl bg-gradient-to-br overflow-hidden transition-colors duration-300 ${windowOpen ? 'border-amber-500/20 from-amber-500/5 to-background' : 'border-muted/40 from-muted/10 to-background'}`}>
+              <Badge variant="outline" className={`absolute top-2 left-3 z-10 text-[0.65rem] py-0 px-1.5 leading-tight transition-colors duration-300 ${windowOpen ? 'border-amber-500/40 text-amber-600' : 'border-muted text-muted-foreground'}`}>
+                {windowOpen ? 'active' : 'inactive'}
+              </Badge>
               <AccordionTrigger className="hover:no-underline px-6 pt-6 pb-4">
                 <div className="flex items-center gap-4 w-full">
-                  <div className="h-12 w-12 rounded-full bg-amber-500/20 flex items-center justify-center shrink-0">
-                    <ShoppingCart className="h-6 w-6 text-amber-600" />
+                  <div className={`h-12 w-12 rounded-full flex items-center justify-center shrink-0 transition-colors duration-300 ${windowOpen ? 'bg-amber-500/20' : 'bg-muted/30'}`}>
+                    <ShoppingCart className={`h-6 w-6 transition-colors duration-300 ${windowOpen ? 'text-amber-600' : 'text-muted-foreground'}`} />
                   </div>
                   <div className="flex-1 text-left min-w-0">
                     <h3 className="text-lg font-bold">Buy Advantages</h3>
