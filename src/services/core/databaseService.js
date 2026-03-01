@@ -250,7 +250,7 @@ export async function getActiveEvents() {
   const data = await executeQuery(
     () => supabase
       .from('events')
-      .select('id, name, type, betting_lock_time, start_date, end_date')
+      .select('id, name, type, start_date, end_date')
       .eq('is_active', true)
       .order('id'),
     'Failed to fetch active events'

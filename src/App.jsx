@@ -7,7 +7,7 @@ import Login from '@/pages/Login'
 import Leaderboard from '@/pages/Leaderboard'
 import Rounds from '@/pages/Rounds'
 import Activity from '@/pages/Activity'
-import Betting from '@/pages/Betting'
+import Pulps from '@/pages/Pulps'
 import Dashboard from '@/pages/Dashboard'
 
 // Lazy load less frequently accessed pages
@@ -15,7 +15,6 @@ const Podcast = lazy(() => import('@/pages/Podcast'))
 const About = lazy(() => import('@/pages/About'))
 const NotFound = lazy(() => import('@/pages/NotFound'))
 const ControlCenter = lazy(() => import('@/pages/admin/ControlCenter'))
-const BettingControls = lazy(() => import('@/pages/admin/BettingControls'))
 const ProcessScorecards = lazy(() => import('@/pages/admin/ProcessScorecards'))
 
 // Layout wrapper for authenticated pages
@@ -25,7 +24,6 @@ import ErrorBoundary from '@/components/shared/ErrorBoundary'
 import OfflineDetector from '@/components/shared/OfflineDetector'
 import { Toaster } from '@/components/ui/toaster'
 
-// Loading fallback component
 function PageLoader() {
   return (
     <div className="min-h-screen flex items-center justify-center">
@@ -37,7 +35,6 @@ function PageLoader() {
   )
 }
 
-// Animated Routes Component
 function AnimatedRoutes() {
   const location = useLocation()
 
@@ -54,13 +51,14 @@ function AnimatedRoutes() {
           <Route path="/rounds" element={<Rounds />} />
           <Route path="/podcast" element={<Suspense fallback={<PageLoader />}><Podcast /></Suspense>} />
           <Route path="/activity" element={<Activity />} />
-          <Route path="/betting" element={<Betting />} />
+          <Route path="/pulps" element={<Pulps />} />
+          {/* Legacy redirect — /betting → /pulps */}
+          <Route path="/betting" element={<Navigate to="/pulps" replace />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/about" element={<Suspense fallback={<PageLoader />}><About /></Suspense>} />
 
           {/* Admin routes */}
           <Route path="/admin/control-center" element={<Suspense fallback={<PageLoader />}><ControlCenter /></Suspense>} />
-          <Route path="/admin/betting-controls" element={<Suspense fallback={<PageLoader />}><BettingControls /></Suspense>} />
           <Route path="/admin/process-scorecards" element={<Suspense fallback={<PageLoader />}><ProcessScorecards /></Suspense>} />
         </Route>
 

@@ -22,10 +22,10 @@ describe('PodiumDisplay', () => {
   it('should display player points and rounds', () => {
     render(<PodiumDisplay players={mockLeaderboardPlayers} />)
 
-    // Check points are displayed
-    expect(screen.getByText('290.5 pts')).toBeInTheDocument()
-    expect(screen.getByText('272.5 pts')).toBeInTheDocument()
-    expect(screen.getByText('243.5 pts')).toBeInTheDocument()
+    // Check points are displayed (component renders the number only, no "pts" suffix)
+    expect(screen.getByText('290.5')).toBeInTheDocument()
+    expect(screen.getByText('272.5')).toBeInTheDocument()
+    expect(screen.getByText('243.5')).toBeInTheDocument()
 
     // Check rounds are displayed (some players may have same round count)
     const roundsElements = screen.getAllByText(/\d+ rounds/)
@@ -58,7 +58,7 @@ describe('PodiumDisplay', () => {
     // Expanded stats should now be visible
     expect(screen.getByText('Wins')).toBeInTheDocument()
     expect(screen.getByText('Podiums')).toBeInTheDocument()
-    expect(screen.getByText('Avg Points/Round')).toBeInTheDocument()
+    expect(screen.getByText('Avg Pts')).toBeInTheDocument()
     expect(screen.getByText('Birdies')).toBeInTheDocument()
     expect(screen.getByText('Eagles')).toBeInTheDocument()
     expect(screen.getByText('Aces')).toBeInTheDocument()
@@ -68,19 +68,16 @@ describe('PodiumDisplay', () => {
     const user = userEvent.setup()
     render(<PodiumDisplay players={mockLeaderboardPlayers} />)
 
-    // Find the card - it's the parent of the player name
-    const shogunName = screen.getByText('Shogun')
-    const shogunCard = shogunName.parentElement
+    // Card should not have ring classes initially
+    expect(screen.getByText('Shogun').parentElement).not.toHaveClass('ring-2')
 
-    // Card should not have ring classes initially (has border-2 border-primary instead)
-    expect(shogunCard).not.toHaveClass('ring-2')
+    await user.click(screen.getByText('Shogun').parentElement)
 
-    await user.click(shogunCard)
-
-    // Wait for state update and check ring highlight
+    // Re-query after click — PodiumCard is defined inside PodiumDisplay so state
+    // updates cause remount; a captured reference would be stale after re-render.
     await waitFor(() => {
-      expect(shogunCard).toHaveClass('ring-2')
-      expect(shogunCard).toHaveClass('ring-primary')
+      expect(screen.getByText('Shogun').parentElement).toHaveClass('ring-2')
+      expect(screen.getByText('Shogun').parentElement).toHaveClass('ring-primary')
     })
   })
 
@@ -96,16 +93,12 @@ describe('PodiumDisplay', () => {
     expect(screen.getByText('Wins')).toBeInTheDocument()
 
     // Click second player
-    const jabbaCard = screen.getByText('Jabba the Putt').closest('div')
-    await user.click(jabbaCard)
+    await user.click(screen.getByText('Jabba the Putt').parentElement)
 
-    // First player should be collapsed, second expanded
-    // (both will show stats section, but only one should be highlighted)
-    const highlightedCards = screen.getAllByText(/\d+\.\d+ pts/).filter(el =>
-      el.closest('div')?.classList.contains('ring-2')
-    )
-
-    // Should have at most 1 highlighted card
-    expect(highlightedCards.length).toBeLessThanOrEqual(3) // accounting for all cards
+    // After clicking Jabba, only Jabba's card should be highlighted
+    await waitFor(() => {
+      expect(screen.getByText('Jabba the Putt').parentElement).toHaveClass('ring-2')
+      expect(screen.getByText('Shogun').parentElement).not.toHaveClass('ring-2')
+    })
   })
 })

@@ -129,6 +129,20 @@ export function useAuth() {
   }
 
   /**
+   * Sign in with OAuth provider (Google, Apple).
+   * Redirects browser — no return value. Supabase handles the callback.
+   */
+  const signInWithOAuth = async (provider) => {
+    try {
+      setError(null)
+      await authAPI.signInWithOAuth(provider)
+    } catch (err) {
+      setError(err.message)
+      throw err
+    }
+  }
+
+  /**
    * Sign out current user
    */
   const signOut = async () => {
@@ -169,6 +183,7 @@ export function useAuth() {
     error,
     signIn,
     signUp,
+    signInWithOAuth,
     signOut,
     continueAsGuest,
     isAuthenticated: !!user,

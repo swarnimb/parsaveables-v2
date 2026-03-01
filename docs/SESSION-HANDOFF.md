@@ -1,8 +1,8 @@
 # ParSaveables v2 - Project Dashboard
 
-**Last Updated:** 2026-02-18 (End of Session)
+**Last Updated:** 2026-02-27 (End of Session)
 **Current Phase:** Phase 5 (Testing & Bug Fixes) - IN PROGRESS
-**Status:** Foundation | Auth & Layout | Leaderboard | Rounds | PULP Design | Backend Services | Frontend UI | Season Awareness | UX Enhancements | Testing Framework | Guest Login | Admin Control Center | Tutorial System | Feature Flags | Podcast System COMPLETE
+**Status:** Foundation | Auth & Layout | Leaderboard | Rounds | PULP Design | Backend Services | Frontend UI | Season Awareness | UX Enhancements | Testing Framework | Guest Login | Admin Control Center | Tutorial System | Feature Flags | Podcast System | PULPy Window Rework | Google OAuth COMPLETE
 
 ---
 
@@ -45,7 +45,96 @@
 
 ---
 
-## This Session Summary (2026-02-18 - Latest)
+## This Session Summary (2026-02-27 - Latest)
+
+### PULPs Tab Copy Polish
+
+All changes are UI text only — no logic, no schema, no API changes.
+
+**AdvantagesSection.jsx:**
+- Removed "Advantage Rules" section entirely
+- Removed per-item "Expires 11:59 PM tonight" line from catalog cards (expiry still shows on active/owned advantages with hours remaining)
+
+**BlessingsSection.jsx:**
+- "1st/2nd/3rd Place Prediction" → "1st/2nd/3rd Place Pick"
+- Label "Wager (PULPs · min 20)" → "Offering (PULPs · min 20)"
+- Display label "Wager" (in placed blessing view) → "Offering"
+
+**ChallengesSection.jsx:**
+- Label "Wager (PULPs · min 20)" → "Offering (PULPs · min 20)"
+- "Wager: X PULPs" in pending challenge card → "Offering: X PULPs"
+- "Wager" in active challenge detail → "Offering"
+- Rules: "Lower score wins 2× total wager" → "Lower score wins 2× total offering"
+- Toast: "X PULPs wagered against Y" → "X PULPs offered against Y"
+
+**Pulps.jsx:**
+- Challenges subtitle: "Challenge a higher-ranked player — lower score wins all" → "Feeling confident? — challenge the villain"
+- Advantages subtitle: "Spend PULPs on in-round powers" → "No shame in using some help"
+- Window open description: "5 minutes to place blessings, challenges & buy advantages" → "You got 5 minutes"
+
+---
+
+## This Session Summary (2026-02-26 - Previous)
+
+### PULPy Window Economy Rework + Google OAuth
+
+#### 1. PULPy Window Economy Rework
+
+Complete rework of the PULP economy replacing admin-controlled betting lock with player-opened 5-minute windows.
+
+**Migration 016 applied** (`supabase/migrations/016_pulpy_window_rework.sql`):
+- Created `pulpy_windows` table (open → locked → settled/expired lifecycle)
+- Renamed `bets` → `blessings`, added `window_id` FK
+- Added `waiting` status to challenges, added `window_id` FK
+- Removed `anti_mulligan` + `cancel` advantages; updated prices for remaining 3
+- Updated `pulp_transactions` constraint with new types (blessing_win_perfect, blessing_win_partial, etc.)
+- Dropped deprecated columns from `registered_players` (last_interaction_week, participation_streak, last_round_date)
+- Dropped `betting_lock_time` from `events`
+- Reset all player balances to 20 PULPs
+- Wiped all existing bets, challenges, transactions
+
+**New files:**
+- `api/pulp/getWindow.js` — GET active window (public)
+- `api/pulp/openWindow.js` — POST open new 5-min window (auth required)
+- `api/pulp/placeBlessing.js` — POST place blessing during open window
+- `src/services/gamification/windowService.js` — openWindow, getActiveWindow, lockExpiredWindows, settleWindow, expireStaleWindows
+- `src/services/gamification/blessingService.js` — placeBlessing, resolveBlessingsForWindow, refundBlessingsForWindow
+- `src/pages/Pulps.jsx` — new /pulps page replacing /betting
+- `src/components/pulps/BlessingsSection.jsx`
+- `src/components/pulps/ChallengesSection.jsx`
+- `src/components/pulps/AdvantagesSection.jsx`
+- `src/components/pulps/PULPyWindowModal.jsx`
+
+**Deleted (intentionally):**
+- `api/checkBettingStatus.js`, `api/pulp/lockBetting.js`, `api/pulp/placeBet.js`
+- `src/pages/Betting.jsx`, `src/pages/admin/BettingControls.jsx`
+- `src/components/betting/ComingSoon.jsx`, `src/components/betting/PredictionsSection.jsx`
+- `src/components/admin/BettingControlsModal.jsx`
+- `src/config/features.js` (feature flags removed — PULP always live)
+
+**Modified:**
+- `src/App.jsx` — /betting redirects to /pulps
+- `src/components/layout/BottomNav.jsx` — Betting tab → PULPs tab (Coins icon)
+- `src/pages/Activity.jsx` — removed features.pulpEconomy guards, updated bets → blessings query
+- `src/components/layout/NotificationBell.jsx` — removed features.pulpEconomy filter
+- `api/processScorecard.js` — window settlement wired into Step 11
+
+#### 2. Google OAuth Login
+
+**Files modified:**
+- `src/services/supabase.js` — `detectSessionInUrl: true` (was false — broke OAuth callback)
+- `src/services/api.js` — added `signInWithOAuth(provider)` method
+- `src/hooks/useAuth.js` — added `signInWithOAuth` action + exposed in return
+- `src/pages/Login.jsx` — Google button added above email/password; handles unclaimed-player-after-OAuth flow (shows player selection if authenticated but no player linked)
+
+**Supabase config required (done manually):**
+- Google provider enabled in Supabase Auth dashboard
+- Redirect URI added to Google Cloud Console: `https://bcovevbtcdsgzbrieiin.supabase.co/auth/v1/callback`
+- Apple provider: deferred (not implemented)
+
+---
+
+## This Session Summary (2026-02-18 - Previous)
 
 ### Minimum 4 Players Skip + Tied Rank Point Averaging
 
@@ -510,6 +599,8 @@ Implement different UI states for betting lifecycle:
 | 012 | Reserved (not yet used) |
 | 013 | Reserved (not yet used) |
 | 014 | Add tutorial tracking columns (onboarding_completed, betting_interest_shown, betting_interest_confirmed) |
+| 015 | Reserved (not yet used) |
+| 016 | PULPy window economy rework (pulpy_windows table, bets→blessings, remove anti_mulligan+cancel, reset balances to 20) |
 
 ---
 
@@ -534,7 +625,7 @@ src/
 │   ├── layout/     # Header, BottomNav, Dropdowns, NotificationBell
 │   ├── admin/      # Control Center tabs
 │   ├── leaderboard/# PodiumDisplay, LeaderboardTable
-│   ├── betting/    # PredictionsSection, ChallengesSection, AdvantagesSection, ComingSoon
+│   ├── pulps/      # BlessingsSection, ChallengesSection, AdvantagesSection, PULPyWindowModal
 │   ├── rounds/     # RoundCard
 │   └── tutorial/   # TutorialSpotlight, Tutorial, BettingTutorial, tutorialData
 ├── hooks/          # useAuth, use-toast
@@ -565,7 +656,7 @@ src/
 - Browser caching can cause stale data - use Ctrl+Shift+R for hard refresh
 - Control Center password: VITE_CONTROL_CENTER_PASSWORD env variable
 - Guest mode uses sessionStorage (not Supabase)
-- Starting PULP balance: 100 PULPs
+- Starting PULP balance: 20 PULPs (reset by migration 016)
 - Dev server: http://localhost:5175
 
 ### Environment Variables Required

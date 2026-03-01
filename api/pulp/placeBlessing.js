@@ -1,15 +1,15 @@
 import { createClient } from '@supabase/supabase-js';
-import * as challengeService from '../../src/services/gamification/challengeService.js';
+import * as blessingService from '../../src/services/gamification/blessingService.js';
 import { createLogger } from '../../src/utils/logger.js';
 import { BusinessLogicError } from '../../src/utils/errors.js';
 
-const logger = createLogger('API:IssueChallenge');
+const logger = createLogger('API:PlaceBlessing');
 
 /**
- * POST /api/pulp/issueChallenge
- * Issue a head-to-head challenge during an open PULPy window.
+ * POST /api/pulp/placeBlessing
+ * Place a blessing (predict top 3 finishers) during an open PULPy window.
  *
- * Body: { challengedId, windowId, wagerAmount }
+ * Body: { windowId, predictions: { first, second, third }, wagerAmount, eventId }
  */
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -40,30 +40,28 @@ export default async function handler(req, res) {
 
     if (playerError || !player) return res.status(404).json({ error: 'Player not found' });
 
-    const { challengedId, windowId, wagerAmount } = req.body;
+    const { windowId, predictions, wagerAmount, eventId } = req.body;
 
-    if (!challengedId || !windowId || wagerAmount === undefined) {
-      return res.status(400).json({ error: 'Missing required fields: challengedId, windowId, wagerAmount' });
+    if (!windowId || !predictions || wagerAmount === undefined || !eventId) {
+      return res.status(400).json({ error: 'Missing required fields: windowId, predictions, wagerAmount, eventId' });
     }
 
-    logger.info('Issuing challenge', { challengerId: player.id, challengedId, windowId, wagerAmount });
+    logger.info('Placing blessing', { playerId: player.id, windowId, wagerAmount });
 
-    const challenge = await challengeService.issueChallenge(
+    const blessing = await blessingService.placeBlessing(
       player.id,
-      challengedId,
       windowId,
-      wagerAmount
+      predictions,
+      wagerAmount,
+      eventId
     );
 
-    logger.info('Challenge issued', { challengeId: challenge.id, status: challenge.status });
-
-    return res.status(200).json({ success: true, challenge });
+    return res.status(200).json({ success: true, blessing });
   } catch (error) {
     if (error instanceof BusinessLogicError) {
-      logger.warn('Business logic error', { error: error.message });
       return res.status(400).json({ error: error.message });
     }
-    logger.error('Failed to issue challenge', { error: error.message });
+    logger.error('Failed to place blessing', { error: error.message });
     return res.status(500).json({ error: 'Internal server error' });
   }
 }

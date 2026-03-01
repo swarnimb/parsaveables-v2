@@ -11,36 +11,20 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { features } from '@/config/features'
-
 export default function NotificationBell() {
   const { player } = useAuth()
   const [notifications, setNotifications] = useState([])
   const [unreadCount, setUnreadCount] = useState(0)
   const [loading, setLoading] = useState(true)
 
-  // PULP-related event types to filter out when feature is disabled
-  const PULP_EVENT_TYPES = [
-    'bet_won',
-    'bet_lost',
-    'challenge_issued',
-    'challenge_accepted',
-    'challenge_resolved',
-    'advantage_purchased',
-    'pulp_earned',
-    'pulp_spent',
-  ]
-
   useEffect(() => {
     async function fetchNotifications() {
-      // Use player from useAuth hook instead of redundant auth check
       if (!player?.id) {
         setLoading(false)
         return
       }
 
       try {
-        // Fetch recent activities for the logged-in player
         const { data, error } = await supabase
           .from('activity_feed')
           .select('*')
@@ -50,15 +34,9 @@ export default function NotificationBell() {
 
         if (error) throw error
 
-        // Filter out PULP-related notifications if feature is disabled
-        let filteredData = data || []
-        if (!features.pulpEconomy) {
-          filteredData = filteredData.filter(n => !PULP_EVENT_TYPES.includes(n.event_type))
-        }
-
+        const filteredData = data || []
         setNotifications(filteredData)
-        // Count only unread notifications
-        const unread = filteredData?.filter(n => !n.is_read).length || 0
+        const unread = filteredData.filter(n => !n.is_read).length
         setUnreadCount(unread)
       } catch (err) {
         console.error('Error fetching notifications:', err)

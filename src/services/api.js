@@ -70,6 +70,21 @@ export const authAPI = {
   },
 
   /**
+   * Sign in with OAuth provider (Google, Apple)
+   * Redirects browser to provider — Supabase handles callback automatically.
+   */
+  signInWithOAuth: async (provider) => {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: window.location.origin
+      }
+    })
+    if (error) throw error
+    return data
+  },
+
+  /**
    * Get current user
    */
   getCurrentUser: async () => {

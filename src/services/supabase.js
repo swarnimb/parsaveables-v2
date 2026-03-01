@@ -106,7 +106,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
-    detectSessionInUrl: false, // Disable URL detection to avoid issues on mobile
+    detectSessionInUrl: true,
     storage: createSafeStorage(),
     storageKey: 'sb-auth-token',
   }

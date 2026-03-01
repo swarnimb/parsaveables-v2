@@ -57,7 +57,7 @@ describe('eventAPI', () => {
     it('should aggregate player stats correctly for tournaments', async () => {
       const mockRounds = [
         {
-          player_name: 'Player1',
+          registered_players: { player_name: 'Player1' },
           final_total: 10.5,
           rank: 1,
           birdies: 3,
@@ -66,7 +66,7 @@ describe('eventAPI', () => {
           total_score: 52,
         },
         {
-          player_name: 'Player1',
+          registered_players: { player_name: 'Player1' },
           final_total: 8.0,
           rank: 2,
           birdies: 2,
@@ -75,7 +75,7 @@ describe('eventAPI', () => {
           total_score: 54,
         },
         {
-          player_name: 'Player2',
+          registered_players: { player_name: 'Player2' },
           final_total: 9.0,
           rank: 1,
           birdies: 2,
@@ -93,6 +93,15 @@ describe('eventAPI', () => {
         eq: vi.fn().mockReturnThis(),
         single: vi.fn().mockResolvedValue({
           data: { type: 'tournament' },
+          error: null,
+        }),
+      })
+
+      // Mock event_players fetch (no players explicitly assigned — show all)
+      supabase.from.mockReturnValueOnce({
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockResolvedValue({
+          data: [],
           error: null,
         }),
       })
@@ -120,7 +129,7 @@ describe('eventAPI', () => {
 
     it('should use top 10 scores only for seasons', async () => {
       const mockRounds = Array.from({ length: 12 }, (_, i) => ({
-        player_name: 'Player1',
+        registered_players: { player_name: 'Player1' },
         final_total: 10 - i, // Descending scores: 10, 9, 8, ..., -1
         rank: i % 3 === 0 ? 1 : 2,
         birdies: 2,
@@ -137,6 +146,15 @@ describe('eventAPI', () => {
         eq: vi.fn().mockReturnThis(),
         single: vi.fn().mockResolvedValue({
           data: { type: 'season' },
+          error: null,
+        }),
+      })
+
+      // Mock event_players fetch (no players explicitly assigned — show all)
+      supabase.from.mockReturnValueOnce({
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockResolvedValue({
+          data: [],
           error: null,
         }),
       })

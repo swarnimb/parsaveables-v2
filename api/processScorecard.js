@@ -350,20 +350,25 @@ async function processSingleImage(scorecardImage, imageIndex, totalImages) {
   const playerRounds = await db.insertPlayerRounds(playerRoundsData);
   logger.info('Player rounds created', { count: playerRounds.length });
 
-  // Step 11: Process PULP gamification (earnings, challenges, bets)
+  // Step 11: Process PULP gamification (earnings, window settlement)
   logger.info('Step 11: Processing PULP gamification');
   let gamificationResults = null;
   try {
+    // Pass round date/time so windowService can match the correct PULPy window
+    const roundMeta = {
+      date: scorecardData.date,
+      time: scorecardData.time || null
+    };
     gamificationResults = await gamificationService.processRoundGamification(
       round.id,
       event.id,
-      event.type
+      event.type,
+      roundMeta
     );
     logger.info('Gamification processing complete', {
       playersProcessed: gamificationResults.playersProcessed,
       totalPulpsAwarded: gamificationResults.totalPulpsAwarded,
-      challengesResolved: gamificationResults.challengesResolved,
-      betsResolved: gamificationResults.betsResolved
+      windowSettled: gamificationResults.windowSettled?.windowId || null
     });
   } catch (error) {
     logger.error('Gamification processing failed (non-fatal)', {
@@ -452,37 +457,7 @@ async function processSingleEmail(email, options = {}) {
     await emailService.addLabel(email.id, 'ParSaveables/Skipped');
   }
 
-  // Step 13: Reset betting lock after PULP settlement (only if rounds were processed)
-  if (processedRounds.length === 0) {
-    logger.info('Step 13: Skipping betting lock reset (no rounds processed)');
-  } else {
-    logger.info('Step 13: Resetting betting lock after PULP settlement');
-    try {
-      const activeEvents = await db.getActiveEvents();
-
-      if (activeEvents && activeEvents.length > 0) {
-        for (const evt of activeEvents) {
-          if (evt.betting_lock_time) {
-            await db.updateEvent(evt.id, { betting_lock_time: null });
-            logger.info('Betting lock reset for event', {
-              eventId: evt.id,
-              eventName: evt.name,
-              previousLockTime: evt.betting_lock_time
-            });
-          }
-        }
-        logger.info('All active events betting locks cleared', {
-          eventsCleared: activeEvents.filter(e => e.betting_lock_time).length
-        });
-      } else {
-        logger.info('No active events found to reset betting lock');
-      }
-    } catch (error) {
-      logger.error('Failed to reset betting lock (non-fatal)', {
-        error: error.message
-      });
-    }
-  }
+  // Step 13: (Betting lock reset removed — PULPy windows settle automatically via scorecard match)
 
   logger.info('Email processing complete', {
     emailId: email.id,
