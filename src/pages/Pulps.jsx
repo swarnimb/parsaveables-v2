@@ -195,32 +195,32 @@ export default function Pulps() {
 
         <div
           onClick={() => setBalanceExpanded(!balanceExpanded)}
-          className="relative z-10 p-6 cursor-pointer hover:bg-primary/5 transition-colors"
+          className="relative z-10 p-5 cursor-pointer hover:bg-primary/5 transition-colors"
         >
-          <div className="flex items-center gap-4 mb-2">
-            <motion.div
-              variants={pulse}
-              animate="animate"
-              className="h-16 w-16 rounded-full bg-primary/20 flex items-center justify-center relative"
-            >
-              <div className="absolute inset-0 rounded-full bg-primary/30 blur-md" />
-              <Coins className="h-8 w-8 text-primary relative z-10" />
-            </motion.div>
-            <div>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <motion.div
+                variants={pulse}
+                animate="animate"
+                className="h-12 w-12 rounded-full bg-primary/20 flex items-center justify-center relative"
+              >
+                <div className="absolute inset-0 rounded-full bg-primary/30 blur-md" />
+                <Coins className="h-6 w-6 text-primary relative z-10" />
+              </motion.div>
               <motion.p
                 key={pulpBalance}
                 initial={{ scale: 1.2 }}
                 animate={{ scale: 1 }}
-                className="text-4xl font-bold tracking-tight"
+                className="text-3xl font-bold tracking-tight"
               >
                 {loading ? '...' : pulpBalance?.toLocaleString() ?? '0'}
-                <span className="text-lg font-semibold text-muted-foreground ml-2">PULPs</span>
+                <span className="text-base font-semibold text-muted-foreground ml-2">PULPs</span>
               </motion.p>
             </div>
-          </div>
-          <div className="flex justify-end items-center gap-1 text-xs text-primary">
-            View History
-            {balanceExpanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+            <div className="flex items-center gap-1 text-xs text-primary">
+              View History
+              {balanceExpanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+            </div>
           </div>
         </div>
 
@@ -331,14 +331,16 @@ export default function Pulps() {
             <AccordionItem value="blessings" className="border-2 border-blue-500/20 rounded-xl bg-gradient-to-br from-blue-500/5 to-background overflow-hidden">
               <AccordionTrigger className="hover:no-underline px-6 py-4">
                 <div className="flex items-center gap-4 w-full">
-                  <div className="h-12 w-12 rounded-full bg-blue-500/20 flex items-center justify-center">
+                  <div className="h-12 w-12 rounded-full bg-blue-500/20 flex items-center justify-center shrink-0">
                     <Target className="h-6 w-6 text-blue-600" />
                   </div>
-                  <div className="flex-1 text-left">
-                    <h3 className="text-lg font-bold">Give a Blessing</h3>
+                  <div className="flex-1 text-left min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="text-lg font-bold">Give a Blessing</h3>
+                      {!windowOpen && <Badge variant="outline" className="text-xs shrink-0">Window required</Badge>}
+                    </div>
                     <p className="text-sm text-muted-foreground">Bless 3 players — double your offerings</p>
                   </div>
-                  {!windowOpen && <Badge variant="outline" className="text-xs shrink-0">Window required</Badge>}
                 </div>
               </AccordionTrigger>
               <AccordionContent className="px-6 pb-6">
@@ -359,14 +361,16 @@ export default function Pulps() {
             <AccordionItem value="challenges" className="border-2 border-red-500/20 rounded-xl bg-gradient-to-br from-red-500/5 to-background overflow-hidden">
               <AccordionTrigger className="hover:no-underline px-6 py-4">
                 <div className="flex items-center gap-4 w-full">
-                  <div className="h-12 w-12 rounded-full bg-red-500/20 flex items-center justify-center">
+                  <div className="h-12 w-12 rounded-full bg-red-500/20 flex items-center justify-center shrink-0">
                     <Swords className="h-6 w-6 text-red-600" />
                   </div>
-                  <div className="flex-1 text-left">
-                    <h3 className="text-lg font-bold">Challenge a Rival</h3>
+                  <div className="flex-1 text-left min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="text-lg font-bold">Challenge a Rival</h3>
+                      {!windowOpen && <Badge variant="outline" className="text-xs shrink-0">Window required</Badge>}
+                    </div>
                     <p className="text-sm text-muted-foreground">Feeling confident? — challenge the villain</p>
                   </div>
-                  {!windowOpen && <Badge variant="outline" className="text-xs shrink-0">Window required</Badge>}
                 </div>
               </AccordionTrigger>
               <AccordionContent className="px-6 pb-6">
@@ -387,14 +391,16 @@ export default function Pulps() {
             <AccordionItem value="advantages" className="border-2 border-amber-500/20 rounded-xl bg-gradient-to-br from-amber-500/5 to-background overflow-hidden">
               <AccordionTrigger className="hover:no-underline px-6 py-4">
                 <div className="flex items-center gap-4 w-full">
-                  <div className="h-12 w-12 rounded-full bg-amber-500/20 flex items-center justify-center">
+                  <div className="h-12 w-12 rounded-full bg-amber-500/20 flex items-center justify-center shrink-0">
                     <ShoppingCart className="h-6 w-6 text-amber-600" />
                   </div>
-                  <div className="flex-1 text-left">
-                    <h3 className="text-lg font-bold">Buy Advantages</h3>
+                  <div className="flex-1 text-left min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="text-lg font-bold">Buy Advantages</h3>
+                      {!windowOpen && <Badge variant="outline" className="text-xs shrink-0">Window required</Badge>}
+                    </div>
                     <p className="text-sm text-muted-foreground">No shame in using some help</p>
                   </div>
-                  {!windowOpen && <Badge variant="outline" className="text-xs shrink-0">Window required</Badge>}
                 </div>
               </AccordionTrigger>
               <AccordionContent className="px-6 pb-6">
