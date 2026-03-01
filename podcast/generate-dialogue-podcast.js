@@ -216,9 +216,9 @@ async function fetchComprehensiveData(periodStart, periodEnd) {
     .lte('issued_at', periodEnd)
     .order('issued_at', { ascending: false });
 
-  // 3. Fetch bets for the period
-  const { data: bets } = await supabase
-    .from('bets')
+  // 3. Fetch blessings for the period
+  const { data: blessings } = await supabase
+    .from('blessings')
     .select(`
       *,
       player:registered_players(player_name)
@@ -241,8 +241,8 @@ async function fetchComprehensiveData(periodStart, periodEnd) {
   // 5. Fetch current leaderboard
   const { data: leaderboard } = await supabase
     .from('registered_players')
-    .select('player_name, total_pulps')
-    .order('total_pulps', { ascending: false })
+    .select('player_name, pulp_balance')
+    .order('pulp_balance', { ascending: false })
     .limit(10);
 
   // 6. Fetch events (seasons/tournaments) that started during this period
@@ -253,12 +253,12 @@ async function fetchComprehensiveData(periodStart, periodEnd) {
     .lte('start_date', periodEnd);
 
   // 7. Calculate statistics
-  const stats = calculateStats(rounds, challenges, bets, transactions);
+  const stats = calculateStats(rounds, challenges, blessings, transactions);
 
   return {
     rounds: rounds || [],
     challenges: challenges || [],
-    bets: bets || [],
+    blessings: blessings || [],
     transactions: transactions || [],
     leaderboard: leaderboard || [],
     newEvents: newEvents || [],
@@ -266,15 +266,15 @@ async function fetchComprehensiveData(periodStart, periodEnd) {
   };
 }
 
-function calculateStats(rounds, challenges, bets, transactions) {
+function calculateStats(rounds, challenges, blessings, transactions) {
   const stats = {
     totalRounds: rounds.length,
     totalPlayers: new Set(rounds.flatMap(r => r.player_rounds?.map(pr => pr.player_name) || [])).size,
     totalChallenges: challenges.length,
     challengesAccepted: challenges.filter(c => c.status === 'accepted').length,
     challengesWon: challenges.filter(c => c.status === 'won').length,
-    totalBets: bets.length,
-    totalWagered: bets.reduce((sum, b) => sum + (b.wager_amount || 0), 0),
+    totalBlessings: blessings.length,
+    totalWagered: blessings.reduce((sum, b) => sum + (b.wager_amount || 0), 0),
     biggestWin: transactions
       .filter(t => t.amount > 0)
       .sort((a, b) => b.amount - a.amount)[0],
@@ -918,7 +918,7 @@ async function main() {
     log('DATA', 'Comprehensive data fetched', {
       rounds: data.rounds.length,
       challenges: data.challenges.length,
-      bets: data.bets.length,
+      blessings: data.blessings.length,
       transactions: data.transactions.length
     });
 

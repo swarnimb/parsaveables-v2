@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Settings, Lock, FileText } from 'lucide-react'
+import { Settings, FileText } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 export default function AdminDropdown() {
@@ -44,15 +44,6 @@ export default function AdminDropdown() {
               >
                 <Settings className="h-4 w-4" />
                 <span>Control Center</span>
-              </Link>
-
-              <Link
-                to="/admin/betting-controls"
-                className="flex items-center gap-3 px-4 py-2 hover:bg-accent transition-colors"
-                onClick={() => setIsOpen(false)}
-              >
-                <Lock className="h-4 w-4" />
-                <span>Betting Controls</span>
               </Link>
 
               <Link
