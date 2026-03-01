@@ -252,8 +252,8 @@ async function fetchComprehensiveData(periodStart, periodEnd) {
     .gte('start_date', periodStart)
     .lte('start_date', periodEnd);
 
-  // 7. Calculate statistics
-  const stats = calculateStats(rounds, challenges, blessings, transactions);
+  // 7. Calculate statistics (guard against null from failed queries)
+  const stats = calculateStats(rounds || [], challenges || [], blessings || [], transactions || []);
 
   return {
     rounds: rounds || [],
