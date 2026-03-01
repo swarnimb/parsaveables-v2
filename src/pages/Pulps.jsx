@@ -328,17 +328,15 @@ export default function Pulps() {
         {/* Blessings */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
           <Accordion type="single" collapsible>
-            <AccordionItem value="blessings" className="border-2 border-blue-500/20 rounded-xl bg-gradient-to-br from-blue-500/5 to-background overflow-hidden">
-              <AccordionTrigger className="hover:no-underline px-6 py-4">
+            <AccordionItem value="blessings" className="relative border-2 border-blue-500/20 rounded-xl bg-gradient-to-br from-blue-500/5 to-background overflow-hidden">
+              {!windowOpen && <Badge variant="outline" className="absolute top-2 left-3 z-10 text-[0.65rem] py-0 px-1.5 leading-tight">inactive</Badge>}
+              <AccordionTrigger className="hover:no-underline px-6 pt-6 pb-4">
                 <div className="flex items-center gap-4 w-full">
                   <div className="h-12 w-12 rounded-full bg-blue-500/20 flex items-center justify-center shrink-0">
                     <Target className="h-6 w-6 text-blue-600" />
                   </div>
                   <div className="flex-1 text-left min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="text-lg font-bold">Give a Blessing</h3>
-                      {!windowOpen && <Badge variant="outline" className="text-xs shrink-0">Window required</Badge>}
-                    </div>
+                    <h3 className="text-lg font-bold">Give a Blessing</h3>
                     <p className="text-sm text-muted-foreground">Bless 3 players — double your offerings</p>
                   </div>
                 </div>
@@ -358,17 +356,15 @@ export default function Pulps() {
         {/* Challenges */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
           <Accordion type="single" collapsible>
-            <AccordionItem value="challenges" className="border-2 border-red-500/20 rounded-xl bg-gradient-to-br from-red-500/5 to-background overflow-hidden">
-              <AccordionTrigger className="hover:no-underline px-6 py-4">
+            <AccordionItem value="challenges" className="relative border-2 border-red-500/20 rounded-xl bg-gradient-to-br from-red-500/5 to-background overflow-hidden">
+              {!windowOpen && <Badge variant="outline" className="absolute top-2 left-3 z-10 text-[0.65rem] py-0 px-1.5 leading-tight">inactive</Badge>}
+              <AccordionTrigger className="hover:no-underline px-6 pt-6 pb-4">
                 <div className="flex items-center gap-4 w-full">
                   <div className="h-12 w-12 rounded-full bg-red-500/20 flex items-center justify-center shrink-0">
                     <Swords className="h-6 w-6 text-red-600" />
                   </div>
                   <div className="flex-1 text-left min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="text-lg font-bold">Challenge a Rival</h3>
-                      {!windowOpen && <Badge variant="outline" className="text-xs shrink-0">Window required</Badge>}
-                    </div>
+                    <h3 className="text-lg font-bold">Challenge a Rival</h3>
                     <p className="text-sm text-muted-foreground">Feeling confident? — challenge the villain</p>
                   </div>
                 </div>
@@ -388,17 +384,15 @@ export default function Pulps() {
         {/* Advantages */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
           <Accordion type="single" collapsible>
-            <AccordionItem value="advantages" className="border-2 border-amber-500/20 rounded-xl bg-gradient-to-br from-amber-500/5 to-background overflow-hidden">
-              <AccordionTrigger className="hover:no-underline px-6 py-4">
+            <AccordionItem value="advantages" className="relative border-2 border-amber-500/20 rounded-xl bg-gradient-to-br from-amber-500/5 to-background overflow-hidden">
+              {!windowOpen && <Badge variant="outline" className="absolute top-2 left-3 z-10 text-[0.65rem] py-0 px-1.5 leading-tight">inactive</Badge>}
+              <AccordionTrigger className="hover:no-underline px-6 pt-6 pb-4">
                 <div className="flex items-center gap-4 w-full">
                   <div className="h-12 w-12 rounded-full bg-amber-500/20 flex items-center justify-center shrink-0">
                     <ShoppingCart className="h-6 w-6 text-amber-600" />
                   </div>
                   <div className="flex-1 text-left min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="text-lg font-bold">Buy Advantages</h3>
-                      {!windowOpen && <Badge variant="outline" className="text-xs shrink-0">Window required</Badge>}
-                    </div>
+                    <h3 className="text-lg font-bold">Buy Advantages</h3>
                     <p className="text-sm text-muted-foreground">No shame in using some help</p>
                   </div>
                 </div>
