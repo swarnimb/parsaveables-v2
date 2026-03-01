@@ -18,16 +18,15 @@ const supabase = createClient(
 /**
  * Advantage Service - PULP advantages shop
  *
- * Players can purchase advantages from the catalog:
- * - Mulligan (120 PULPs) - Extra mulligan for the round
- * - Anti-Mulligan (200 PULPs) - Force opponent to re-shoot
- * - Cancel (200 PULPs) - Cancel last mulligan/anti-mulligan
- * - Bag Trump (100 PULPs) - Change bag-carry decision
- * - Shotgun Buddy (100 PULPs) - Make someone shotgun a beer
+ * Players can purchase advantages from the catalog (only during an open PULPy window):
+ * - Mulligan (150 PULPs) - Re-throw any shot without consequence
+ * - Bag Trump (80 PULPs) - Veto who carries the bag on the next hole
+ * - Shotgun Buddy (80 PULPs) - Point to anyone — they shotgun a beer with you
  *
  * Rules:
  * - One advantage per type limit (can't stack)
- * - All advantages expire in 24 hours
+ * - Advantages expire at 11:59 PM on the day of purchase
+ * - Can be purchased ONLY during an open PULPy window
  * - Can be used once per purchase
  */
 
@@ -53,17 +52,36 @@ export async function getAvailableCatalog() {
 }
 
 /**
- * Purchase an advantage from the catalog
+ * Purchase an advantage from the catalog.
+ * Requires an open PULPy window — will throw if no window is open.
  *
  * @param {number} playerId - Player ID
  * @param {string} advantageKey - Advantage key from catalog
+ * @param {string} windowId - PULPy window UUID (must be open)
  * @returns {Promise<object>} Updated player with new advantage
- * @throws {BusinessLogicError} If insufficient PULPs or already owns advantage
+ * @throws {BusinessLogicError} If window not open, insufficient PULPs, or already owns advantage
  */
-export async function purchaseAdvantage(playerId, advantageKey) {
-  logger.info('Purchasing advantage', { playerId, advantageKey });
+export async function purchaseAdvantage(playerId, advantageKey, windowId) {
+  logger.info('Purchasing advantage', { playerId, advantageKey, windowId });
 
   try {
+    // Validate window is open
+    if (!windowId) {
+      throw new BusinessLogicError('A PULPy window must be open to purchase advantages');
+    }
+
+    const { data: window, error: windowError } = await supabase
+      .from('pulpy_windows')
+      .select('id, status')
+      .eq('id', windowId)
+      .single();
+
+    if (windowError) throw windowError;
+    if (!window) throw new BusinessLogicError('PULPy window not found');
+    if (window.status !== 'open') {
+      throw new BusinessLogicError('PULPy window is not open — advantages cannot be purchased');
+    }
+
     // Get advantage from catalog
     const { data: advantage, error: catalogError } = await supabase
       .from('advantage_catalog')
@@ -107,9 +125,10 @@ export async function purchaseAdvantage(playerId, advantageKey) {
       { advantage_key: advantageKey }
     );
 
-    // Create advantage instance
+    // Create advantage instance — expires at 11:59 PM on the day of purchase
     const purchasedAt = new Date();
-    const expiresAt = new Date(purchasedAt.getTime() + advantage.expiration_hours * 60 * 60 * 1000);
+    const expiresAt = new Date(purchasedAt);
+    expiresAt.setHours(23, 59, 59, 999);
 
     const newAdvantage = {
       advantage_key: advantageKey,

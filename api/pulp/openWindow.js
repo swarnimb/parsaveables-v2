@@ -1,15 +1,14 @@
 import { createClient } from '@supabase/supabase-js';
-import * as challengeService from '../../src/services/gamification/challengeService.js';
+import * as windowService from '../../src/services/gamification/windowService.js';
 import { createLogger } from '../../src/utils/logger.js';
 import { BusinessLogicError } from '../../src/utils/errors.js';
 
-const logger = createLogger('API:IssueChallenge');
+const logger = createLogger('API:OpenWindow');
 
 /**
- * POST /api/pulp/issueChallenge
- * Issue a head-to-head challenge during an open PULPy window.
- *
- * Body: { challengedId, windowId, wagerAmount }
+ * POST /api/pulp/openWindow
+ * Opens a new 5-minute PULPy window. Only one can be open at a time.
+ * Any authenticated player can open a window.
  */
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -40,30 +39,16 @@ export default async function handler(req, res) {
 
     if (playerError || !player) return res.status(404).json({ error: 'Player not found' });
 
-    const { challengedId, windowId, wagerAmount } = req.body;
+    logger.info('Opening PULPy window', { playerId: player.id });
 
-    if (!challengedId || !windowId || wagerAmount === undefined) {
-      return res.status(400).json({ error: 'Missing required fields: challengedId, windowId, wagerAmount' });
-    }
+    const window = await windowService.openWindow(player.id);
 
-    logger.info('Issuing challenge', { challengerId: player.id, challengedId, windowId, wagerAmount });
-
-    const challenge = await challengeService.issueChallenge(
-      player.id,
-      challengedId,
-      windowId,
-      wagerAmount
-    );
-
-    logger.info('Challenge issued', { challengeId: challenge.id, status: challenge.status });
-
-    return res.status(200).json({ success: true, challenge });
+    return res.status(200).json({ success: true, window });
   } catch (error) {
     if (error instanceof BusinessLogicError) {
-      logger.warn('Business logic error', { error: error.message });
       return res.status(400).json({ error: error.message });
     }
-    logger.error('Failed to issue challenge', { error: error.message });
+    logger.error('Failed to open window', { error: error.message });
     return res.status(500).json({ error: 'Internal server error' });
   }
 }

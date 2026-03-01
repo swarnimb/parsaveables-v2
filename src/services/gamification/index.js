@@ -3,50 +3,43 @@ import { config } from '../../config/index.js';
 import { createLogger } from '../../utils/logger.js';
 import { DatabaseError } from '../../utils/errors.js';
 import * as pulpService from './pulpService.js';
-import * as bettingService from './bettingService.js';
 import * as challengeService from './challengeService.js';
-import * as advantageService from './advantageService.js';
+import * as blessingService from './blessingService.js';
+import * as windowService from './windowService.js';
 
 const logger = createLogger('GamificationService');
 
-/**
- * Initialize Supabase client with service role key
- * This bypasses Row-Level Security for backend operations
- */
 const supabase = createClient(
   config.supabase.url,
   config.supabase.serviceRoleKey
 );
 
 /**
- * Gamification Service - Master Orchestrator
+ * Gamification Service — Master Orchestrator
  *
- * Handles all PULP economy processing after a round is completed:
- * 1. Award participation PULPs (+10 base)
- * 2. Award streak bonuses (+20 if 4 consecutive weeks)
- * 3. Award beat-higher-ranked bonuses (+5 per player)
- * 4. Award DRS bonuses (position-based: 4th=+2, 5th=+4, 6th=+6, etc.)
- * 5. Resolve accepted challenges
- * 6. Resolve locked bets
- * 7. Update player counters (streak, rounds played, etc.)
+ * Called after a round is stored. Handles:
+ * 1. Participation PULPs (+10 per player)
+ * 2. Beat-higher-ranked bonus (+5 per player beaten, seasons only)
+ * 3. DRS bonus (4th=+2, 5th=+4, 6th=+6, etc.)
+ * 4. PULPy window settlement (if a locked window matches this round)
  */
 
 /**
- * Process all gamification logic for a completed round
+ * Process all gamification for a completed round.
  *
  * @param {string} roundId - Round UUID
  * @param {number} eventId - Event ID
- * @param {string} eventType - Event type ('season' or 'tournament')
+ * @param {string} eventType - 'season' or 'tournament'
+ * @param {object} roundMeta - { date, time } extracted from scorecard
  * @returns {Promise<object>} Summary of PULP earnings and resolutions
  */
-export async function processRoundGamification(roundId, eventId, eventType) {
+export async function processRoundGamification(roundId, eventId, eventType, roundMeta = {}) {
   logger.info('Processing round gamification', { roundId, eventId, eventType });
 
   try {
-    // Get all players for this round
     const { data: playerRounds, error: roundsError } = await supabase
       .from('player_rounds')
-      .select('player_name, rank, total_strokes, registered_players!inner(id, player_name, participation_streak, last_round_date)')
+      .select('player_name, rank, total_strokes, registered_players!inner(id, player_name)')
       .eq('round_id', roundId)
       .order('rank', { ascending: true });
 
@@ -57,7 +50,7 @@ export async function processRoundGamification(roundId, eventId, eventType) {
       return { message: 'No players to process' };
     }
 
-    // Get round date
+    // Get round date for context
     const { data: round, error: roundError } = await supabase
       .from('rounds')
       .select('date')
@@ -66,32 +59,24 @@ export async function processRoundGamification(roundId, eventId, eventType) {
 
     if (roundError) throw roundError;
 
-    const roundDate = new Date(round.date);
-
-    // Get season leaderboard (for beat-higher-ranked calculation)
-    // Only calculate if event is a season
+    // Season leaderboard for beat-higher-ranked calculation
     let seasonLeaderboard = [];
     if (eventType === 'season') {
-      const { data: leaderboardData, error: leaderboardError } = await supabase
+      const { data: leaderboardData, error: lbError } = await supabase
         .from('player_rounds')
-        .select('player_name, final_total')
+        .select('player_id, final_total')
         .eq('event_id', eventId);
 
-      if (leaderboardError) throw leaderboardError;
+      if (lbError) throw lbError;
 
-      // Aggregate by player_name and calculate total points
       const aggregated = {};
-      leaderboardData.forEach(pr => {
-        if (!aggregated[pr.player_name]) {
-          aggregated[pr.player_name] = 0;
-        }
-        aggregated[pr.player_name] += pr.final_total || 0;
-      });
+      for (const pr of leaderboardData) {
+        aggregated[pr.player_id] = (aggregated[pr.player_id] || 0) + (pr.final_total || 0);
+      }
 
-      // Convert to array and sort by total points (descending)
       seasonLeaderboard = Object.entries(aggregated)
-        .map(([player_name, total_points]) => ({ player_name, total_points }))
-        .sort((a, b) => b.total_points - a.total_points);
+        .map(([playerId, total]) => ({ playerId: Number(playerId), total }))
+        .sort((a, b) => b.total - a.total);
     }
 
     const results = {
@@ -100,124 +85,109 @@ export async function processRoundGamification(roundId, eventId, eventType) {
       eventType,
       playersProcessed: 0,
       totalPulpsAwarded: 0,
-      challengesResolved: 0,
-      betsResolved: 0,
+      windowSettled: null,
       playerSummaries: []
     };
 
-    // Process each player
+    // Award per-player PULPs
     for (const pr of playerRounds) {
       const playerId = pr.registered_players.id;
       const playerName = pr.player_name;
       const rank = pr.rank;
 
-      logger.info('Processing player', { playerId, playerName, rank });
-
       let playerEarnings = 0;
-      const earningBreakdown = {};
+      const breakdown = {};
 
-      // 1. Participation: +10 PULPs
+      // 1. Participation: +10
       await pulpService.addTransaction(
         playerId,
         10,
         'round_participation',
-        `Played round at ${round.date}`,
+        `Played round on ${round.date}`,
         { round_id: roundId, event_id: eventId }
       );
       playerEarnings += 10;
-      earningBreakdown.participation = 10;
+      breakdown.participation = 10;
 
-      // 2. Streak Bonus: +20 if 4 consecutive weeks
-      const streakResult = await calculateAndAwardStreakBonus(
-        playerId,
-        roundDate,
-        pr.registered_players.last_round_date,
-        pr.registered_players.participation_streak,
-        roundId
-      );
-      if (streakResult.awarded) {
-        playerEarnings += streakResult.amount;
-        earningBreakdown.streak = streakResult.amount;
-      }
-
-      // 3. Beat Higher-Ranked: +5 per player (only for season rounds)
+      // 2. Beat-higher-ranked: +5 per player beaten (seasons only)
       if (eventType === 'season') {
-        const higherRankedBeaten = calculateHigherRankedBeaten(playerName, rank, playerRounds, seasonLeaderboard);
-        if (higherRankedBeaten > 0) {
-          const beatBonus = higherRankedBeaten * 5;
+        const beaten = countHigherRankedBeaten(playerId, rank, playerRounds, seasonLeaderboard);
+        if (beaten > 0) {
+          const bonus = beaten * 5;
           await pulpService.addTransaction(
             playerId,
-            beatBonus,
+            bonus,
             'beat_higher_ranked',
-            `Beat ${higherRankedBeaten} higher-ranked player(s)`,
-            { round_id: roundId, count: higherRankedBeaten }
+            `Beat ${beaten} higher-ranked player(s)`,
+            { round_id: roundId, count: beaten }
           );
-          playerEarnings += beatBonus;
-          earningBreakdown.beatHigherRanked = beatBonus;
+          playerEarnings += bonus;
+          breakdown.beatHigherRanked = bonus;
         }
       }
 
-      // 4. DRS (Drag Reduction System): Position-based bonus (4th=+2, 5th=+4, etc.)
+      // 3. DRS bonus: 4th=+2, 5th=+4, 6th=+6, etc.
       if (rank >= 4) {
-        const drsBonus = (rank - 3) * 2;
+        const drs = (rank - 3) * 2;
         await pulpService.addTransaction(
           playerId,
-          drsBonus,
+          drs,
           'drs_bonus',
-          `DRS bonus for ${rank}${getRankSuffix(rank)} place`,
+          `DRS bonus for ${rank}${rankSuffix(rank)} place`,
           { round_id: roundId, rank }
         );
-        playerEarnings += drsBonus;
-        earningBreakdown.drs = drsBonus;
+        playerEarnings += drs;
+        breakdown.drs = drs;
       }
 
-      // 5. Update player counters
-      await updatePlayerCounters(playerId, roundDate, streakResult.newStreak);
+      // 4. Increment total_rounds_this_season counter
+      const { data: playerRecord } = await supabase
+        .from('registered_players')
+        .select('total_rounds_this_season')
+        .eq('id', playerId)
+        .single();
+
+      if (playerRecord) {
+        await supabase
+          .from('registered_players')
+          .update({ total_rounds_this_season: (playerRecord.total_rounds_this_season || 0) + 1 })
+          .eq('id', playerId);
+      }
 
       results.playersProcessed++;
       results.totalPulpsAwarded += playerEarnings;
-      results.playerSummaries.push({
-        playerId,
-        playerName,
-        rank,
-        pulpsEarned: playerEarnings,
-        breakdown: earningBreakdown
-      });
+      results.playerSummaries.push({ playerId, playerName, rank, pulpsEarned: playerEarnings, breakdown });
     }
 
-    // 6. Resolve challenges for this round
-    const { data: challenges, error: challengesError } = await supabase
-      .from('challenges')
-      .select('id')
-      .eq('round_id', roundId)
-      .eq('status', 'accepted');
+    // 5. Match and settle a locked PULPy window for this round
+    const matchedWindow = await findMatchingWindow(roundMeta);
 
-    if (challengesError) throw challengesError;
-
-    for (const challenge of challenges || []) {
+    if (matchedWindow) {
       try {
-        await challengeService.resolveChallenge(challenge.id);
-        results.challengesResolved++;
-      } catch (error) {
-        logger.error('Failed to resolve challenge', { challengeId: challenge.id, error: error.message });
+        const settlementResults = await windowService.settleWindow(
+          matchedWindow.id,
+          roundId,
+          {
+            resolveBlessingsForWindow: blessingService.resolveBlessingsForWindow,
+            resolveChallengesForWindow: challengeService.resolveChallengesForWindow
+          }
+        );
+        results.windowSettled = { windowId: matchedWindow.id, ...settlementResults };
+        logger.info('PULPy window settled', { windowId: matchedWindow.id, roundId });
+      } catch (settleError) {
+        logger.error('Window settlement failed (non-fatal)', {
+          windowId: matchedWindow.id,
+          error: settleError.message
+        });
       }
     }
 
-    // 7. Resolve bets for this round
-    try {
-      const betResults = await bettingService.resolveBets(roundId);
-      results.betsResolved = betResults.totalBets;
-      results.betPayouts = {
-        perfectWins: betResults.perfectWins,
-        partialWins: betResults.partialWins,
-        losses: betResults.losses,
-        totalPaidOut: betResults.totalPaidOut
-      };
-    } catch (error) {
-      logger.error('Failed to resolve bets', { roundId, error: error.message });
-    }
-
-    logger.info('Round gamification complete', results);
+    logger.info('Round gamification complete', {
+      roundId,
+      playersProcessed: results.playersProcessed,
+      totalPulpsAwarded: results.totalPulpsAwarded,
+      windowSettled: results.windowSettled?.windowId || null
+    });
 
     return results;
   } catch (error) {
@@ -226,99 +196,92 @@ export async function processRoundGamification(roundId, eventId, eventType) {
   }
 }
 
+// ============================================================================
+// Internal helpers
+// ============================================================================
+
 /**
- * Calculate and award streak bonus
+ * Find a locked window that matches the given round's date/time.
  *
- * @param {number} playerId - Player ID
- * @param {Date} currentRoundDate - Current round date
- * @param {string|null} lastRoundDate - Last round date (ISO string)
- * @param {number} currentStreak - Current streak counter
- * @param {string} roundId - Round UUID
- * @returns {Promise<object>} Streak result with awarded flag and new streak
+ * Match logic:
+ * 1. If round has a time: find window where opened_at-1hr ≤ round_datetime ≤ opened_at+2hrs
+ * 2. If no time: match any locked window from the same calendar day, FIFO by locked_at
+ *
+ * @param {object} roundMeta - { date: 'YYYY-MM-DD', time: 'HH:MM' | null }
+ * @returns {Promise<object|null>} Matching window record or null
  */
-async function calculateAndAwardStreakBonus(playerId, currentRoundDate, lastRoundDate, currentStreak, roundId) {
-  let newStreak = currentStreak || 0;
-  let awarded = false;
-  let amount = 0;
+async function findMatchingWindow(roundMeta) {
+  const { date, time } = roundMeta;
 
-  // If first round or no last round date, start streak at 1
-  if (!lastRoundDate) {
-    newStreak = 1;
-    return { awarded: false, amount: 0, newStreak };
+  if (!date) return null;
+
+  try {
+    if (time) {
+      // Parse round datetime
+      const roundDatetime = new Date(`${date}T${time}`);
+      const lowerBound = new Date(roundDatetime.getTime() - 60 * 60 * 1000).toISOString();  // -1hr
+      const upperBound = new Date(roundDatetime.getTime() + 2 * 60 * 60 * 1000).toISOString(); // +2hrs
+
+      const { data, error } = await supabase
+        .from('pulpy_windows')
+        .select('*')
+        .eq('status', 'locked')
+        .gte('opened_at', lowerBound)
+        .lte('opened_at', upperBound)
+        .order('locked_at', { ascending: true })
+        .limit(1)
+        .maybeSingle();
+
+      if (error) throw error;
+      return data || null;
+    } else {
+      // Fallback: same calendar day, FIFO
+      const dayStart = `${date}T00:00:00.000Z`;
+      const dayEnd = `${date}T23:59:59.999Z`;
+
+      const { data, error } = await supabase
+        .from('pulpy_windows')
+        .select('*')
+        .eq('status', 'locked')
+        .gte('opened_at', dayStart)
+        .lte('opened_at', dayEnd)
+        .order('locked_at', { ascending: true })
+        .limit(1)
+        .maybeSingle();
+
+      if (error) throw error;
+      return data || null;
+    }
+  } catch (error) {
+    logger.error('Failed to find matching window', { error: error.message, roundMeta });
+    return null;
   }
-
-  const lastDate = new Date(lastRoundDate);
-  const daysSinceLastRound = Math.floor((currentRoundDate - lastDate) / (1000 * 60 * 60 * 24));
-
-  // If more than 7 days (missed a week), reset streak
-  if (daysSinceLastRound > 7) {
-    newStreak = 1; // Start new streak
-    return { awarded: false, amount: 0, newStreak };
-  }
-
-  // Increment streak
-  newStreak = currentStreak + 1;
-
-  // If streak reaches 4, award bonus and reset
-  if (newStreak >= 4) {
-    await pulpService.addTransaction(
-      playerId,
-      20,
-      'streak_bonus',
-      '4-week participation streak bonus',
-      { round_id: roundId, streak: 4 }
-    );
-    awarded = true;
-    amount = 20;
-    newStreak = 0; // Reset after awarding
-  }
-
-  return { awarded, amount, newStreak };
 }
 
 /**
- * Calculate how many higher-ranked players this player beat
+ * Count how many higher-season-ranked players this player beat in this round.
  *
- * @param {string} playerName - Player name
- * @param {number} currentRank - Player's rank in this round
- * @param {Array} playerRounds - All player rounds for this round (with rank)
- * @param {Array} seasonLeaderboard - Season leaderboard (sorted by total_points desc)
- * @returns {number} Count of higher-ranked players beaten
+ * @param {number} playerId - Current player's ID
+ * @param {number} roundRank - Their rank in this round
+ * @param {Array} playerRounds - All player_rounds for this round
+ * @param {Array} seasonLeaderboard - [{ playerId, total }] sorted desc
+ * @returns {number} Count of higher-ranked opponents beaten
  */
-function calculateHigherRankedBeaten(playerName, currentRank, playerRounds, seasonLeaderboard) {
-  // Find player's season rank
-  const seasonRank = seasonLeaderboard.findIndex(p => p.player_name === playerName) + 1;
-
-  if (seasonRank === 0) {
-    // Player not on season leaderboard yet (first round)
-    return 0;
-  }
-
-  // Count how many players ranked higher on season leaderboard finished below them this round
-  // Higher on season = lower seasonRank number (1st is better than 2nd)
-  // Finished below in round = higher currentRank number (1st is better than 2nd)
+function countHigherRankedBeaten(playerId, roundRank, playerRounds, seasonLeaderboard) {
+  const mySeasonIndex = seasonLeaderboard.findIndex(p => p.playerId === playerId);
+  if (mySeasonIndex === -1) return 0; // Not on leaderboard yet
 
   let count = 0;
 
   for (const pr of playerRounds) {
-    const opponentName = pr.player_name;
-    const opponentRank = pr.rank;
+    const opponentId = pr.registered_players.id;
+    if (opponentId === playerId) continue;
 
-    // Skip self
-    if (opponentName === playerName) {
-      continue;
-    }
+    const opponentSeasonIndex = seasonLeaderboard.findIndex(p => p.playerId === opponentId);
+    if (opponentSeasonIndex === -1) continue;
 
-    // Find opponent's season rank
-    const opponentSeasonRank = seasonLeaderboard.findIndex(p => p.player_name === opponentName) + 1;
-
-    if (opponentSeasonRank === 0) {
-      // Opponent not on season leaderboard yet
-      continue;
-    }
-
-    // Check if opponent ranks higher on season (lower number) but finished below in this round (higher number)
-    if (opponentSeasonRank < seasonRank && opponentRank > currentRank) {
+    // Opponent ranks higher on season (lower index = higher rank) AND finished below us this round
+    if (opponentSeasonIndex < mySeasonIndex && pr.rank > roundRank) {
       count++;
     }
   }
@@ -326,57 +289,8 @@ function calculateHigherRankedBeaten(playerName, currentRank, playerRounds, seas
   return count;
 }
 
-/**
- * Update player counters after round processing
- *
- * @param {number} playerId - Player ID
- * @param {Date} roundDate - Round date
- * @param {number} newStreak - Updated streak counter
- * @returns {Promise<void>}
- */
-async function updatePlayerCounters(playerId, roundDate, newStreak) {
-  try {
-    // Fetch current total_rounds_this_season
-    const { data: player, error: fetchError } = await supabase
-      .from('registered_players')
-      .select('total_rounds_this_season')
-      .eq('id', playerId)
-      .single();
-
-    if (fetchError) throw fetchError;
-
-    // Increment the counter
-    const newTotalRounds = (player.total_rounds_this_season || 0) + 1;
-
-    // Update all counters
-    const { error } = await supabase
-      .from('registered_players')
-      .update({
-        participation_streak: newStreak,
-        last_round_date: roundDate.toISOString().split('T')[0], // DATE format (YYYY-MM-DD)
-        total_rounds_this_season: newTotalRounds
-      })
-      .eq('id', playerId);
-
-    if (error) throw error;
-
-    logger.debug('Updated player counters', { playerId, newStreak, roundDate: roundDate.toISOString(), totalRounds: newTotalRounds });
-  } catch (error) {
-    logger.error('Failed to update player counters', { error: error.message, playerId });
-    throw error;
-  }
-}
-
-/**
- * Get rank suffix (1st, 2nd, 3rd, 4th, etc.)
- *
- * @param {number} rank - Rank number
- * @returns {string} Suffix ('st', 'nd', 'rd', 'th')
- */
-function getRankSuffix(rank) {
-  if (rank % 100 >= 11 && rank % 100 <= 13) {
-    return 'th';
-  }
+function rankSuffix(rank) {
+  if (rank % 100 >= 11 && rank % 100 <= 13) return 'th';
   switch (rank % 10) {
     case 1: return 'st';
     case 2: return 'nd';
@@ -385,74 +299,6 @@ function getRankSuffix(rank) {
   }
 }
 
-/**
- * Award weekly interaction bonus to a player (called from API endpoints)
- *
- * @param {number} playerId - Player ID
- * @returns {Promise<boolean>} True if bonus was awarded
- */
-export async function awardWeeklyInteractionBonus(playerId) {
-  try {
-    // Get current ISO week number
-    const currentWeek = getISOWeek(new Date());
-
-    // Get player's last interaction week
-    const { data: player, error: fetchError } = await supabase
-      .from('registered_players')
-      .select('last_interaction_week')
-      .eq('id', playerId)
-      .single();
-
-    if (fetchError) throw fetchError;
-
-    // If already interacted this week, skip bonus
-    if (player.last_interaction_week === currentWeek) {
-      return false;
-    }
-
-    // Award +5 PULPs
-    await pulpService.addTransaction(
-      playerId,
-      5,
-      'weekly_interaction',
-      'First PULP action this week',
-      { week: currentWeek }
-    );
-
-    // Update last interaction week
-    await supabase
-      .from('registered_players')
-      .update({ last_interaction_week: currentWeek })
-      .eq('id', playerId);
-
-    logger.info('Weekly interaction bonus awarded', { playerId, week: currentWeek });
-
-    return true;
-  } catch (error) {
-    logger.error('Failed to award weekly interaction bonus', { error: error.message, playerId });
-    return false;
-  }
-}
-
-/**
- * Get ISO week number for a date
- *
- * @param {Date} date - Date object
- * @returns {number} ISO week number (1-53)
- */
-function getISOWeek(date) {
-  const target = new Date(date.valueOf());
-  const dayNr = (date.getDay() + 6) % 7;
-  target.setDate(target.getDate() - dayNr + 3);
-  const firstThursday = target.valueOf();
-  target.setMonth(0, 1);
-  if (target.getDay() !== 4) {
-    target.setMonth(0, 1 + ((4 - target.getDay()) + 7) % 7);
-  }
-  return 1 + Math.ceil((firstThursday - target) / 604800000);
-}
-
 export default {
-  processRoundGamification,
-  awardWeeklyInteractionBonus
+  processRoundGamification
 };
