@@ -97,7 +97,6 @@ export const pulpScreens = [
     advantages: [
       { name: 'Mulligan', icon: '🔄' },
       { name: 'Bag Trump', icon: '🎒' },
-      { name: 'Anti-Mulligan', icon: '🚫' },
       { name: 'Shotgun Buddy', icon: '🍺' },
     ],
   },
