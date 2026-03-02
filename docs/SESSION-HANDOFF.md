@@ -1,8 +1,8 @@
 # ParSaveables v2 - Project Dashboard
 
-**Last Updated:** 2026-02-27 (End of Session)
+**Last Updated:** 2026-02-28 (End of Session)
 **Current Phase:** Phase 5 (Testing & Bug Fixes) - IN PROGRESS
-**Status:** Foundation | Auth & Layout | Leaderboard | Rounds | PULP Design | Backend Services | Frontend UI | Season Awareness | UX Enhancements | Testing Framework | Guest Login | Admin Control Center | Tutorial System | Feature Flags | Podcast System | PULPy Window Rework | Google OAuth COMPLETE
+**Status:** Foundation | Auth & Layout | Leaderboard | Rounds | PULP Design | Backend Services | Frontend UI | Season Awareness | UX Enhancements | Testing Framework | Guest Login | Admin Control Center | Tutorial System | PULPy Window Rework | Google OAuth | Podcast Crash Fix | Course Alias Fix COMPLETE
 
 ---
 
@@ -32,7 +32,7 @@
 | Frontend Pages (PULP) | Complete (Betting, Dashboard, Activity, About, Admin) |
 | PULP Settlement | BROKEN - Bets/challenges not resolving after scorecard processing |
 | Tutorial System | Complete (Onboarding 7 screens + Betting 5 screens, spotlight effect) |
-| Feature Flag System | Complete (PULP economy toggle, Coming Soon screen) |
+| Feature Flag System | REMOVED (migration 016 — PULP always live, no toggle) |
 | Testing Framework | Complete (Vitest + React Testing Library + Happy DOM) |
 | PULP Transaction Tests | Complete (Advantages, Betting, Challenges - 16 tests) |
 | Guest Login System | Complete (Read-only access, disabled features, tooltips) |
@@ -45,7 +45,54 @@
 
 ---
 
-## This Session Summary (2026-02-27 - Latest)
+## This Session Summary (2026-02-28 - Latest)
+
+### Test Fixes, Podcast Crash Fix & Course Alias Fix
+
+#### 1. All Tests Passing (37 tests across 6 files)
+
+**api.test.js:**
+- Fixed mock data shape — `player_name: 'Player1'` → `registered_players: { player_name: 'Player1' }` to match Supabase join shape from `.select('registered_players!inner(player_name)')`
+
+**PodiumDisplay.test.jsx:**
+- Removed `"pts"` suffix from point assertions (component renders number only)
+- Fixed stale DOM reference bug: `PodiumCard` defined inside `PodiumDisplay` causes full remount on state change; captured DOM refs become detached. Fixed by re-querying inside `waitFor`
+
+#### 2. Podcast Cron Crash Fix
+
+**Root cause:** `bets` table renamed to `blessings` in migration 016; Supabase returns `null` on a failed `.from()` query, not an empty array — crash happened at `.length` call on null.
+
+**Files fixed (`podcast/generate-dialogue-podcast.js`):**
+- `from('bets')` → `from('blessings')`
+- Renamed all `bets` variables → `blessings`
+- `total_pulps` → `pulp_balance` in leaderboard query
+- Added `|| []` null guards at `calculateStats` call site (not just on return values)
+
+#### 3. AdminDropdown Cleanup
+
+**`src/components/layout/AdminDropdown.jsx`:**
+- Removed "Betting Controls" link (route deleted in migration 016 cleanup)
+- Removed unused `Lock` import from lucide-react
+
+#### 4. Roy G Guerrero Course Multiplier Fix (1x → 2.5x)
+
+**Root cause:** Claude Vision extracts `"Roy G. Guerrero DGC"` from UDisc scorecards. The period after "G" combined with the " DGC" suffix caused all 3 match steps in `find_course_by_name_or_alias` (exact, alias, partial) to fail → silent fallback to 1.0x multiplier.
+
+**Fix (Supabase production SQL — no code change):**
+- Added alias `"Roy G. Guerrero DGC"` to `course_aliases`
+- Added alias `"Roy G Guerrero DGC"` (defensive variant without period)
+- Roy G Guerrero now has 4 aliases: `"Roy G"`, `"Roy G."`, `"Roy G. Guerrero DGC"`, `"Roy G Guerrero DGC"`
+
+**Note:** Round `id: 058e0cc4` (2026-02-28) was processed with 1.0x. Needs to be deleted and re-emailed to get correct 2.5x.
+
+#### 5. Branch Cleanup
+
+- `feature/pulp-economy` branch deleted (local + remote already gone)
+- Repo is now clean on `main`, tracking `origin/main`
+
+---
+
+## This Session Summary (2026-02-27 - Previous)
 
 ### PULPs Tab Copy Polish
 
@@ -526,36 +573,33 @@ Changed alias matching to **EXACT matches only**:
 
 ## Next Session: Immediate Tasks (Priority Order)
 
-### Priority 1: Fix PULP Economy Settlement (CRITICAL)
-- **BROKEN:** Bets and challenges are NOT resolving after scorecard processing
+### Priority 1: Reprocess Roy G Guerrero Round (QUICK WIN)
+- Delete `player_rounds` row `id: 058e0cc4` (2026-02-28, processed at 1.0x)
+- Re-email the UDisc scorecard to reprocess with correct 2.5x multiplier
+- Verify leaderboard updates correctly
+
+### Priority 2: Course Alias Audit (DGC Suffix)
+- Claude Vision appends `"DGC"` suffix to some course names
+- Audit other courses (Bartholomew, Cat Hollow, Harvey Penick, Northtown, Wells Branch, Zilker) for same issue
+- Add defensive `"[Course Name] DGC"` aliases where needed
+
+### Priority 3: Fix PULP Economy Settlement (CRITICAL)
+- **BROKEN:** Blessings and challenges are NOT resolving after scorecard processing
 - Debug gamificationService integration with processScorecard workflow
-- Verify bet resolution logic (resolveBets function)
+- Verify blessing resolution logic (resolveBlessingsForWindow in blessingService)
 - Verify challenge resolution logic (resolveChallenge function)
-- Test end-to-end: Place bet → Process scorecard → Verify PULP settlement
-- Test end-to-end: Issue/accept challenge → Process scorecard → Verify winner gets PULPs
+- Test end-to-end: Open window → Place blessing → Process scorecard → Verify PULP settlement
 - Check transaction logging (pulp_transactions table)
 
-### Priority 2: PULP Economy UI Stages
-Implement different UI states for betting lifecycle:
-- **Pre-lock Stage:** Betting open, show available balance, allow placing bets/challenges
-- **Post-lock Stage:** Betting locked, can't modify, show locked state with clear messaging
-- **Post-resolve Stage:** Show results (won/lost), display payouts, show updated balance
-
-### Priority 3: End-to-End Testing
-- Create test accounts for all players
-- Run multiple full scenarios (bets, challenges, advantages)
+### Priority 4: End-to-End Testing
+- Open PULPy window → place blessings, challenges, buy advantages
+- Process scorecard → verify settlement
 - Verify all PULP earning mechanisms work
-- After testing: Reset for production use
 
-### Priority 4: Podcast Feature
+### Priority 5: Podcast Feature
 - ✅ Episode 0 content finalized and generated (uploaded to Supabase)
 - Build Podcast page UI (audio player, episode description)
 - Test /api/generatePodcast endpoint for future episodes
-
-### Priority 5: Polish & Mobile Testing
-- Framer Motion animations polish
-- Mobile testing & responsive refinements
-- Design system pass (colors, branding)
 
 ---
 
@@ -650,7 +694,10 @@ src/
 ## Known Issues & Notes
 
 ### CRITICAL BLOCKER
-**PULP Settlement Broken**: Bets and challenges are NOT being resolved after scorecard processing. The gamification service may not be fully integrated with the processScorecard workflow, or the resolution logic has bugs.
+**PULP Settlement Broken**: Blessings and challenges are NOT being resolved after scorecard processing. The gamification service may not be fully integrated with the processScorecard workflow, or the resolution logic has bugs.
+
+### ACTION NEEDED
+**Roy G Guerrero round** (`id: 058e0cc4`, 2026-02-28): Processed at 1.0x multiplier (should be 2.5x). Delete this `player_rounds` row and re-email the scorecard to reprocess correctly.
 
 ### Development Notes
 - Browser caching can cause stale data - use Ctrl+Shift+R for hard refresh

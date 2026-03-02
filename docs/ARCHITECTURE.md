@@ -1,8 +1,8 @@
 # ParSaveables 2.0 - System Architecture
 
-**Last Updated:** 2026-02-18
-**Version:** 2.0 (PULP Economy Edition)
-**Status:** Backend & Frontend Complete - Season Aware - Guest Login - Admin Control Center Complete - Tutorial System Complete - Feature Flags - Testing Phase
+**Last Updated:** 2026-02-28
+**Version:** 2.0 (PULPy Window Economy Edition)
+**Status:** Backend & Frontend Complete - Season Aware - Guest Login - Admin Control Center Complete - Tutorial System Complete - PULPy Window Economy Live - Google OAuth Complete - Testing Phase
 
 ---
 
@@ -139,10 +139,11 @@ ParSaveables 2.0 is a disc golf tournament tracking platform for small friend gr
 │  │                                                        │  │
 │  │  [src/services/gamification/] - PULP System          │  │
 │  │  10. pulpService       - Balance & transactions      │  │
-│  │  11. bettingService    - Place/lock/resolve bets     │  │
-│  │  12. challengeService  - Issue/accept/resolve        │  │
-│  │  13. advantageService  - Purchase/track/expire       │  │
-│  │  14. index.js          - Master orchestrator         │  │
+│  │  11. windowService     - Open/lock/settle windows    │  │
+│  │  12. blessingService   - Place/resolve/refund        │  │
+│  │  13. challengeService  - Issue/accept/resolve        │  │
+│  │  14. advantageService  - Purchase/track/expire       │  │
+│  │  15. index.js          - Master orchestrator         │  │
 │  │                          (gamificationService)       │  │
 │  │                                                        │  │
 │  │  [src/services/] - Standalone Services               │  │
@@ -162,18 +163,16 @@ ParSaveables 2.0 is a disc golf tournament tracking platform for small friend gr
 │                                                              │
 │  [EXISTING TABLES - Extended]                               │
 │  - registered_players  + pulp_balance, unique_courses,      │
-│                          participation_streak, last_round,  │
-│                          total_rounds_this_season,          │
-│                          last_interaction_week,             │
 │                          challenges_declined                │
-│  - events              + betting_lock_time                  │
+│  - events              (betting_lock_time removed)          │
 │  - rounds              (no changes)                         │
 │  - player_rounds       (no changes)                         │
 │  - courses             (no changes)                         │
 │  - points_systems      (no changes)                         │
 │                                                              │
 │  [NEW TABLES - PULP Economy]                                │
-│  - bets                    - Structured betting data        │
+│  - pulpy_windows           - Player-opened 5-min windows    │
+│  - blessings (was bets)    - Top-3 predictions per window   │
 │  - challenges              - Head-to-head challenges        │
 │  - pulp_transactions       - Transaction log (audit trail)  │
 │  - advantage_catalog       - Purchasable advantages         │
@@ -322,7 +321,6 @@ ParSaveables 2.0 is a disc golf tournament tracking platform for small friend gr
   - **Courses**: Manage courses with tier/multiplier system
   - **Rules**: Configure scoring rules, bonuses, and point systems
   - Password stored in VITE_CONTROL_CENTER_PASSWORD environment variable
-- **Betting Controls** (modal): Set betting_lock_time, delay, cancel betting window
 - **Process Scorecards** (modal): One-click trigger to process all unprocessed scorecards
 
 **3. User - Profile** (visible to all users)
@@ -505,58 +503,9 @@ ParSaveables 2.0 is a disc golf tournament tracking platform for small friend gr
 
 ## Feature Flag System
 
-ParSaveables uses a simple feature flag system to toggle major features on/off without code changes.
+**Removed in Migration 016 (2026-02-26).**
 
-**Configuration File:** `src/config/features.js`
-
-```javascript
-export const features = {
-  pulpEconomy: false, // Set to true when ready to launch PULP economy
-}
-
-export function useFeatureFlag(flag) {
-  return features[flag] ?? false
-}
-```
-
-**Current Flags:**
-
-| Flag | Default | Description |
-|------|---------|-------------|
-| `pulpEconomy` | `false` | Controls all PULP economy features (betting, challenges, advantages, PULP notifications) |
-
-**PULP Economy Feature Toggle:**
-
-When `features.pulpEconomy = false`:
-- **Betting page** shows Coming Soon screen (for users who confirmed interest)
-- **Betting page** shows tutorial (for users who haven't seen it)
-- **NotificationBell** filters out PULP-related event types (bet_won, bet_lost, challenge_issued, etc.)
-- **Activity page** skips fetching PULP data (transactions, bets, challenges)
-- **Community feed** hides challenges and achievements, shows only rounds
-
-When `features.pulpEconomy = true`:
-- All PULP features enabled
-- Betting page shows actual betting UI (predictions, challenges, advantages)
-- All PULP notifications visible
-- Full activity feed with PULP transactions
-
-**Usage in Components:**
-```javascript
-import { features } from '@/config/features'
-
-// Check flag
-if (features.pulpEconomy) {
-  // Show PULP features
-} else {
-  // Show Coming Soon or hide
-}
-```
-
-**Deployment:**
-To enable PULP economy in production:
-1. Update `src/config/features.js`: `pulpEconomy: true`
-2. Commit and push to main branch
-3. Vercel auto-deploys with features enabled
+`src/config/features.js` was deleted. The PULP economy is always live. There is no Coming Soon screen, no `pulpEconomy` toggle, and no feature-gating. All PULP features (blessings, challenges, advantages, PULPy windows) are permanently active.
 
 ---
 
@@ -748,7 +697,7 @@ Located in `src/services/core/`:
 7. **pointsService.js** (187 lines) - Points calculation + tied rank averaging
 8. **databaseService.js** (227 lines) - Supabase CRUD
 
-### PULP Services (4 Services + Master Orchestrator)
+### PULP Services (5 Services + Master Orchestrator)
 
 Located in `src/services/gamification/`:
 
@@ -756,16 +705,17 @@ Located in `src/services/gamification/`:
 ```
 src/services/gamification/
 ├── pulpService.js        - Balance operations & transactions
-├── bettingService.js     - Place/lock/resolve bets
+├── windowService.js      - Open/lock/settle/expire PULPy windows
+├── blessingService.js    - Place/resolve/refund blessings (formerly bets)
 ├── challengeService.js   - Issue/accept/reject/resolve challenges
 ├── advantageService.js   - Purchase/track expiry/record usage
 └── index.js              - Master orchestrator (gamificationService)
 ```
 
-**Implementation Status:** Complete (~750 lines total)
-- All 4 sub-services fully implemented
+**Implementation Status:** Complete
+- All 5 sub-services fully implemented
 - Master orchestrator processRoundGamification() complete
-- Weekly interaction bonus logic implemented
+- Window settlement integrated into processScorecard Step 11
 - Integrated into processScorecard workflow
 
 ---
@@ -783,15 +733,11 @@ parsaveables-v2/
 │   │   ├── Rounds.jsx                   # Round history (bottom nav)
 │   │   ├── Podcast.jsx                  # Podcast player (bottom nav)
 │   │   ├── Activity.jsx                 # Player feed + Community feed tabs
-│   │   ├── Betting.jsx                  # Predictions + Challenges + Advantages
+│   │   ├── Pulps.jsx                    # PULPy window + Blessings + Challenges + Advantages
 │   │   ├── NotFound.jsx                 # 404 page
 │   │   └── admin/
 │   │       ├── ControlCenter.jsx        # Admin dashboard with 4 tabs
-│   │       ├── BettingControls.jsx      # Betting lock management
 │   │       └── ProcessScorecards.jsx    # Manual scorecard trigger
-│   │
-│   ├── config/
-│   │   └── features.js                  # Feature flags (pulpEconomy toggle)
 │   │
 │   ├── components/
 │   │   ├── ui/                          # Shadcn base components (12 total)
@@ -822,8 +768,7 @@ parsaveables-v2/
 │   │   │   ├── PlayersTab.jsx           # Players CRUD
 │   │   │   ├── CoursesTab.jsx           # Courses CRUD
 │   │   │   ├── RulesTab.jsx             # Points system configuration
-│   │   │   ├── EventsTab.jsx            # Legacy events tab (deprecated)
-│   │   │   └── BettingControlsModal.jsx # Lock betting modal
+│   │   │   └── EventsTab.jsx            # Legacy events tab (deprecated)
 │   │   │
 │   │   ├── tutorial/
 │   │   │   ├── TutorialSpotlight.jsx    # Spotlight overlay for UI highlighting
@@ -835,11 +780,11 @@ parsaveables-v2/
 │   │   │   ├── LeaderboardTable.jsx     # Sortable table with expandable rows
 │   │   │   └── PodiumDisplay.jsx        # Top 3 visual
 │   │   │
-│   │   ├── betting/
-│   │   │   ├── PredictionsSection.jsx   # Top 3 prediction (next round)
-│   │   │   ├── ChallengesSection.jsx    # Issue/respond to challenges (next round)
-│   │   │   ├── AdvantagesSection.jsx    # Purchase advantages shop
-│   │   │   └── ComingSoon.jsx           # Coming Soon screen (when PULP disabled)
+│   │   ├── pulps/
+│   │   │   ├── PULPyWindowModal.jsx     # Open/close 5-minute window
+│   │   │   ├── BlessingsSection.jsx     # Top-3 predictions (during open window)
+│   │   │   ├── ChallengesSection.jsx    # Issue/respond to challenges (during open window)
+│   │   │   └── AdvantagesSection.jsx    # Purchase advantages shop
 │   │   │
 │   │   └── rounds/
 │   │       └── RoundCard.jsx            # Accordion round card
@@ -885,13 +830,21 @@ parsaveables-v2/
 ```
 ┌─────────────────────────────────────────────────────────┐
 │ PHASE 1: PRE-ROUND                                      │
-│ Event Created → Betting Window Opens                    │
+│ Event Created → Player Opens PULPy Window               │
 └─────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────┐
-│ 1. Players Place Bets & Challenges (Via API)            │
-│    Frontend → API Endpoints:                            │
-│    - POST /api/pulp/placeBet                            │
+│ 1. Player Opens PULPy Window (5 minutes)                │
+│    - Any authenticated player can open a window         │
+│    - POST /api/pulp/openWindow                          │
+│    - Window auto-locks after 5 minutes                  │
+└────────────────────┬────────────────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────────────────┐
+│ 2. Players Place Blessings, Challenges & Advantages     │
+│    (Only during an open window)                         │
+│    - POST /api/pulp/placeBlessing                       │
 │    - POST /api/pulp/issueChallenge                      │
 │    - POST /api/pulp/respondToChallenge                  │
 │    - POST /api/pulp/purchaseAdvantage                   │
@@ -899,15 +852,10 @@ parsaveables-v2/
                      │
                      ▼
 ┌─────────────────────────────────────────────────────────┐
-│ 2. Admin Sets Betting Lock Time                         │
-│    Admin Dropdown → Betting Controls                    │
-└────────────────────┬────────────────────────────────────┘
-                     │
-                     ▼
-┌─────────────────────────────────────────────────────────┐
-│ 3. Betting Locks Automatically                          │
-│    - System locks betting at scheduled time             │
-│    - Prevents new bets/challenges                       │
+│ 3. Window Auto-Locks at 5 Minutes                       │
+│    - No new blessings/challenges accepted               │
+│    - Window status: open → locked                       │
+│    - Expires (refunds all) if no round in 15 days       │
 └────────────────────┬────────────────────────────────────┘
                      │
                      ▼
@@ -937,8 +885,9 @@ parsaveables-v2/
 ┌─────────────────────────────────────────────────────────┐
 │ 6. PULP Economy Processing                              │
 │    gamificationService.processRoundGamification()       │
+│    - Settle PULPy window (match to round)               │
+│    - Resolve blessings (top-3 predictions)              │
 │    - Resolve challenges                                 │
-│    - Resolve bets                                       │
 │    - Award participation PULPs                          │
 │    - Update player counters                             │
 └────────────────────┬────────────────────────────────────┘
