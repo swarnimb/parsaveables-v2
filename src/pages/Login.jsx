@@ -276,25 +276,15 @@ export default function Login() {
           )}
         </div>
 
-        {/* Guest Access */}
+        {/* About link */}
         <div className="mt-6 text-center">
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-border" />
-            </div>
-            <div className="relative flex justify-center text-xs">
-              <span className="px-2 bg-background text-muted-foreground">OR</span>
-            </div>
-          </div>
-
           <button
             type="button"
-            onClick={() => { continueAsGuest(); navigate('/dashboard') }}
-            className="mt-4 w-full py-2 px-4 border border-border rounded-md font-medium text-foreground hover:bg-accent transition-colors"
+            onClick={() => { continueAsGuest(); navigate('/about') }}
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors underline underline-offset-4"
           >
-            Continue as Guest
+            About ParSaveables
           </button>
-          <p className="mt-2 text-xs text-muted-foreground">Browse and view content without creating an account</p>
         </div>
       </div>
     </div>

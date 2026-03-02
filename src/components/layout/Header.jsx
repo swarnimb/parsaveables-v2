@@ -1,6 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { LogIn } from 'lucide-react'
 import NotificationBell from './NotificationBell'
@@ -28,9 +27,12 @@ export default function Header() {
         <div className="flex items-center gap-3">
           {isGuest ? (
             <>
-              <Badge variant="outline" className="text-muted-foreground">
-                Guest
-              </Badge>
+              <Link
+                to="/about"
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors underline underline-offset-4"
+              >
+                About
+              </Link>
               <Button
                 variant="default"
                 size="sm"
