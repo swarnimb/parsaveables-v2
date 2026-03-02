@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import {
   Coins, Target, Swords, ShoppingCart,
   TrendingUp, Award, ChevronDown, ChevronUp, ChevronRight,
@@ -24,6 +24,8 @@ import BlessingsSection from '@/components/pulps/BlessingsSection'
 import ChallengesSection from '@/components/pulps/ChallengesSection'
 import AdvantagesSection from '@/components/pulps/AdvantagesSection'
 import PageContainer from '@/components/layout/PageContainer'
+import BettingTutorial from '@/components/tutorial/BettingTutorial'
+import { useTutorialTracking } from '@/hooks/useTutorialTracking'
 import { motion, AnimatePresence } from 'framer-motion'
 import { scaleIn, pulse } from '@/utils/animations'
 import { useToast } from '@/hooks/use-toast'
@@ -33,6 +35,7 @@ const POLL_INTERVAL = 30000
 export default function Pulps() {
   const { player } = useAuth()
   const { toast } = useToast()
+  const { shouldShow: showTutorial, markCompleted: completeTutorial } = useTutorialTracking('pulp_economy')
 
   const [pulpBalance, setPulpBalance] = useState(null)
   const [transactions, setTransactions] = useState([])
@@ -232,6 +235,9 @@ export default function Pulps() {
 
   return (
     <PageContainer className="container mx-auto px-4 py-6 max-w-4xl">
+
+      {/* PULP Economy Tutorial — shown once on first visit */}
+      {showTutorial && <BettingTutorial onClose={completeTutorial} />}
 
       {/* PULP Balance Card */}
       <motion.div
