@@ -101,7 +101,7 @@ export default function About() {
           <div className="grid md:grid-cols-3 gap-4">
             <Card className="p-4">
               <a
-                href="https://github.com/yourusername/parsaveables"
+                href="https://github.com/swarnimb/parsaveables-v2"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-3 hover:text-primary transition-colors"

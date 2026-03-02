@@ -13,6 +13,7 @@ import Dashboard from '@/pages/Dashboard'
 // Lazy load less frequently accessed pages
 const Podcast = lazy(() => import('@/pages/Podcast'))
 const About = lazy(() => import('@/pages/About'))
+const Faq = lazy(() => import('@/pages/Faq'))
 const NotFound = lazy(() => import('@/pages/NotFound'))
 const ControlCenter = lazy(() => import('@/pages/admin/ControlCenter'))
 const ProcessScorecards = lazy(() => import('@/pages/admin/ProcessScorecards'))
@@ -56,6 +57,7 @@ function AnimatedRoutes() {
           <Route path="/betting" element={<Navigate to="/pulps" replace />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/about" element={<Suspense fallback={<PageLoader />}><About /></Suspense>} />
+          <Route path="/faq" element={<Suspense fallback={<PageLoader />}><Faq /></Suspense>} />
 
           {/* Admin routes */}
           <Route path="/admin/control-center" element={<Suspense fallback={<PageLoader />}><ControlCenter /></Suspense>} />
