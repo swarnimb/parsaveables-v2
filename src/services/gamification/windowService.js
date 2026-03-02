@@ -97,8 +97,20 @@ export async function getActiveWindow() {
     if (!window) return null;
 
     const now = new Date();
-    let secondsRemaining = null;
 
+    // Auto-lock if open window has passed its closes_at — don't rely on scorecard processing
+    if (window.status === 'open' && new Date(window.closes_at) <= now) {
+      await lockExpiredWindows();
+      const { data: updated, error: refetchError } = await supabase
+        .from('pulpy_windows')
+        .select('*')
+        .eq('id', window.id)
+        .single();
+      if (refetchError) throw refetchError;
+      return { ...updated, secondsRemaining: null };
+    }
+
+    let secondsRemaining = null;
     if (window.status === 'open') {
       secondsRemaining = Math.max(
         0,

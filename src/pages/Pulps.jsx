@@ -151,8 +151,7 @@ export default function Pulps() {
     if (secondsLeft <= 0) {
       setActiveWindow(w => w ? { ...w, status: 'locked' } : w)
       setSecondsLeft(null)
-      fetchWindow()   // sync with server in background
-      fetchUnresolvedWindows()
+      fetchWindow()   // auto-locks in DB, then triggers fetchUnresolvedWindows via status check
       return
     }
     const timer = setTimeout(() => setSecondsLeft(s => s - 1), 1000)
