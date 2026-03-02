@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { flushSync } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import { playerAPI } from '@/services/api'
@@ -175,6 +176,15 @@ export default function Login() {
             </button>
           </div>
 
+          {/* Continue as Guest */}
+          <button
+            type="button"
+            onClick={() => { flushSync(() => continueAsGuest()); navigate('/dashboard') }}
+            className="w-full py-2.5 px-4 border border-input rounded-md font-medium text-sm text-foreground hover:bg-accent transition-colors mb-5"
+          >
+            Continue as Guest
+          </button>
+
           {/* Divider */}
           <div className="relative mb-5">
             <div className="absolute inset-0 flex items-center">
@@ -280,7 +290,7 @@ export default function Login() {
         <div className="mt-6 text-center">
           <button
             type="button"
-            onClick={() => { continueAsGuest(); navigate('/about') }}
+            onClick={() => { flushSync(() => continueAsGuest()); navigate('/about') }}
             className="text-sm text-muted-foreground hover:text-foreground transition-colors underline underline-offset-4"
           >
             About ParSaveables
