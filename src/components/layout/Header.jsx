@@ -29,7 +29,7 @@ export default function Header() {
             <>
               <Link
                 to="/about"
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors underline underline-offset-4"
+                className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors underline underline-offset-4"
               >
                 About
               </Link>

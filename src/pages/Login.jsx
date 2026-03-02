@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { flushSync } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import { playerAPI } from '@/services/api'
@@ -280,7 +281,7 @@ export default function Login() {
         <div className="mt-6 text-center">
           <button
             type="button"
-            onClick={() => { continueAsGuest(); navigate('/about') }}
+            onClick={() => { flushSync(() => continueAsGuest()); navigate('/about') }}
             className="text-sm text-muted-foreground hover:text-foreground transition-colors underline underline-offset-4"
           >
             About ParSaveables
