@@ -38,9 +38,13 @@ export async function openWindow(playerId) {
       const secondsLeft = Math.ceil(
         (new Date(existing.closes_at) - new Date()) / 1000
       );
-      throw new BusinessLogicError(
-        `A PULPy window is already open (${secondsLeft}s remaining)`
-      );
+      if (secondsLeft > 0) {
+        throw new BusinessLogicError(
+          `A PULPy window is already open (${secondsLeft}s remaining)`
+        );
+      }
+      // Window time expired but DB not yet updated (no scorecard processed) — lock it now
+      await lockExpiredWindows();
     }
 
     const now = new Date();
