@@ -56,56 +56,49 @@ export const onboardingScreens = [
   {
     id: 7,
     title: 'One More Thing...',
-    content: 'See that Betting tab in the navigation? Don\'t tap it yet 😏',
-    emoji: '😏',
+    content: 'See that PULPs tab in the navigation? That\'s where the real fun is — open PULPy windows, place Blessings, challenge rivals, and spend PULPs on Advantages.',
+    emoji: '🪙',
     showImage: false,
-    spotlightTarget: 'betting',
+    spotlightTarget: 'pulps',
     spotlightPosition: 'above',
   },
 ]
 
 /**
- * Betting Tutorial Screen Data
- * Shown when user tries to access /betting for the first time
+ * PULP Economy Tutorial Screen Data
+ * Shown from the About page PULP Economy card
  */
 
-export const bettingScreens = [
+export const pulpScreens = [
   {
     id: 1,
     title: 'Welcome to PULP',
-    content: 'Your ParSaveables Ultimate Loyalty Program (PULP) - where every round earns rewards!',
+    content: 'Your ParSaveables Ultimate Loyalty Program (PULP) — where every round earns rewards!',
     emoji: '🎉',
   },
   {
     id: 2,
     title: 'Earn PULPs',
-    content: 'The more you play, the more you earn. Keep streaks going to earn even more!',
+    content: 'Play rounds to earn PULPs automatically: +10 for participation, +5 per higher-ranked player you beat, and bonus PULPs for finishing outside the top 3.',
     emoji: '🔥',
   },
   {
     id: 3,
     title: 'Grow Your PULPs',
-    content: 'Bet on who will be top 3 in the next round, or straight up challenge a rival to double your PULPs.',
+    content: 'When a PULPy window opens (5 minutes!), place a Blessing on the top 3 finishers or challenge a rival to a head-to-head duel to double your PULPs.',
     emoji: '📈',
   },
   {
     id: 4,
-    title: 'Use Your PULPs',
-    content: 'Buy advantages to gain competitive edges:',
+    title: 'Spend Your PULPs',
+    content: 'Buy advantages to gain competitive edges on the course:',
     emoji: '🛒',
-    showAdvantages: true, // Shows 2x2 grid of advantages
+    showAdvantages: true,
     advantages: [
       { name: 'Mulligan', icon: '🔄' },
       { name: 'Bag Trump', icon: '🎒' },
       { name: 'Anti-Mulligan', icon: '🚫' },
       { name: 'Shotgun Buddy', icon: '🍺' },
     ],
-  },
-  {
-    id: 5,
-    title: 'Your Vote Kinda Matters',
-    content: 'ParSaveables is a wanna-be democracy, so we\'re asking: are you interested in the betting economy?',
-    emoji: '🗳️',
-    isInterestScreen: true, // Special flag for interest confirmation UI
   },
 ]

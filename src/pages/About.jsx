@@ -1,6 +1,6 @@
 import { BookOpen, Coins, Trophy, Github, Mail, HelpCircle } from 'lucide-react'
 import TutorialModal from '@/components/tutorial/TutorialModal'
-import { onboardingScreens, bettingScreens } from '@/components/tutorial/tutorialData'
+import { onboardingScreens, pulpScreens } from '@/components/tutorial/tutorialData'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import PageContainer from '@/components/layout/PageContainer'
@@ -52,18 +52,18 @@ export default function About() {
                   <Coins className="h-6 w-6 text-primary" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-semibold mb-1">Betting Preview</h3>
+                  <h3 className="font-semibold mb-1">PULP Economy</h3>
                   <p className="text-sm text-muted-foreground">
-                    Preview the upcoming betting and PULP economy features
+                    Learn how PULPy windows, Blessings, Challenges, and Advantages work
                   </p>
                 </div>
               </div>
               <TutorialModal
-                title="Betting System"
-                screens={bettingScreens}
+                title="PULP Economy"
+                screens={pulpScreens}
                 trigger={
                   <Button className="w-full">
-                    Learn About Betting
+                    How PULPs Work
                   </Button>
                 }
               />
@@ -86,7 +86,8 @@ export default function About() {
                 <li>AI-Powered Scorecard Processing - Email your UDisc screenshots, we handle the rest</li>
                 <li>Dual Leaderboard System - Traditional points + PULP rankings</li>
                 <li>Achievement System - Earn badges and PULPs for milestones</li>
-                <li>Betting & Predictions - Wager PULPs on round outcomes</li>
+                <li>Blessings - Predict top 3 finishers during a PULPy window to win PULPs</li>
+                <li>Challenges - Wager PULPs in head-to-head duels during a PULPy window</li>
                 <li>Head-to-Head Challenges - Battle rivals for PULP glory</li>
                 <li>Advantages Shop - Buy power-ups to gain competitive edges</li>
                 <li>Activity Feed - Stay updated on group activity</li>
