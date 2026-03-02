@@ -176,6 +176,15 @@ export default function Login() {
             </button>
           </div>
 
+          {/* Continue as Guest */}
+          <button
+            type="button"
+            onClick={() => { flushSync(() => continueAsGuest()); navigate('/dashboard') }}
+            className="w-full py-2.5 px-4 border border-input rounded-md font-medium text-sm text-foreground hover:bg-accent transition-colors mb-5"
+          >
+            Continue as Guest
+          </button>
+
           {/* Divider */}
           <div className="relative mb-5">
             <div className="absolute inset-0 flex items-center">
