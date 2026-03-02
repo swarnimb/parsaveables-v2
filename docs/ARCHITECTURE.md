@@ -1,6 +1,6 @@
 # ParSaveables 2.0 - System Architecture
 
-**Last Updated:** 2026-02-28
+**Last Updated:** 2026-03-01
 **Version:** 2.0 (PULPy Window Economy Edition)
 **Status:** Backend & Frontend Complete - Season Aware - Guest Login - Admin Control Center Complete - Tutorial System Complete - PULPy Window Economy Live - Google OAuth Complete - Testing Phase
 
@@ -705,7 +705,7 @@ Located in `src/services/gamification/`:
 ```
 src/services/gamification/
 ├── pulpService.js        - Balance operations & transactions
-├── windowService.js      - Open/lock/settle/expire PULPy windows
+├── windowService.js      - Open/lock/settle/expire PULPy windows (self-healing: getActiveWindow auto-locks expired open windows)
 ├── blessingService.js    - Place/resolve/refund blessings (formerly bets)
 ├── challengeService.js   - Issue/accept/reject/resolve challenges
 ├── advantageService.js   - Purchase/track expiry/record usage

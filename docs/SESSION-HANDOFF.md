@@ -1,8 +1,8 @@
 # ParSaveables v2 - Project Dashboard
 
-**Last Updated:** 2026-02-28 (End of Session)
+**Last Updated:** 2026-03-01 (End of Session)
 **Current Phase:** Phase 5 (Testing & Bug Fixes) - IN PROGRESS
-**Status:** Foundation | Auth & Layout | Leaderboard | Rounds | PULP Design | Backend Services | Frontend UI | Season Awareness | UX Enhancements | Testing Framework | Guest Login | Admin Control Center | Tutorial System | PULPy Window Rework | Google OAuth | Podcast Crash Fix | Course Alias Fix COMPLETE
+**Status:** Foundation | Auth & Layout | Leaderboard | Rounds | PULP Design | Backend Services | Frontend UI | Season Awareness | UX Enhancements | Testing Framework | Guest Login | Admin Control Center | Tutorial System | PULPy Window Rework | Google OAuth | Podcast Crash Fix | Course Alias Fix | PULPs Tab UX + Window Lifecycle Fixes COMPLETE
 
 ---
 
@@ -45,7 +45,47 @@
 
 ---
 
-## This Session Summary (2026-02-28 - Latest)
+## This Session Summary (2026-03-01 - Latest)
+
+### PULPs Tab UX Rework & Window Lifecycle Bug Fixes
+
+#### 1. PULPs Tab UX Rework (`src/pages/Pulps.jsx`)
+
+- **Base state**: when no window is open (or window is locked), show "Open a PULPy Window" button. Sections show as greyed-out, non-interactive cards (`opacity-50 pointer-events-none`). Single "inactive" badge above all three sections.
+- **Active state**: timer card with countdown. Full accordions with colored styling.
+- **Locked state**: treated as base state (no orange locked card). Locked window appears in Unresolved Transactions instead.
+- **Unresolved Transactions**: merged into the bottom of the window card (same border, not a separate box). Shows all locked windows with date/time and opener name. Clickable rows open a modal showing all blessings and challenges for that window.
+- **Modal**: shows blessings (player, 1st/2nd/3rd predictions, wager, status) and challenges (challenger vs challenged, wager, status). Uses an `allPlayers` map for name resolution.
+
+#### 2. Window Lifecycle Bug Fixes
+
+**Bug: stuck at 0:00**
+- Root cause: when `secondsLeft` hit 0, `fetchWindow()` was called, but the server returned `status: open, secondsRemaining: 0` → set `secondsLeft(0)` → triggered effect again → infinite loop.
+- Fix: immediately set local window to `locked` and clear `secondsLeft` when timer hits 0. `fetchWindow()` still runs in background to sync.
+
+**Bug: DB never locked (window stays `open` in Supabase forever)**
+- Root cause: `lockExpiredWindows()` was only called during scorecard processing. No scorecard = window stays `open` in DB indefinitely.
+- Fix: `getActiveWindow()` now auto-locks any `open` window whose `closes_at` is in the past before returning. Every poll self-heals the DB.
+
+**Bug: "already an unsettled window open" false error**
+- Root cause: `openWindow()` blocked on any `status = 'open'` window, including stale ones past their `closes_at`.
+- Fix: `openWindow()` checks `secondsLeft`. If ≤ 0, calls `lockExpiredWindows()` and proceeds.
+
+**Bug: Unresolved Transactions list empty after timer**
+- Root cause: `fetchUnresolvedWindows()` was called immediately when timer hit 0, before the DB was locked.
+- Fix: removed from timer handler. Now triggered only after `fetchWindow()` returns `status: locked` — DB is already updated at that point.
+
+#### 3. PULP Data Reset (Production)
+- Wiped: `pulpy_windows` (CASCADE → blessings + challenges), `pulp_transactions`
+- Reset: all 14 players to 20 PULPs
+
+#### 4. Season Reset — Deferred
+- Decided not to implement auto-reset or admin button for now
+- If revisited: manual admin button with typed "RESET" confirmation, or Jan 1 noon UTC cron
+
+---
+
+## This Session Summary (2026-02-28 - Previous)
 
 ### Test Fixes, Podcast Crash Fix & Course Alias Fix
 
@@ -573,23 +613,23 @@ Changed alias matching to **EXACT matches only**:
 
 ## Next Session: Immediate Tasks (Priority Order)
 
-### Priority 1: Reprocess Roy G Guerrero Round (QUICK WIN)
+### Priority 1: Fix PULP Economy Settlement (CRITICAL)
+- **BROKEN:** Blessings and challenges are NOT resolving after scorecard processing
+- Debug gamificationService integration with processScorecard workflow
+- Verify blessing resolution logic (`resolveBlessingsForWindow` in blessingService)
+- Verify challenge resolution logic (`resolveChallenge` function)
+- Test end-to-end: Open window → Place blessing → Process scorecard → Verify PULP settlement
+- Check transaction logging (pulp_transactions table)
+
+### Priority 2: Reprocess Roy G Guerrero Round (QUICK WIN)
 - Delete `player_rounds` row `id: 058e0cc4` (2026-02-28, processed at 1.0x)
 - Re-email the UDisc scorecard to reprocess with correct 2.5x multiplier
 - Verify leaderboard updates correctly
 
-### Priority 2: Course Alias Audit (DGC Suffix)
+### Priority 3: Course Alias Audit (DGC Suffix)
 - Claude Vision appends `"DGC"` suffix to some course names
 - Audit other courses (Bartholomew, Cat Hollow, Harvey Penick, Northtown, Wells Branch, Zilker) for same issue
 - Add defensive `"[Course Name] DGC"` aliases where needed
-
-### Priority 3: Fix PULP Economy Settlement (CRITICAL)
-- **BROKEN:** Blessings and challenges are NOT resolving after scorecard processing
-- Debug gamificationService integration with processScorecard workflow
-- Verify blessing resolution logic (resolveBlessingsForWindow in blessingService)
-- Verify challenge resolution logic (resolveChallenge function)
-- Test end-to-end: Open window → Place blessing → Process scorecard → Verify PULP settlement
-- Check transaction logging (pulp_transactions table)
 
 ### Priority 4: End-to-End Testing
 - Open PULPy window → place blessings, challenges, buy advantages

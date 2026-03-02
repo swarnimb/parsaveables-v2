@@ -71,6 +71,22 @@ Adding `|| []` only on the return value of a function is too late if the crash h
 
 ---
 
+## PULPy Window Lifecycle
+
+### `getActiveWindow` auto-locks expired open windows
+**Decision:** Added 2026-03-01. `lockExpiredWindows()` is only called during scorecard processing — no scorecard = window stays `open` in DB forever. `getActiveWindow` now checks if an open window's `closes_at` is in the past and locks it before returning.
+**Rule:** Do not remove this auto-lock behavior. It is the only reliable mechanism that transitions `open → locked` outside of scorecard processing.
+
+### `openWindow` auto-locks stale windows before checking
+**Decision:** Added 2026-03-01. If `openWindow` finds an existing `open` window whose `closes_at` is in the past, it locks it and proceeds rather than throwing a false "already open" error.
+**Rule:** The check must remain: `if (secondsLeft > 0) throw` — the `> 0` condition is intentional.
+
+### Frontend timer: snap to base state immediately, don't wait for server
+**Decision:** When `secondsLeft` hits 0, the frontend immediately sets local window status to `locked` and clears the timer. `fetchWindow()` runs in background to sync DB. Do NOT call `fetchUnresolvedWindows()` at this point — the DB hasn't locked yet.
+**Rule:** `fetchUnresolvedWindows()` must only be triggered after `fetchWindow()` returns `status: locked` from the server.
+
+---
+
 ## Git / Branch Hygiene
 
 ### Work directly on `main` for this project
