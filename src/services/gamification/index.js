@@ -219,7 +219,17 @@ async function findMatchingWindow(roundMeta) {
     // Lock any expired-but-still-open windows before searching.
     // Without this, windows that timed out but were never polled by the
     // frontend stay 'open' in the DB and are invisible to this query.
-    await windowService.lockExpiredWindows();
+    const newlyLockedIds = await windowService.lockExpiredWindows();
+
+    // Apply window-close rules (burn pending, cancel waiting challenges) for
+    // any window that just transitioned open → locked.
+    for (const wid of newlyLockedIds) {
+      try {
+        await challengeService.applyWindowCloseRules(wid);
+      } catch (e) {
+        logger.error('applyWindowCloseRules failed (non-fatal)', { windowId: wid, error: e.message });
+      }
+    }
 
     if (time) {
       // Round has a known time — match any locked window opened within ±3 hrs.

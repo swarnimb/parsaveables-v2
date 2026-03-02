@@ -460,17 +460,20 @@ export async function getChallengesForPlayer(playerId, windowId = null) {
  * Resolve a single accepted challenge against the matched round.
  */
 async function resolveSingleChallenge(challenge, roundId) {
-  // Get both players' scores from player_rounds
+  // Get both players' scores from player_rounds.
+  // Filter directly on player_id (a real column) — filtering on an embedded
+  // relation column (registered_players.id) is unreliable in PostgREST and
+  // can silently return 0 rows, causing wrongful refunds.
   const { data: rounds, error } = await supabase
     .from('player_rounds')
-    .select('total_strokes, registered_players!inner(id)')
+    .select('total_strokes, player_id')
     .eq('round_id', roundId)
-    .in('registered_players.id', [challenge.challenger_id, challenge.challenged_id]);
+    .in('player_id', [challenge.challenger_id, challenge.challenged_id]);
 
   if (error) throw error;
 
-  const challengerRound = rounds.find(r => r.registered_players.id === challenge.challenger_id);
-  const challengedRound = rounds.find(r => r.registered_players.id === challenge.challenged_id);
+  const challengerRound = rounds.find(r => r.player_id === challenge.challenger_id);
+  const challengedRound = rounds.find(r => r.player_id === challenge.challenged_id);
 
   const totalPayout = challenge.wager_amount * 2;
   const now = new Date().toISOString();
