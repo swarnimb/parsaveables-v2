@@ -27,6 +27,12 @@ export default function AppLayout() {
       return
     }
 
+    // Authenticated via OAuth but hasn't claimed a player name yet
+    if (isAuthenticated && !isGuest && !player) {
+      navigate('/login', { replace: true })
+      return
+    }
+
     if (isGuest) {
       const guestBlockedRoutes = ['/pulps', '/admin', '/dashboard']
       const isBlocked = guestBlockedRoutes.some(route => location.pathname.startsWith(route))
@@ -34,7 +40,7 @@ export default function AppLayout() {
         navigate('/leaderboard', { replace: true })
       }
     }
-  }, [isAuthenticated, isGuest, loading, location.pathname, navigate])
+  }, [isAuthenticated, isGuest, loading, player, location.pathname, navigate])
 
   // Show onboarding tutorial for new players
   useEffect(() => {
