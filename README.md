@@ -1,49 +1,54 @@
-# ParSaveables v2 - PULP Economy Edition
+# ParSaveables
 
-Gamified disc golf tournament tracking platform with achievements, betting, and social features.
+Gamified disc golf tracking platform for friend groups and small leagues. Players email UDisc screenshots — AI extracts scores, updates the leaderboard, and runs the PULP economy automatically.
 
-## Project Status ✅
+## Features
 
-**93% Complete - Phase 5 (Testing & Polish)**
+- **AI Scorecard Processing** — Email a UDisc screenshot, Claude Vision extracts every score and updates the leaderboard
+- **Season & Tournament Tracking** — Points-based leaderboard with expandable player stats (wins, podiums, avg points, scoring)
+- **PULP Economy** — Earn PULPs by playing (participation, beat-higher-ranked, DRS bonus), spend on Advantages
+- **PULPy Windows** — 5-minute windows before a round where players place Blessings and issue Challenges
+- **Blessings** — Predict 3 players to podium; get 2x back if it lands
+- **Challenges** — Head-to-head PULP duels; lower strokes wins both sides
+- **Advantages Shop** — Buy Mulligan, Anti-Mulligan, Bag Trump, and Shotgun Buddy with PULPs
+- **AI Podcast** — Monthly AI-generated recap with ElevenLabs voice narration
+- **Admin Control Center** — Manage events, players, courses, and points systems
+- **Mobile-First** — Built for phones, smooth animations, premium feel
 
-### Completed Phases
+## Tech Stack
 
-- ✅ **Phase 1:** Foundation & Setup (Vite, React, Tailwind, Shadcn/ui, Supabase)
-- ✅ **Phase 2:** Authentication & Layout (Login, Signup, Header, BottomNav, Routes)
-- ✅ **Phase 3:** Leaderboard & Rounds (Podium, Expandable rows, Scorecard images)
-- ✅ **Phase 4A:** PULP Economy Design (Architecture, Migration, Documentation)
-- ✅ **Phase 4B:** PULP Economy Implementation (Backend services, API endpoints, Frontend UI)
-- ✅ **Phase 4C:** UX Enhancements (Season awareness, Dashboard expansion, Next round logic)
-- ⏳ **Phase 5:** Testing & Polish (Testing framework, Guest login, Admin tools, Betting timer)
-
-### Tech Stack
-
-- **Frontend:** React 18 + Vite
-- **Styling:** Tailwind CSS
-- **UI Components:** Shadcn/ui
-- **State:** Zustand
-- **Animations:** Framer Motion
-- **Routing:** React Router
-- **Icons:** Lucide React
-- **Database:** Supabase PostgreSQL
-- **Auth:** Supabase Auth
+| Layer | Technology |
+|---|---|
+| Frontend | React 19 + Vite |
+| Styling | Tailwind CSS |
+| UI Components | Shadcn/ui (Radix primitives) |
+| State | Zustand |
+| Animations | Framer Motion |
+| Routing | React Router v7 |
+| Icons | Lucide React |
+| Database | Supabase PostgreSQL |
+| Auth | Supabase Auth (email/password + Google OAuth) |
+| Backend | Vercel Serverless Functions |
+| AI — Scorecards & Podcast | Claude (Anthropic) |
+| AI — Podcast Voice | ElevenLabs |
+| Email Ingestion | Gmail API |
 
 ## Quick Start
 
-### Development Server
-
 ```bash
+npm install
 npm run dev
 ```
 
 ### Environment Setup
 
-1. Copy `.env.local.example` to `.env.local`
-2. Add your Supabase credentials:
-   ```
-   VITE_SUPABASE_URL=your_supabase_url
-   VITE_SUPABASE_ANON_KEY=your_anon_key
-   ```
+Copy `.env.local.example` to `.env.local` and fill in your credentials:
+
+```bash
+cp .env.local.example .env.local
+```
+
+See `.env.local.example` for all required variables.
 
 ### Build for Production
 
@@ -52,53 +57,72 @@ npm run build
 npm run preview
 ```
 
+### Tests
+
+```bash
+npm test
+npm run test:coverage
+```
+
 ## Project Structure
 
 ```
 src/
-├── pages/              # Route pages (Login, Leaderboard, etc.)
+├── pages/                  # Route-level pages
+│   ├── admin/              # ControlCenter, ProcessScorecards
+│   ├── Dashboard.jsx
+│   ├── Leaderboard.jsx
+│   ├── Rounds.jsx
+│   ├── Pulps.jsx           # PULP economy hub
+│   ├── Podcast.jsx
+│   ├── Activity.jsx
+│   ├── About.jsx
+│   └── Faq.jsx
 ├── components/
-│   ├── ui/            # Shadcn base components
-│   ├── layout/        # Header, BottomNav, etc.
-│   ├── leaderboard/   # Leaderboard components
-│   ├── betting/       # Betting & PULP economy
-│   ├── achievements/  # Achievement system
-│   ├── activity/      # Activity feed
-│   ├── rounds/        # Round history
-│   └── shared/        # Shared components
-├── hooks/             # Custom React hooks
-├── services/          # API clients (Supabase)
-└── lib/               # Utilities (Shadcn utils)
+│   ├── ui/                 # Shadcn base components
+│   ├── layout/             # Header, BottomNav, AppLayout, AdminDropdown
+│   ├── leaderboard/        # LeaderboardTable, PodiumDisplay
+│   ├── pulps/              # BlessingsSection, ChallengesSection, AdvantagesSection
+│   ├── tutorial/           # Onboarding and PULP economy tutorial modals
+│   ├── admin/              # Control center tab components
+│   ├── rounds/             # RoundCard
+│   └── shared/             # ErrorBoundary, OfflineDetector
+├── hooks/                  # Custom React hooks
+├── services/
+│   ├── core/               # Scorecard processing pipeline (vision, scoring, email)
+│   ├── gamification/       # PULP economy (pulp, blessing, challenge, window, advantage)
+│   └── supabase.js         # Frontend Supabase client
+└── lib/                    # Utilities (cn, etc.)
+
+api/                        # Vercel serverless functions
+├── processScorecard.js     # Email ingestion → AI vision → leaderboard update
+├── generatePodcast.js      # Monthly AI podcast generation
+└── pulp/                   # PULP economy endpoints (window, blessings, challenges, advantages)
 ```
 
-## Next Steps
+## Environment Variables
 
-### Phase 2: Authentication & Layout
+```bash
+# Frontend (Vite — must be prefixed VITE_)
+VITE_SUPABASE_URL=
+VITE_SUPABASE_ANON_KEY=
+VITE_CONTROL_CENTER_PASSWORD=
 
-See `docs/SESSION-HANDOFF.md` for complete backlog and roadmap.
-
-**Immediate Next Tasks:**
-1. Create Supabase project and run database migrations
-2. Build Login page with Supabase Auth
-3. Create layout components (Header, BottomNav)
-4. Set up routing with React Router
+# Backend (Vercel serverless functions)
+SUPABASE_SERVICE_ROLE_KEY=
+ANTHROPIC_API_KEY=
+ANTHROPIC_MODEL=
+GMAIL_CLIENT_ID=
+GMAIL_CLIENT_SECRET=
+GMAIL_REFRESH_TOKEN=
+ELEVENLABS_API_KEY=
+ELEVENLABS_HOST_VOICE_ID=
+ELEVENLABS_COHOST_VOICE_ID=
+GITHUB_TOKEN=
+```
 
 ## Documentation
 
-- **Architecture:** `docs/ARCHITECTURE.md` (883 lines - complete system design)
-- **Project Dashboard:** `docs/SESSION-HANDOFF.md` (708 lines - backlog & status)
-- **Claude Context:** `.claude/CLAUDE.md` (project context for AI)
-
-## Features
-
-- 🎯 **Dual Leaderboard System** - Points-based + PULP economy
-- 🏆 **Achievement System** - Unlock badges, earn PULPs
-- 💰 **Betting System** - Predict outcomes, win PULPs
-- ⚔️ **Head-to-Head Challenges** - 1v1 PULP battles
-- 🛒 **Advantages Shop** - Mulligans, score boosts, etc.
-- 🎙️ **AI Podcast** - Monthly recaps
-- 📱 **Mobile-First Design** - Premium UX
-
----
-
-**Status:** Foundation complete. Ready for Phase 2! 🚀
+- **Architecture:** `docs/ARCHITECTURE.md`
+- **Session Notes:** `docs/SESSION-HANDOFF.md`
+- **Binding Constraints:** `docs/constraints.md` — hard rules that must not be undone
