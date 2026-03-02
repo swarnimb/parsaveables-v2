@@ -216,11 +216,17 @@ async function findMatchingWindow(roundMeta) {
   if (!date) return null;
 
   try {
+    // Lock any expired-but-still-open windows before searching.
+    // Without this, windows that timed out but were never polled by the
+    // frontend stay 'open' in the DB and are invisible to this query.
+    await windowService.lockExpiredWindows();
+
     if (time) {
-      // Parse round datetime
-      const roundDatetime = new Date(`${date}T${time}`);
-      const lowerBound = new Date(roundDatetime.getTime() - 60 * 60 * 1000).toISOString();  // -1hr
-      const upperBound = new Date(roundDatetime.getTime() + 2 * 60 * 60 * 1000).toISOString(); // +2hrs
+      // Round has a known time — match any locked window opened within ±3 hrs.
+      // Use explicit UTC suffix so Vercel (UTC) and local dev parse identically.
+      const roundDatetime = new Date(`${date}T${time}:00Z`);
+      const lowerBound = new Date(roundDatetime.getTime() - 3 * 60 * 60 * 1000).toISOString();
+      const upperBound = new Date(roundDatetime.getTime() + 3 * 60 * 60 * 1000).toISOString();
 
       const { data, error } = await supabase
         .from('pulpy_windows')
@@ -235,16 +241,19 @@ async function findMatchingWindow(roundMeta) {
       if (error) throw error;
       return data || null;
     } else {
-      // Fallback: same calendar day, FIFO
-      const dayStart = `${date}T00:00:00.000Z`;
-      const dayEnd = `${date}T23:59:59.999Z`;
+      // No time available — match any locked window within ±1 calendar day of
+      // the round date (UTC). The ±1 day buffer handles evening games where the
+      // player's local date is behind the UTC date stored in opened_at.
+      const dayStart = new Date(`${date}T00:00:00Z`);
+      const lowerBound = new Date(dayStart.getTime() - 24 * 60 * 60 * 1000).toISOString();
+      const upperBound = new Date(dayStart.getTime() + 2 * 24 * 60 * 60 * 1000).toISOString();
 
       const { data, error } = await supabase
         .from('pulpy_windows')
         .select('*')
         .eq('status', 'locked')
-        .gte('opened_at', dayStart)
-        .lte('opened_at', dayEnd)
+        .gte('opened_at', lowerBound)
+        .lte('opened_at', upperBound)
         .order('locked_at', { ascending: true })
         .limit(1)
         .maybeSingle();
