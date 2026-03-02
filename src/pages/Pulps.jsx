@@ -312,29 +312,27 @@ export default function Pulps() {
         </AnimatePresence>
       </motion.div>
 
-      {/* PULPy Window Section */}
-      <div className="mb-6 space-y-3">
+      {/* PULPy Window Section — single card with unresolved transactions extending below */}
+      <div className={`mb-6 relative overflow-hidden rounded-xl border-2 transition-colors duration-300 ${
+        isWindowActive
+          ? 'border-primary bg-gradient-to-br from-primary/15 via-background to-primary/5 shadow-lg shadow-primary/20'
+          : 'border-primary/20 bg-gradient-to-br from-primary/5 to-background'
+      }`}>
 
         {/* Window opener (base state) or timer (active) */}
         {!isWindowActive ? (
-          <div className="relative overflow-hidden rounded-xl border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-background p-5">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-bold text-lg">Open a PULPy Window</p>
-                <p className="text-sm text-muted-foreground">You got 5 minutes</p>
-              </div>
-              <Button onClick={handleOpenWindow} disabled={openingWindow} className="shrink-0">
-                <Zap className="h-4 w-4 mr-1" />
-                {openingWindow ? 'Opening...' : 'Open Window'}
-              </Button>
+          <div className="flex items-center justify-between p-5">
+            <div>
+              <p className="font-bold text-lg">Open a PULPy Window</p>
+              <p className="text-sm text-muted-foreground">You got 5 minutes</p>
             </div>
+            <Button onClick={handleOpenWindow} disabled={openingWindow} className="shrink-0">
+              <Zap className="h-4 w-4 mr-1" />
+              {openingWindow ? 'Opening...' : 'Open Window'}
+            </Button>
           </div>
         ) : (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.97 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="relative overflow-hidden rounded-xl border-2 border-primary bg-gradient-to-br from-primary/15 via-background to-primary/5 shadow-lg shadow-primary/20 p-5"
-          >
+          <div className="relative p-5">
             <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent opacity-60" />
             <div className="relative z-10 flex items-center gap-4">
               <motion.div
@@ -350,14 +348,14 @@ export default function Pulps() {
                 <p className="text-xs text-muted-foreground">All sections unlocked below</p>
               </div>
             </div>
-          </motion.div>
+          </div>
         )}
 
-        {/* Unresolved Windows — locked windows awaiting scorecard settlement */}
+        {/* Unresolved Transactions — extends from bottom of same card */}
         {unresolvedWindows.length > 0 && (
-          <div className="rounded-xl border-2 border-orange-500/30 bg-orange-500/5 overflow-hidden">
-            <div className="px-5 py-3 border-b border-orange-500/20">
-              <p className="font-semibold text-sm text-orange-700 dark:text-orange-400">Unresolved Transactions</p>
+          <div className="border-t border-orange-500/20 bg-orange-500/5">
+            <div className="px-5 py-2.5">
+              <p className="text-xs font-semibold text-orange-700 dark:text-orange-400 uppercase tracking-wide">Unresolved Transactions</p>
             </div>
             <div className="divide-y divide-orange-500/10">
               {unresolvedWindows.map(win => (
