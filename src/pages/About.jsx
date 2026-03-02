@@ -86,9 +86,8 @@ export default function About() {
                 <li>AI-Powered Scorecard Processing - Email your UDisc screenshots, we handle the rest</li>
                 <li>Dual Leaderboard System - Traditional points + PULP rankings</li>
                 <li>Achievement System - Earn badges and PULPs for milestones</li>
-                <li>Blessings - Predict top 3 finishers during a PULPy window to win PULPs</li>
-                <li>Challenges - Wager PULPs in head-to-head duels during a PULPy window</li>
-                <li>Head-to-Head Challenges - Battle rivals for PULP glory</li>
+                <li>Blessings - Bless 3 players to podium during a PULPy window, get 2x back if it lands</li>
+                <li>Challenges - Put PULPs on the line in head-to-head duels during a PULPy window</li>
                 <li>Advantages Shop - Buy power-ups to gain competitive edges</li>
                 <li>Activity Feed - Stay updated on group activity</li>
               </ul>
