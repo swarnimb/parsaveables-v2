@@ -8,7 +8,7 @@ Gamified disc golf tracking platform for friend groups and small leagues. Player
 - **Season & Tournament Tracking** — Points-based leaderboard with expandable player stats (wins, podiums, avg points, scoring)
 - **PULP Economy** — Earn PULPs by playing (participation, beat-higher-ranked, DRS bonus), spend on Advantages
 - **PULPy Windows** — 5-minute windows before a round where players place Blessings and issue Challenges
-- **Blessings** — Predict 3 players to podium; get 2x back if it lands
+- **Blessings** — Bless 3 players to finish on a podium; get 2x back if the blessing works
 - **Challenges** — Head-to-head PULP duels; lower strokes wins both sides
 - **Advantages Shop** — Buy Mulligan, Anti-Mulligan, Bag Trump, and Shotgun Buddy with PULPs
 - **AI Podcast** — Monthly AI-generated recap with ElevenLabs voice narration
