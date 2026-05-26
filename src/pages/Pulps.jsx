@@ -29,6 +29,14 @@ import { useTutorialTracking } from '@/hooks/useTutorialTracking'
 import { motion, AnimatePresence } from 'framer-motion'
 import { scaleIn, pulse } from '@/utils/animations'
 import { useToast } from '@/hooks/use-toast'
+import { isDemoMode, demoBlock } from '@/lib/demoMode'
+import {
+  players as demoPlayers,
+  pulpTransactions as demoPulpTxns,
+  pulpyWindows as demoPulpyWindows,
+  blessings as demoBlessings,
+  challenges as demoChallenges,
+} from '@/lib/demoData'
 
 const POLL_INTERVAL = 30000
 
@@ -58,6 +66,12 @@ export default function Pulps() {
   useEffect(() => {
     if (!player?.id) return
     async function fetchBalance() {
+      if (isDemoMode) {
+        const demoP = demoPlayers.find(p => p.id === player.id)
+        setPulpBalance(demoP?.pulp_balance ?? player.pulp_balance ?? 0)
+        setLoading(false)
+        return
+      }
       try {
         const { data, error } = await supabase
           .from('registered_players')
@@ -79,6 +93,15 @@ export default function Pulps() {
   useEffect(() => {
     if (!balanceExpanded || !player?.id) return
     async function fetchTransactions() {
+      if (isDemoMode) {
+        setTransactions(
+          demoPulpTxns
+            .filter(t => t.player_id === player.id)
+            .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+            .slice(0, 10)
+        )
+        return
+      }
       try {
         const { data, error } = await supabase
           .from('pulp_transactions')
@@ -98,6 +121,12 @@ export default function Pulps() {
   // Fetch all player names for use in lookups
   useEffect(() => {
     async function fetchPlayers() {
+      if (isDemoMode) {
+        const map = {}
+        demoPlayers.forEach(p => { map[p.id] = p.player_name })
+        setAllPlayers(map)
+        return
+      }
       const { data } = await supabase.from('registered_players').select('id, player_name')
       const map = {}
       data?.forEach(p => { map[p.id] = p.player_name })
@@ -108,6 +137,14 @@ export default function Pulps() {
 
   // Fetch locked windows that haven't settled yet
   const fetchUnresolvedWindows = useCallback(async () => {
+    if (isDemoMode) {
+      setUnresolvedWindows(
+        demoPulpyWindows
+          .filter(w => w.status === 'locked')
+          .sort((a, b) => new Date(b.opened_at) - new Date(a.opened_at))
+      )
+      return
+    }
     try {
       const { data } = await supabase
         .from('pulpy_windows')
@@ -122,6 +159,7 @@ export default function Pulps() {
 
   // Poll for the current active window
   const fetchWindow = useCallback(async () => {
+    if (isDemoMode) { setActiveWindow(null); setSecondsLeft(null); return }
     try {
       const res = await fetch('/api/pulp/getWindow')
       const data = await res.json()
@@ -166,6 +204,14 @@ export default function Pulps() {
     if (!selectedWindowId) return
     setLoadingTxns(true)
     async function loadTxns() {
+      if (isDemoMode) {
+        setWindowTxns({
+          blessings: demoBlessings.filter(b => b.window_id === selectedWindowId),
+          challenges: demoChallenges.filter(c => c.window_id === selectedWindowId),
+        })
+        setLoadingTxns(false)
+        return
+      }
       const [{ data: blessings }, { data: challenges }] = await Promise.all([
         supabase.from('blessings').select('*').eq('window_id', selectedWindowId),
         supabase.from('challenges').select('*').eq('window_id', selectedWindowId),
@@ -177,6 +223,7 @@ export default function Pulps() {
   }, [selectedWindowId])
 
   const handleOpenWindow = async () => {
+    if (isDemoMode) { demoBlock('Open PULPy window'); return }
     setOpeningWindow(true)
     try {
       const { data: session } = await supabase.auth.getSession()

@@ -3,6 +3,11 @@ import { ShoppingCart, Clock } from 'lucide-react'
 import { supabase } from '@/services/supabase'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/hooks/use-toast'
+import { isDemoMode, demoBlock } from '@/lib/demoMode'
+import {
+  advantageCatalog as demoAdvantageCatalog,
+  players as demoPlayers,
+} from '@/lib/demoData'
 
 /**
  * AdvantagesSection — buy advantages during an open PULPy window.
@@ -22,6 +27,10 @@ export default function AdvantagesSection({ playerId, pulpBalance, window, onPur
 
   useEffect(() => {
     async function fetchCatalog() {
+      if (isDemoMode) {
+        setCatalog([...demoAdvantageCatalog].sort((a, b) => a.pulp_cost - b.pulp_cost))
+        return
+      }
       try {
         const { data, error } = await supabase
           .from('advantage_catalog')
@@ -41,6 +50,15 @@ export default function AdvantagesSection({ playerId, pulpBalance, window, onPur
   useEffect(() => {
     async function fetchActive() {
       if (!playerId) return
+
+      if (isDemoMode) {
+        const demoP = demoPlayers.find(p => p.id === playerId)
+        const now = new Date()
+        setActiveAdvantages(
+          (demoP?.active_advantages || []).filter(adv => !adv.used_at && new Date(adv.expires_at) > now)
+        )
+        return
+      }
 
       try {
         const { data, error } = await supabase
@@ -65,6 +83,7 @@ export default function AdvantagesSection({ playerId, pulpBalance, window, onPur
   }, [playerId])
 
   const handlePurchase = async (advantageKey, cost, name) => {
+    if (isDemoMode) { demoBlock('Purchase advantage'); return }
     if (cost > pulpBalance) {
       toast({ variant: 'destructive', title: 'Insufficient PULPs', description: `Need ${cost}, have ${pulpBalance}` })
       return

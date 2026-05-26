@@ -5,6 +5,8 @@ import { LogIn } from 'lucide-react'
 import NotificationBell from './NotificationBell'
 import AdminDropdown from './AdminDropdown'
 import ProfileDropdown from './ProfileDropdown'
+import DemoBanner from './DemoBanner'
+import { isDemoMode } from '@/lib/demoMode'
 
 export default function Header() {
   const { isGuest, signOut } = useAuth()
@@ -16,7 +18,8 @@ export default function Header() {
   }
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-background border-b border-border backdrop-blur-sm bg-opacity-95">
+    <header className={`fixed left-0 right-0 z-50 bg-background border-b border-border backdrop-blur-sm bg-opacity-95 ${isDemoMode ? 'top-7 sm:top-8' : 'top-0'}`}>
+      <DemoBanner />
       <div className="container mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
         {/* Logo */}
         <Link to={isGuest ? "/leaderboard" : "/dashboard"} className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
@@ -33,15 +36,17 @@ export default function Header() {
               >
                 About
               </Link>
-              <Button
-                variant="default"
-                size="sm"
-                onClick={handleLoginClick}
-                className="flex items-center gap-2"
-              >
-                <LogIn className="h-4 w-4" />
-                Login
-              </Button>
+              {!isDemoMode && (
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={handleLoginClick}
+                  className="flex items-center gap-2"
+                >
+                  <LogIn className="h-4 w-4" />
+                  Login
+                </Button>
+              )}
             </>
           ) : (
             <>

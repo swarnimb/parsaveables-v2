@@ -3,6 +3,8 @@ import { Bell, Trophy, Swords, TrendingUp, Clock } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { supabase } from '@/services/supabase'
 import { useAuth } from '@/hooks/useAuth'
+import { isDemoMode, demoBlock } from '@/lib/demoMode'
+import { activityFeed as demoActivityFeed } from '@/lib/demoData'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,6 +22,17 @@ export default function NotificationBell() {
   useEffect(() => {
     async function fetchNotifications() {
       if (!player?.id) {
+        setLoading(false)
+        return
+      }
+
+      if (isDemoMode) {
+        const items = demoActivityFeed
+          .filter(n => n.player_id === player.id)
+          .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+          .slice(0, 5)
+        setNotifications(items)
+        setUnreadCount(items.filter(n => !n.is_read).length)
         setLoading(false)
         return
       }
@@ -49,6 +62,7 @@ export default function NotificationBell() {
   }, [player])
 
   const markAllAsRead = async () => {
+    if (isDemoMode) { demoBlock('Mark notifications read'); return }
     if (!player?.id || unreadCount === 0) return
 
     try {

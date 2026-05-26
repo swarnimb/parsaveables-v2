@@ -1,18 +1,25 @@
 import { useState, useEffect } from 'react'
 import { authAPI, playerAPI } from '@/services/api'
+import { isDemoMode } from '@/lib/demoMode'
+import { demoUser, demoPlayer } from '@/lib/demoData'
 
 /**
  * Custom hook for authentication state and actions
  */
 export function useAuth() {
-  const [user, setUser] = useState(null)
-  const [player, setPlayer] = useState(null)
+  // Demo mode: auto-sign-in as the fixture user. Visitors skip the login screen
+  // entirely and experience the app as a logged-in player.
+  const [user, setUser] = useState(isDemoMode ? demoUser : null)
+  const [player, setPlayer] = useState(isDemoMode ? demoPlayer : null)
   const [isGuest, setIsGuest] = useState(false)
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(!isDemoMode)
   const [error, setError] = useState(null)
 
   // Initialize auth state on mount
   useEffect(() => {
+    // Demo mode: state is already seeded above. Nothing to subscribe to.
+    if (isDemoMode) return
+
     // Check for guest mode first
     const guestFlag = sessionStorage.getItem('guestMode')
     if (guestFlag === 'true') {

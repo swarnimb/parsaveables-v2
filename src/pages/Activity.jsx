@@ -3,6 +3,13 @@ import { User, Users, Trophy, Swords, Coins, Target, Calendar, Mic2, TrendingUp,
 import { supabase } from '@/services/supabase'
 import { queryWithTimeout } from '@/services/supabaseWithTimeout'
 import { useAuth } from '@/hooks/useAuth'
+import { isDemoMode } from '@/lib/demoMode'
+import {
+  pulpTransactions as demoPulpTxns,
+  blessings as demoBlessings,
+  challenges as demoChallenges,
+  rounds as demoRounds,
+} from '@/lib/demoData'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -29,6 +36,19 @@ export default function Activity() {
   useEffect(() => {
     async function fetchPlayerFeed() {
       if (!player || activeTab !== 'player') return
+
+      if (isDemoMode) {
+        const transactions = demoPulpTxns.filter(t => t.player_id === player.id)
+        const blessings = demoBlessings.filter(b => b.player_id === player.id)
+        const challenges = demoChallenges.filter(c => c.challenger_id === player.id || c.challenged_id === player.id)
+        const feed = []
+        transactions.forEach(txn => feed.push({ id: `txn-${txn.id}`, type: 'transaction', timestamp: new Date(txn.created_at), data: txn }))
+        blessings.forEach(b => feed.push({ id: `blessing-${b.id}`, type: 'bet', timestamp: new Date(b.created_at), data: b }))
+        challenges.forEach(c => feed.push({ id: `challenge-${c.id}`, type: 'challenge', timestamp: new Date(c.issued_at), data: c }))
+        feed.sort((a, b) => b.timestamp - a.timestamp)
+        setPlayerFeed(feed.slice(0, 20))
+        return
+      }
 
       try {
         // Combine and sort feed items
@@ -114,6 +134,15 @@ export default function Activity() {
   useEffect(() => {
     async function fetchCommunityFeed() {
       if (activeTab !== 'community') return
+
+      if (isDemoMode) {
+        const feed = []
+        demoRounds.forEach(round => feed.push({ id: `round-${round.id}`, type: 'round', timestamp: new Date(round.created_at || round.date), data: round }))
+        demoChallenges.forEach(c => feed.push({ id: `challenge-${c.id}`, type: 'challenge', timestamp: new Date(c.issued_at), data: c }))
+        feed.sort((a, b) => b.timestamp - a.timestamp)
+        setCommunityFeed(feed.slice(0, 20))
+        return
+      }
 
       try {
         // Combine and sort feed items

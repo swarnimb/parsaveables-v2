@@ -1,5 +1,16 @@
 import { supabase } from './supabase'
 import { queryWithTimeout, authQueryWithTimeout } from './supabaseWithTimeout'
+import { isDemoMode, demoBlock } from '@/lib/demoMode'
+import {
+  demoUser,
+  demoPlayer,
+  demoSession,
+  players as demoPlayers,
+  events as demoEvents,
+  getRoundsWithPlayerCount as demoRoundsWithCount,
+  getPlayersForRound as demoPlayersForRound,
+  getLeaderboardForEvent as demoLeaderboardForEvent,
+} from '@/lib/demoData'
 
 /**
  * Authentication API helpers
@@ -10,6 +21,7 @@ export const authAPI = {
    * Sign in with email and password
    */
   signIn: async (email, password) => {
+    if (isDemoMode) { demoBlock('Sign in'); return null }
     const { data, error } = await authQueryWithTimeout(
       () => supabase.auth.signInWithPassword({ email, password }),
       10000 // 10s timeout for login
@@ -23,6 +35,7 @@ export const authAPI = {
    * Sign up new user
    */
   signUp: async (email, password, metadata = {}) => {
+    if (isDemoMode) { demoBlock('Sign up'); return null }
     const { data, error } = await authQueryWithTimeout(
       () => supabase.auth.signUp({
         email,
@@ -51,6 +64,7 @@ export const authAPI = {
    * Get current session
    */
   getSession: async () => {
+    if (isDemoMode) return demoSession
     try {
       const { data, error } = await authQueryWithTimeout(
         () => supabase.auth.getSession(),
@@ -74,6 +88,7 @@ export const authAPI = {
    * Redirects browser to provider — Supabase handles callback automatically.
    */
   signInWithOAuth: async (provider) => {
+    if (isDemoMode) { demoBlock('OAuth sign in'); return null }
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
@@ -88,6 +103,7 @@ export const authAPI = {
    * Get current user
    */
   getCurrentUser: async () => {
+    if (isDemoMode) return demoUser
     const { data, error } = await authQueryWithTimeout(
       () => supabase.auth.getUser(),
       6000 // 6s timeout
@@ -100,6 +116,9 @@ export const authAPI = {
    * Subscribe to auth state changes
    */
   onAuthStateChange: (callback) => {
+    if (isDemoMode) {
+      return { data: { subscription: { unsubscribe: () => {} } } }
+    }
     return supabase.auth.onAuthStateChange(callback)
   },
 }
@@ -113,6 +132,7 @@ export const playerAPI = {
    * Get player profile by user_id
    */
   getPlayerByUserId: async (userId) => {
+    if (isDemoMode) return demoPlayer
     const { data, error } = await queryWithTimeout(
       () => supabase
         .from('registered_players')
@@ -130,6 +150,7 @@ export const playerAPI = {
    * Get unclaimed players (no user_id assigned yet)
    */
   getUnclaimedPlayers: async () => {
+    if (isDemoMode) return []
     const { data, error } = await queryWithTimeout(
       () => supabase
         .from('registered_players')
@@ -147,6 +168,7 @@ export const playerAPI = {
    * Link existing player to auth user
    */
   linkPlayerToUser: async (playerId, userId) => {
+    if (isDemoMode) { demoBlock('Link player'); return null }
     const { data, error } = await queryWithTimeout(
       () => supabase
         .from('registered_players')
@@ -165,6 +187,7 @@ export const playerAPI = {
    * Create player profile after signup (for new players not in v1)
    */
   createPlayer: async (userId, playerData) => {
+    if (isDemoMode) { demoBlock('Create player'); return null }
     const { data, error } = await queryWithTimeout(
       () => supabase
         .from('registered_players')
@@ -185,6 +208,7 @@ export const playerAPI = {
    * Update player profile
    */
   updatePlayer: async (playerId, updates) => {
+    if (isDemoMode) { demoBlock('Update player'); return null }
     const { data, error } = await queryWithTimeout(
       () => supabase
         .from('registered_players')
@@ -203,6 +227,11 @@ export const playerAPI = {
    * Get all players (basic info only)
    */
   getAllPlayers: async () => {
+    if (isDemoMode) {
+      return demoPlayers
+        .map(p => ({ id: p.id, player_name: p.player_name, user_id: p.user_id, active: p.active }))
+        .sort((a, b) => a.player_name.localeCompare(b.player_name))
+    }
     const { data, error } = await queryWithTimeout(
       () => supabase
         .from('registered_players')
@@ -225,6 +254,12 @@ export const eventAPI = {
    * Get all events (seasons + tournaments)
    */
   getAllEvents: async () => {
+    if (isDemoMode) {
+      return demoEvents.map(e => ({
+        id: e.id, name: e.name, type: e.type, year: e.year,
+        start_date: e.start_date, end_date: e.end_date, is_active: e.is_active,
+      }))
+    }
     const { data, error } = await queryWithTimeout(
       () => supabase
         .from('events')
@@ -245,6 +280,7 @@ export const eventAPI = {
    * - For tournaments: sums all round scores
    */
   getLeaderboardForEvent: async (eventId) => {
+    if (isDemoMode) return demoLeaderboardForEvent(Number(eventId))
     // First, fetch the event to determine if it's a season or tournament
     const { data: event, error: eventError } = await queryWithTimeout(
       () => supabase
@@ -383,6 +419,7 @@ export const tutorialAPI = {
    * Mark onboarding tutorial as completed
    */
   completeOnboarding: async (playerId) => {
+    if (isDemoMode) { demoBlock('Complete onboarding'); return }
     const { error } = await queryWithTimeout(
       () => supabase
         .from('registered_players')
@@ -398,6 +435,7 @@ export const tutorialAPI = {
    * Mark betting tutorial as shown
    */
   markBettingInterestShown: async (playerId) => {
+    if (isDemoMode) { demoBlock('Mark betting interest'); return }
     const { error } = await queryWithTimeout(
       () => supabase
         .from('registered_players')
@@ -413,6 +451,7 @@ export const tutorialAPI = {
    * Confirm user interest in betting feature
    */
   confirmBettingInterest: async (playerId) => {
+    if (isDemoMode) { demoBlock('Confirm betting interest'); return }
     const { error } = await queryWithTimeout(
       () => supabase
         .from('registered_players')
@@ -434,6 +473,7 @@ export const roundAPI = {
    * Get all rounds with player count
    */
   getAllRounds: async () => {
+    if (isDemoMode) return demoRoundsWithCount()
     const { data, error } = await queryWithTimeout(
       () => supabase
         .from('rounds')
@@ -474,6 +514,7 @@ export const roundAPI = {
    * Get players for a specific round
    */
   getPlayersForRound: async (roundId) => {
+    if (isDemoMode) return demoPlayersForRound(Number(roundId))
     const { data, error } = await queryWithTimeout(
       () => supabase
         .from('player_rounds')

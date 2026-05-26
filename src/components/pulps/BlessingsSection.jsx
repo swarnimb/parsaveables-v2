@@ -13,6 +13,12 @@ import {
 } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { useToast } from '@/hooks/use-toast'
+import { isDemoMode, demoBlock } from '@/lib/demoMode'
+import {
+  events as demoEvents,
+  players as demoPlayers,
+  blessings as demoBlessings,
+} from '@/lib/demoData'
 
 /**
  * BlessingsSection — predict the top 3 finishers during an open PULPy window.
@@ -37,6 +43,13 @@ export default function BlessingsSection({ playerId, pulpBalance, window, onBles
   // Fetch players registered for the active event
   useEffect(() => {
     async function fetchEventPlayers() {
+      if (isDemoMode) {
+        const event = demoEvents.find(e => e.is_active)
+        if (!event) return
+        setActiveEventId(event.id)
+        setEventPlayers(demoPlayers.map(p => ({ id: p.id, player_name: p.player_name })))
+        return
+      }
       try {
         const { data: event } = await supabase
           .from('events')
@@ -69,6 +82,13 @@ export default function BlessingsSection({ playerId, pulpBalance, window, onBles
     async function fetchMyBlessing() {
       if (!playerId || !window?.id) return
 
+      if (isDemoMode) {
+        setMyBlessing(
+          demoBlessings.find(b => b.player_id === playerId && b.window_id === window.id) || null
+        )
+        return
+      }
+
       try {
         const { data, error } = await supabase
           .from('blessings')
@@ -88,6 +108,7 @@ export default function BlessingsSection({ playerId, pulpBalance, window, onBles
   }, [playerId, window?.id])
 
   const handlePlace = async () => {
+    if (isDemoMode) { demoBlock('Place blessing'); return }
     const { first, second, third } = predictions
 
     if (!first || !second || !third) {

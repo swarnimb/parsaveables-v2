@@ -3,6 +3,8 @@ import { Trophy, Calendar, TrendingUp, Award, Target, Swords, ChevronDown, Chevr
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/services/supabase'
 import { eventAPI } from '@/services/api'
+import { isDemoMode } from '@/lib/demoMode'
+import { playerRounds as demoPlayerRounds } from '@/lib/demoData'
 import { getCurrentEvent } from '@/utils/seasonUtils'
 import { Card } from '@/components/ui/card'
 import PageContainer from '@/components/layout/PageContainer'
@@ -63,19 +65,27 @@ export default function Dashboard() {
           isSeason = selectedEvent?.type === 'season'
         }
 
-        let query = supabase
-          .from('player_rounds')
-          .select('*')
-          .eq('player_name', player.player_name)
+        let rounds
+        if (isDemoMode) {
+          rounds = demoPlayerRounds.filter(pr =>
+            pr.player_name === player.player_name &&
+            (selectedEventId === 'all' || pr.event_id === selectedEventId)
+          )
+        } else {
+          let query = supabase
+            .from('player_rounds')
+            .select('*')
+            .eq('player_name', player.player_name)
 
-        // Filter by event if not "all time"
-        if (selectedEventId !== 'all') {
-          query = query.eq('event_id', selectedEventId)
+          // Filter by event if not "all time"
+          if (selectedEventId !== 'all') {
+            query = query.eq('event_id', selectedEventId)
+          }
+
+          const { data, error } = await query
+          if (error) throw error
+          rounds = data
         }
-
-        const { data: rounds, error } = await query
-
-        if (error) throw error
 
         // Calculate total points based on event type
         let totalPoints = 0
@@ -125,17 +135,25 @@ export default function Dashboard() {
       if (!player || !selectedEventId) return
 
       try {
-        // Get all player rounds for the selected event
-        let query = supabase
-          .from('player_rounds')
-          .select('*')
+        let allRounds
+        if (isDemoMode) {
+          allRounds = demoPlayerRounds.filter(pr =>
+            selectedEventId === 'all' || pr.event_id === selectedEventId
+          )
+        } else {
+          // Get all player rounds for the selected event
+          let query = supabase
+            .from('player_rounds')
+            .select('*')
 
-        if (selectedEventId !== 'all') {
-          query = query.eq('event_id', selectedEventId)
+          if (selectedEventId !== 'all') {
+            query = query.eq('event_id', selectedEventId)
+          }
+
+          const { data, error } = await query
+          if (error) throw error
+          allRounds = data
         }
-
-        const { data: allRounds, error } = await query
-        if (error) throw error
 
         // Group rounds by player
         const playerRoundsMap = {}
@@ -184,39 +202,62 @@ export default function Dashboard() {
       if (!player || !selectedEventId || allPlayersStats.length === 0) return
 
       try {
-        // Get all rounds for the current player
-        let query = supabase
-          .from('player_rounds')
-          .select('round_id, player_name, rank')
-          .eq('player_name', player.player_name)
+        let playerRounds, allRoundsData
+        if (isDemoMode) {
+          playerRounds = demoPlayerRounds
+            .filter(pr =>
+              pr.player_name === player.player_name &&
+              (selectedEventId === 'all' || pr.event_id === selectedEventId)
+            )
+            .map(pr => ({ round_id: pr.round_id, player_name: pr.player_name, rank: pr.rank }))
+          const roundIds = playerRounds.map(r => r.round_id)
+          if (roundIds.length === 0) {
+            setHeadToHeadRecords({})
+            return
+          }
+          allRoundsData = demoPlayerRounds
+            .filter(pr =>
+              roundIds.includes(pr.round_id) &&
+              (selectedEventId === 'all' || pr.event_id === selectedEventId)
+            )
+            .map(pr => ({ round_id: pr.round_id, player_name: pr.player_name, rank: pr.rank }))
+        } else {
+          // Get all rounds for the current player
+          let query = supabase
+            .from('player_rounds')
+            .select('round_id, player_name, rank')
+            .eq('player_name', player.player_name)
 
-        if (selectedEventId !== 'all') {
-          query = query.eq('event_id', selectedEventId)
+          if (selectedEventId !== 'all') {
+            query = query.eq('event_id', selectedEventId)
+          }
+
+          const { data, error: playerError } = await query
+          if (playerError) throw playerError
+          playerRounds = data
+
+          // Get round IDs where current player participated
+          const roundIds = playerRounds.map(r => r.round_id)
+
+          if (roundIds.length === 0) {
+            setHeadToHeadRecords({})
+            return
+          }
+
+          // Get all rounds for these round IDs
+          let allRoundsQuery = supabase
+            .from('player_rounds')
+            .select('round_id, player_name, rank')
+            .in('round_id', roundIds)
+
+          if (selectedEventId !== 'all') {
+            allRoundsQuery = allRoundsQuery.eq('event_id', selectedEventId)
+          }
+
+          const { data: arData, error: allRoundsError } = await allRoundsQuery
+          if (allRoundsError) throw allRoundsError
+          allRoundsData = arData
         }
-
-        const { data: playerRounds, error: playerError } = await query
-        if (playerError) throw playerError
-
-        // Get round IDs where current player participated
-        const roundIds = playerRounds.map(r => r.round_id)
-
-        if (roundIds.length === 0) {
-          setHeadToHeadRecords({})
-          return
-        }
-
-        // Get all rounds for these round IDs
-        let allRoundsQuery = supabase
-          .from('player_rounds')
-          .select('round_id, player_name, rank')
-          .in('round_id', roundIds)
-
-        if (selectedEventId !== 'all') {
-          allRoundsQuery = allRoundsQuery.eq('event_id', selectedEventId)
-        }
-
-        const { data: allRoundsData, error: allRoundsError } = await allRoundsQuery
-        if (allRoundsError) throw allRoundsError
 
         // Group by round_id
         const roundsMap = {}

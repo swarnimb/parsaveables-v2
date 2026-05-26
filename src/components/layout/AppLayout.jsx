@@ -5,6 +5,7 @@ import Header from './Header'
 import BottomNav from './BottomNav'
 import OnboardingTutorial from '@/components/tutorial/Tutorial'
 import PULPyWindowModal from '@/components/pulps/PULPyWindowModal'
+import { isDemoMode } from '@/lib/demoMode'
 
 const WINDOW_POLL_INTERVAL = 30000 // 30 seconds
 
@@ -33,12 +34,17 @@ export default function AppLayout() {
       return
     }
 
-    if (isGuest) {
+    if (isGuest && !isDemoMode) {
       const guestBlockedRoutes = ['/pulps', '/admin', '/dashboard']
       const isBlocked = guestBlockedRoutes.some(route => location.pathname.startsWith(route))
       if (isBlocked) {
         navigate('/leaderboard', { replace: true })
       }
+    }
+
+    // In demo mode, block admin routes even for guests
+    if (isDemoMode && location.pathname.startsWith('/admin')) {
+      navigate('/leaderboard', { replace: true })
     }
   }, [isAuthenticated, isGuest, loading, player, location.pathname, navigate])
 
@@ -76,6 +82,7 @@ export default function AppLayout() {
 
   useEffect(() => {
     if (!isAuthenticated) return
+    if (isDemoMode) return // No backend in static demo build
 
     pollWindow()
     const interval = setInterval(pollWindow, WINDOW_POLL_INTERVAL)
@@ -117,7 +124,7 @@ export default function AppLayout() {
 
       <Header />
 
-      <main className="pt-16 pb-20">
+      <main className={`pb-20 ${isDemoMode ? 'pt-24 sm:pt-24' : 'pt-16'}`}>
         <Outlet />
       </main>
 

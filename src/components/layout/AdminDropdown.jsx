@@ -2,9 +2,12 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Settings, FileText } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { isDemoMode } from '@/lib/demoMode'
 
 export default function AdminDropdown() {
   const [isOpen, setIsOpen] = useState(false)
+
+  if (isDemoMode) return null
 
   return (
     <div className="relative">

@@ -1,5 +1,6 @@
 import { lazy, Suspense } from 'react'
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
+import { BrowserRouter, HashRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
+import { isDemoMode } from '@/lib/demoMode'
 import { AnimatePresence } from 'framer-motion'
 
 // Eagerly load frequently accessed pages for instant navigation
@@ -42,12 +43,15 @@ function AnimatedRoutes() {
   return (
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
-        {/* Public route */}
-        <Route path="/login" element={<Login />} />
+        {/* Public route — hidden in demo */}
+        <Route
+          path="/login"
+          element={isDemoMode ? <Navigate to="/leaderboard" replace /> : <Login />}
+        />
 
         {/* Protected routes with layout */}
         <Route element={<AppLayout />}>
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/" element={<Navigate to={isDemoMode ? '/leaderboard' : '/dashboard'} replace />} />
           <Route path="/leaderboard" element={<Leaderboard />} />
           <Route path="/rounds" element={<Rounds />} />
           <Route path="/podcast" element={<Suspense fallback={<PageLoader />}><Podcast /></Suspense>} />
@@ -59,9 +63,15 @@ function AnimatedRoutes() {
           <Route path="/about" element={<Suspense fallback={<PageLoader />}><About /></Suspense>} />
           <Route path="/faq" element={<Suspense fallback={<PageLoader />}><Faq /></Suspense>} />
 
-          {/* Admin routes */}
-          <Route path="/admin/control-center" element={<Suspense fallback={<PageLoader />}><ControlCenter /></Suspense>} />
-          <Route path="/admin/process-scorecards" element={<Suspense fallback={<PageLoader />}><ProcessScorecards /></Suspense>} />
+          {/* Admin routes — hidden in demo */}
+          <Route
+            path="/admin/control-center"
+            element={isDemoMode ? <Navigate to="/leaderboard" replace /> : <Suspense fallback={<PageLoader />}><ControlCenter /></Suspense>}
+          />
+          <Route
+            path="/admin/process-scorecards"
+            element={isDemoMode ? <Navigate to="/leaderboard" replace /> : <Suspense fallback={<PageLoader />}><ProcessScorecards /></Suspense>}
+          />
         </Route>
 
         {/* 404 catch-all */}
@@ -72,14 +82,15 @@ function AnimatedRoutes() {
 }
 
 function App() {
+  const Router = isDemoMode ? HashRouter : BrowserRouter
   return (
     <ErrorBoundary>
-      <BrowserRouter>
+      <Router>
         <SplashScreen />
         <OfflineDetector />
         <AnimatedRoutes />
         <Toaster />
-      </BrowserRouter>
+      </Router>
     </ErrorBoundary>
   )
 }

@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { Play, Pause, Square } from 'lucide-react'
 import { supabase } from '@/services/supabase'
+import { isDemoMode } from '@/lib/demoMode'
+import { podcastEpisodes as demoPodcastEpisodes } from '@/lib/demoData'
 import PageContainer from '@/components/layout/PageContainer'
 import { Card } from '@/components/ui/card'
 import { motion } from 'framer-motion'
@@ -19,6 +21,23 @@ export default function Podcast() {
   // Fetch published podcast episodes from database
   useEffect(() => {
     async function fetchEpisodes() {
+      if (isDemoMode) {
+        setEpisodes(
+          [...demoPodcastEpisodes]
+            .filter(ep => ep.is_published)
+            .sort((a, b) => b.episode_number - a.episode_number)
+            .map(ep => ({
+              id: ep.id,
+              title: ep.title,
+              date: ep.published_at || ep.created_at,
+              audioUrl: ep.audio_url,
+              description: ep.description,
+            }))
+        )
+        setLoading(false)
+        markAllAsRead()
+        return
+      }
       try {
         const { data, error } = await supabase
           .from('podcast_episodes')

@@ -14,6 +14,13 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { useToast } from '@/hooks/use-toast'
+import { isDemoMode, demoBlock } from '@/lib/demoMode'
+import {
+  players as demoPlayers,
+  events as demoEvents,
+  playerRounds as demoPlayerRounds,
+  challenges as demoChallenges,
+} from '@/lib/demoData'
 
 /**
  * ChallengesSection — issue and respond to challenges during a PULPy window.
@@ -41,6 +48,35 @@ export default function ChallengesSection({ playerId, pulpBalance, window, onCha
   useEffect(() => {
     async function fetchHigherRanked() {
       if (!playerId) return
+
+      if (isDemoMode) {
+        const currentYear = new Date().getFullYear()
+        const event = demoEvents.find(e => e.type === 'season' && e.name.includes(String(currentYear)))
+        if (!event) {
+          setHigherRankedPlayers([])
+          return
+        }
+        const totals = {}
+        demoPlayerRounds
+          .filter(pr => pr.event_id === event.id)
+          .forEach(pr => { totals[pr.player_id] = (totals[pr.player_id] || 0) + (pr.final_total || 0) })
+        const ranked = Object.entries(totals)
+          .map(([id, total]) => ({ id: Number(id), total }))
+          .sort((a, b) => b.total - a.total)
+        const myIdx = ranked.findIndex(p => p.id === playerId)
+        if (myIdx <= 0) {
+          setHigherRankedPlayers([])
+          return
+        }
+        const higherIds = ranked.slice(0, myIdx).map(p => p.id)
+        setHigherRankedPlayers(
+          demoPlayers
+            .filter(p => higherIds.includes(p.id))
+            .map(p => ({ id: p.id, player_name: p.player_name }))
+            .sort((a, b) => a.player_name.localeCompare(b.player_name))
+        )
+        return
+      }
 
       try {
         const currentYear = new Date().getFullYear()
@@ -103,6 +139,17 @@ export default function ChallengesSection({ playerId, pulpBalance, window, onCha
     async function fetchMyChallenge() {
       if (!playerId || !windowId) return
 
+      if (isDemoMode) {
+        setMyChallenge(
+          demoChallenges.find(c =>
+            c.challenger_id === playerId &&
+            c.window_id === windowId &&
+            c.status !== 'cancelled_waitlist'
+          ) || null
+        )
+        return
+      }
+
       try {
         const { data, error } = await supabase
           .from('challenges')
@@ -130,6 +177,15 @@ export default function ChallengesSection({ playerId, pulpBalance, window, onCha
     async function fetchPending() {
       if (!playerId || !windowId) return
 
+      if (isDemoMode) {
+        setPendingChallenges(
+          demoChallenges.filter(c =>
+            c.challenged_id === playerId && c.window_id === windowId && c.status === 'pending'
+          )
+        )
+        return
+      }
+
       try {
         const { data, error } = await supabase
           .from('challenges')
@@ -156,6 +212,19 @@ export default function ChallengesSection({ playerId, pulpBalance, window, onCha
     async function fetchActive() {
       if (!playerId) return
 
+      if (isDemoMode) {
+        setActiveChallenges(
+          demoChallenges
+            .filter(c =>
+              (c.challenger_id === playerId || c.challenged_id === playerId) &&
+              c.status === 'accepted' &&
+              c.round_id === null
+            )
+            .sort((a, b) => new Date(b.issued_at) - new Date(a.issued_at))
+        )
+        return
+      }
+
       try {
         const { data, error } = await supabase
           .from('challenges')
@@ -180,6 +249,7 @@ export default function ChallengesSection({ playerId, pulpBalance, window, onCha
   }, [playerId])
 
   const handleIssue = async () => {
+    if (isDemoMode) { demoBlock('Issue challenge'); return }
     if (!selectedPlayer) {
       toast({ variant: 'destructive', title: 'No opponent', description: 'Select an opponent' })
       return
@@ -229,6 +299,7 @@ export default function ChallengesSection({ playerId, pulpBalance, window, onCha
   }
 
   const handleRespond = async (challengeId, accept) => {
+    if (isDemoMode) { demoBlock('Respond to challenge'); return }
     setLoading(true)
 
     try {
