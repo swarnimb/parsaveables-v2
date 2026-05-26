@@ -124,7 +124,7 @@ export default function AppLayout() {
 
       <Header />
 
-      <main className={`pb-20 ${isDemoMode ? 'pt-24 sm:pt-24' : 'pt-16'}`}>
+      <main className={`pb-20 ${isDemoMode ? 'pt-28 sm:pt-24' : 'pt-16'}`}>
         <Outlet />
       </main>
 
