@@ -1969,7 +1969,7 @@ export const playerRounds = [
   {
     "id": "9c7e1989-2d6e-4a19-ada4-e1b6ef48ca34",
     "round_id": "2caab1d4-6479-4e86-a883-1422ae86a7ad",
-    "player_name": "Bird",
+    "player_name": "🦅🦅🧺",
     "rank": 2,
     "total_strokes": 60,
     "total_score": 4,
@@ -1991,13 +1991,13 @@ export const playerRounds = [
     "course_multiplier_applied": false,
     "player_id": 9,
     "registered_players": {
-      "player_name": "Bird"
+      "player_name": "🦅🦅🧺"
     }
   },
   {
     "id": "174e0efc-a789-4f6a-b29b-92ad2661188b",
     "round_id": "39fa67f7-f1ff-466e-850f-0a61cf8a9337",
-    "player_name": "Bird",
+    "player_name": "🦅🦅🧺",
     "rank": 6,
     "total_strokes": null,
     "total_score": null,
@@ -2019,13 +2019,13 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 9,
     "registered_players": {
-      "player_name": "Bird"
+      "player_name": "🦅🦅🧺"
     }
   },
   {
     "id": "db0defe7-9418-4a78-8337-40bde9a27b21",
     "round_id": "35f950b1-cd7e-42f0-adac-5459a13caa9a",
-    "player_name": "Bird",
+    "player_name": "🦅🦅🧺",
     "rank": 1,
     "total_strokes": null,
     "total_score": null,
@@ -2047,13 +2047,13 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 9,
     "registered_players": {
-      "player_name": "Bird"
+      "player_name": "🦅🦅🧺"
     }
   },
   {
     "id": "a9daabee-3864-479c-a4c7-5ba9db33eac0",
     "round_id": "5f7df216-12ed-429b-b214-def314e2989d",
-    "player_name": "Bird",
+    "player_name": "🦅🦅🧺",
     "rank": 1,
     "total_strokes": null,
     "total_score": null,
@@ -2075,13 +2075,13 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 9,
     "registered_players": {
-      "player_name": "Bird"
+      "player_name": "🦅🦅🧺"
     }
   },
   {
     "id": "89a0cab9-7c55-4f0a-895e-aa7d53dd1c25",
     "round_id": "391234a8-482e-4f68-a326-d566baaeb16b",
-    "player_name": "Shogun",
+    "player_name": "Xerxes",
     "rank": 1,
     "total_strokes": 64,
     "total_score": 4,
@@ -2122,7 +2122,7 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 5,
     "registered_players": {
-      "player_name": "Shogun"
+      "player_name": "Xerxes"
     }
   },
   {
@@ -2494,7 +2494,7 @@ export const playerRounds = [
   {
     "id": "b27e9337-8cd0-499a-890f-21ab6ae85a94",
     "round_id": "2caab1d4-6479-4e86-a883-1422ae86a7ad",
-    "player_name": "Shogun",
+    "player_name": "Xerxes",
     "rank": 4,
     "total_strokes": 62,
     "total_score": 6,
@@ -2516,7 +2516,7 @@ export const playerRounds = [
     "course_multiplier_applied": false,
     "player_id": 5,
     "registered_players": {
-      "player_name": "Shogun"
+      "player_name": "Xerxes"
     }
   },
   {
@@ -2718,7 +2718,7 @@ export const playerRounds = [
   {
     "id": "53d5d165-3ec0-427c-8204-fdbc0d9c38dc",
     "round_id": "f4617d6f-012d-41f2-8137-3269815dbc6f",
-    "player_name": "Bird",
+    "player_name": "🦅🦅🧺",
     "rank": 5,
     "total_strokes": 69,
     "total_score": 8,
@@ -2740,13 +2740,13 @@ export const playerRounds = [
     "course_multiplier_applied": false,
     "player_id": 9,
     "registered_players": {
-      "player_name": "Bird"
+      "player_name": "🦅🦅🧺"
     }
   },
   {
     "id": "4f441a18-227d-4404-a8cd-63cb50c73aa7",
     "round_id": "0dd59ad1-6a41-4fa6-aac5-b64a787509fa",
-    "player_name": "Bird",
+    "player_name": "🦅🦅🧺",
     "rank": 5,
     "total_strokes": 75,
     "total_score": 16,
@@ -2768,13 +2768,13 @@ export const playerRounds = [
     "course_multiplier_applied": false,
     "player_id": 9,
     "registered_players": {
-      "player_name": "Bird"
+      "player_name": "🦅🦅🧺"
     }
   },
   {
     "id": "2f23864a-235f-41e4-8639-458a3cb69a64",
     "round_id": "230370e9-081b-4731-94e1-8655384972fd",
-    "player_name": "Bird",
+    "player_name": "🦅🦅🧺",
     "rank": 4,
     "total_strokes": 70,
     "total_score": 7,
@@ -2796,13 +2796,13 @@ export const playerRounds = [
     "course_multiplier_applied": false,
     "player_id": 9,
     "registered_players": {
-      "player_name": "Bird"
+      "player_name": "🦅🦅🧺"
     }
   },
   {
     "id": "0229c8d6-9b60-4d32-816c-21dcd6be0a5e",
     "round_id": "dabbcdf7-8ae1-46d5-a2c8-cb6bdcec1944",
-    "player_name": "Shogun",
+    "player_name": "Xerxes",
     "rank": 1,
     "total_strokes": 60,
     "total_score": 6,
@@ -2843,7 +2843,7 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 5,
     "registered_players": {
-      "player_name": "Shogun"
+      "player_name": "Xerxes"
     }
   },
   {
@@ -3130,7 +3130,7 @@ export const playerRounds = [
   {
     "id": "fd90d2f7-5749-4e24-a06f-90182ee568b8",
     "round_id": "5f7df216-12ed-429b-b214-def314e2989d",
-    "player_name": "Shogun",
+    "player_name": "Xerxes",
     "rank": 4,
     "total_strokes": null,
     "total_score": null,
@@ -3152,7 +3152,7 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 5,
     "registered_players": {
-      "player_name": "Shogun"
+      "player_name": "Xerxes"
     }
   },
   {
@@ -3326,7 +3326,7 @@ export const playerRounds = [
   {
     "id": "b796b827-cd10-488b-8984-cab109bffbcc",
     "round_id": "f4617d6f-012d-41f2-8137-3269815dbc6f",
-    "player_name": "Shogun",
+    "player_name": "Xerxes",
     "rank": 6,
     "total_strokes": 69,
     "total_score": 8,
@@ -3348,7 +3348,7 @@ export const playerRounds = [
     "course_multiplier_applied": false,
     "player_id": 5,
     "registered_players": {
-      "player_name": "Shogun"
+      "player_name": "Xerxes"
     }
   },
   {
@@ -3466,7 +3466,7 @@ export const playerRounds = [
   {
     "id": "347878ee-f38f-4b2e-b76f-40a50373bbb9",
     "round_id": "ff107e41-c183-42ec-8696-1a61b41fe06c",
-    "player_name": "Bird",
+    "player_name": "🦅🦅🧺",
     "rank": 4,
     "total_strokes": 59,
     "total_score": 3,
@@ -3488,7 +3488,7 @@ export const playerRounds = [
     "course_multiplier_applied": false,
     "player_id": 9,
     "registered_players": {
-      "player_name": "Bird"
+      "player_name": "🦅🦅🧺"
     }
   },
   {
@@ -4114,7 +4114,7 @@ export const playerRounds = [
   {
     "id": "19f8a0c8-bf5f-4987-931d-96fb4c97d8a8",
     "round_id": "0dd59ad1-6a41-4fa6-aac5-b64a787509fa",
-    "player_name": "Shogun",
+    "player_name": "Xerxes",
     "rank": 4,
     "total_strokes": 73,
     "total_score": 14,
@@ -4136,7 +4136,7 @@ export const playerRounds = [
     "course_multiplier_applied": false,
     "player_id": 5,
     "registered_players": {
-      "player_name": "Shogun"
+      "player_name": "Xerxes"
     }
   },
   {
@@ -4254,7 +4254,7 @@ export const playerRounds = [
   {
     "id": "b586b49f-8f3d-43db-ae6a-9d8f2321a648",
     "round_id": "230370e9-081b-4731-94e1-8655384972fd",
-    "player_name": "Shogun",
+    "player_name": "Xerxes",
     "rank": 3,
     "total_strokes": 69,
     "total_score": 6,
@@ -4276,7 +4276,7 @@ export const playerRounds = [
     "course_multiplier_applied": false,
     "player_id": 5,
     "registered_players": {
-      "player_name": "Shogun"
+      "player_name": "Xerxes"
     }
   },
   {
@@ -4310,7 +4310,7 @@ export const playerRounds = [
   {
     "id": "720260e1-f57a-4776-910b-6a530642b139",
     "round_id": "ff107e41-c183-42ec-8696-1a61b41fe06c",
-    "player_name": "Shogun",
+    "player_name": "Xerxes",
     "rank": 3,
     "total_strokes": 58,
     "total_score": 2,
@@ -4332,7 +4332,7 @@ export const playerRounds = [
     "course_multiplier_applied": false,
     "player_id": 5,
     "registered_players": {
-      "player_name": "Shogun"
+      "player_name": "Xerxes"
     }
   },
   {
@@ -4478,7 +4478,7 @@ export const playerRounds = [
   {
     "id": "aa10881f-fbdb-4b52-8434-db90644484d0",
     "round_id": "90bff9a7-9877-4eda-83fe-0af9d186abf5",
-    "player_name": "Bird",
+    "player_name": "🦅🦅🧺",
     "rank": 5,
     "total_strokes": null,
     "total_score": null,
@@ -4500,13 +4500,13 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 9,
     "registered_players": {
-      "player_name": "Bird"
+      "player_name": "🦅🦅🧺"
     }
   },
   {
     "id": "ee3b2b29-b3cd-46a6-8261-7220fc76f46d",
     "round_id": "2f1e42cd-b41b-4086-9060-c2dd33fd5474",
-    "player_name": "Bird",
+    "player_name": "🦅🦅🧺",
     "rank": 1,
     "total_strokes": null,
     "total_score": null,
@@ -4528,13 +4528,13 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 9,
     "registered_players": {
-      "player_name": "Bird"
+      "player_name": "🦅🦅🧺"
     }
   },
   {
     "id": "f360c5fc-583d-47c4-ae1c-509ca8d550d7",
     "round_id": "8c7c31c2-73d5-4afb-99dd-c97ba83790e4",
-    "player_name": "Bird",
+    "player_name": "🦅🦅🧺",
     "rank": 4,
     "total_strokes": null,
     "total_score": null,
@@ -4556,13 +4556,13 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 9,
     "registered_players": {
-      "player_name": "Bird"
+      "player_name": "🦅🦅🧺"
     }
   },
   {
     "id": "6df0ab01-93b7-43af-8733-cae717531910",
     "round_id": "86498cd5-5cb2-4a6c-a25b-ef8048a921b6",
-    "player_name": "Bird",
+    "player_name": "🦅🦅🧺",
     "rank": 1,
     "total_strokes": null,
     "total_score": null,
@@ -4584,7 +4584,7 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 9,
     "registered_players": {
-      "player_name": "Bird"
+      "player_name": "🦅🦅🧺"
     }
   },
   {
@@ -4684,7 +4684,7 @@ export const playerRounds = [
   {
     "id": "577d7099-80eb-4b52-bc79-38175ac2bcbc",
     "round_id": "4103c5f0-f4e7-442e-941b-463f33a6970c",
-    "player_name": "Shogun",
+    "player_name": "Xerxes",
     "rank": 3,
     "total_strokes": 76,
     "total_score": 9,
@@ -4725,7 +4725,7 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 5,
     "registered_players": {
-      "player_name": "Shogun"
+      "player_name": "Xerxes"
     }
   },
   {
@@ -4937,7 +4937,7 @@ export const playerRounds = [
   {
     "id": "2b2408e7-1744-4d6c-a2b0-38ab29ec47f2",
     "round_id": "2f1e42cd-b41b-4086-9060-c2dd33fd5474",
-    "player_name": "Shogun",
+    "player_name": "Xerxes",
     "rank": 1,
     "total_strokes": null,
     "total_score": null,
@@ -4959,7 +4959,7 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 5,
     "registered_players": {
-      "player_name": "Shogun"
+      "player_name": "Xerxes"
     }
   },
   {
@@ -5077,7 +5077,7 @@ export const playerRounds = [
   {
     "id": "d26bc461-9ace-4045-81d7-a4915b608844",
     "round_id": "8c7c31c2-73d5-4afb-99dd-c97ba83790e4",
-    "player_name": "Shogun",
+    "player_name": "Xerxes",
     "rank": 1,
     "total_strokes": null,
     "total_score": null,
@@ -5099,7 +5099,7 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 5,
     "registered_players": {
-      "player_name": "Shogun"
+      "player_name": "Xerxes"
     }
   },
   {
@@ -5217,7 +5217,7 @@ export const playerRounds = [
   {
     "id": "7f621e52-f67b-4e85-964b-60efbf59ad8b",
     "round_id": "90bff9a7-9877-4eda-83fe-0af9d186abf5",
-    "player_name": "Shogun",
+    "player_name": "Xerxes",
     "rank": 3,
     "total_strokes": null,
     "total_score": null,
@@ -5239,7 +5239,7 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 5,
     "registered_players": {
-      "player_name": "Shogun"
+      "player_name": "Xerxes"
     }
   },
   {
@@ -5423,7 +5423,7 @@ export const playerRounds = [
   {
     "id": "c179d20a-dc53-4c6e-a335-235869643341",
     "round_id": "c32161ed-3492-4120-b994-becf181c3cb0",
-    "player_name": "Shogun",
+    "player_name": "Xerxes",
     "rank": 3,
     "total_strokes": 55,
     "total_score": 1,
@@ -5464,7 +5464,7 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 5,
     "registered_players": {
-      "player_name": "Shogun"
+      "player_name": "Xerxes"
     }
   },
   {
@@ -5752,7 +5752,7 @@ export const playerRounds = [
   {
     "id": "fb661731-6477-4121-8c87-5562e1d36a9f",
     "round_id": "9107f4ed-9010-46a6-b3c8-e259d190824a",
-    "player_name": "Bird",
+    "player_name": "🦅🦅🧺",
     "rank": 1,
     "total_strokes": null,
     "total_score": null,
@@ -5774,13 +5774,13 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 9,
     "registered_players": {
-      "player_name": "Bird"
+      "player_name": "🦅🦅🧺"
     }
   },
   {
     "id": "a90e0edd-ba1a-49d5-83f5-f80f26893f27",
     "round_id": "9021197b-905c-4865-9e41-14f92b3068f6",
-    "player_name": "Bird",
+    "player_name": "🦅🦅🧺",
     "rank": 4,
     "total_strokes": null,
     "total_score": null,
@@ -5802,13 +5802,13 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 9,
     "registered_players": {
-      "player_name": "Bird"
+      "player_name": "🦅🦅🧺"
     }
   },
   {
     "id": "056bbb3f-8f22-466d-858e-ca4caf561d80",
     "round_id": "d629acd8-2955-44e0-bc02-d7b5586ef957",
-    "player_name": "Bird",
+    "player_name": "🦅🦅🧺",
     "rank": 4,
     "total_strokes": null,
     "total_score": null,
@@ -5830,13 +5830,13 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 9,
     "registered_players": {
-      "player_name": "Bird"
+      "player_name": "🦅🦅🧺"
     }
   },
   {
     "id": "ad89c3af-5316-4960-9655-d48cd71d87cf",
     "round_id": "14466c13-6766-4ecd-9bbe-00aef841bee9",
-    "player_name": "Bird",
+    "player_name": "🦅🦅🧺",
     "rank": 2,
     "total_strokes": null,
     "total_score": null,
@@ -5858,13 +5858,13 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 9,
     "registered_players": {
-      "player_name": "Bird"
+      "player_name": "🦅🦅🧺"
     }
   },
   {
     "id": "1e50eb1a-9ddc-4cb5-866b-70426c536d9c",
     "round_id": "ae295c69-2ae4-45ff-939a-11ea64952e4e",
-    "player_name": "Bird",
+    "player_name": "🦅🦅🧺",
     "rank": 2,
     "total_strokes": null,
     "total_score": null,
@@ -5886,7 +5886,7 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 9,
     "registered_players": {
-      "player_name": "Bird"
+      "player_name": "🦅🦅🧺"
     }
   },
   {
@@ -5939,7 +5939,7 @@ export const playerRounds = [
   {
     "id": "c9d46f67-2e60-45f0-bdb4-ed6dfb2f3ede",
     "round_id": "c43d135c-553c-4487-b8ef-3cdeec4a9ca3",
-    "player_name": "Bird",
+    "player_name": "🦅🦅🧺",
     "rank": 1,
     "total_strokes": null,
     "total_score": null,
@@ -5961,13 +5961,13 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 9,
     "registered_players": {
-      "player_name": "Bird"
+      "player_name": "🦅🦅🧺"
     }
   },
   {
     "id": "9f9a0f81-9543-4320-9a1e-9b0afee0c212",
     "round_id": "7675db8c-c0c7-4640-a7d6-fc1c24ae13c7",
-    "player_name": "Bird",
+    "player_name": "🦅🦅🧺",
     "rank": 2,
     "total_strokes": null,
     "total_score": null,
@@ -5989,13 +5989,13 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 9,
     "registered_players": {
-      "player_name": "Bird"
+      "player_name": "🦅🦅🧺"
     }
   },
   {
     "id": "bc42629c-a77d-4bf5-8d50-eaef3aaba251",
     "round_id": "7d16091f-3f69-46a9-99aa-73759ff78b00",
-    "player_name": "Bird",
+    "player_name": "🦅🦅🧺",
     "rank": 1,
     "total_strokes": null,
     "total_score": null,
@@ -6017,7 +6017,7 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 9,
     "registered_players": {
-      "player_name": "Bird"
+      "player_name": "🦅🦅🧺"
     }
   },
   {
@@ -6258,7 +6258,7 @@ export const playerRounds = [
   {
     "id": "69ea3a5e-9a2f-4600-a3e5-5c34f57f0833",
     "round_id": "dee302aa-138b-4427-91b0-dfbd2aae3316",
-    "player_name": "Bird",
+    "player_name": "🦅🦅🧺",
     "rank": 1,
     "total_strokes": null,
     "total_score": null,
@@ -6280,13 +6280,13 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 9,
     "registered_players": {
-      "player_name": "Bird"
+      "player_name": "🦅🦅🧺"
     }
   },
   {
     "id": "8d89ce42-2925-4601-bc42-780f7ef4e2ab",
     "round_id": "3c9468dc-5038-4439-a729-322d9d68423e",
-    "player_name": "Bird",
+    "player_name": "🦅🦅🧺",
     "rank": 3,
     "total_strokes": null,
     "total_score": null,
@@ -6308,13 +6308,13 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 9,
     "registered_players": {
-      "player_name": "Bird"
+      "player_name": "🦅🦅🧺"
     }
   },
   {
     "id": "1b22e6c9-d784-46a6-be5e-4aa69a1a8674",
     "round_id": "b8aa4d9d-9131-4ee1-9e1d-a5a09981fed2",
-    "player_name": "Bird",
+    "player_name": "🦅🦅🧺",
     "rank": 1,
     "total_strokes": null,
     "total_score": null,
@@ -6336,13 +6336,13 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 9,
     "registered_players": {
-      "player_name": "Bird"
+      "player_name": "🦅🦅🧺"
     }
   },
   {
     "id": "9666e1d1-7fbe-44c8-b0fd-3d83445519bb",
     "round_id": "561a09ab-70a6-4b70-b380-88398f09cb91",
-    "player_name": "Bird",
+    "player_name": "🦅🦅🧺",
     "rank": 2,
     "total_strokes": null,
     "total_score": null,
@@ -6364,13 +6364,13 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 9,
     "registered_players": {
-      "player_name": "Bird"
+      "player_name": "🦅🦅🧺"
     }
   },
   {
     "id": "ecf3273a-e57b-4131-b758-0ffcc220ddcf",
     "round_id": "2687c7b6-6180-4a47-b928-d5439881b4b7",
-    "player_name": "Bird",
+    "player_name": "🦅🦅🧺",
     "rank": 3,
     "total_strokes": null,
     "total_score": null,
@@ -6392,7 +6392,7 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 9,
     "registered_players": {
-      "player_name": "Bird"
+      "player_name": "🦅🦅🧺"
     }
   },
   {
@@ -6445,7 +6445,7 @@ export const playerRounds = [
   {
     "id": "019f9b30-0d6c-4515-9a6e-773509f35805",
     "round_id": "06d61751-3a66-4e8d-9635-14111e0abf60",
-    "player_name": "Bird",
+    "player_name": "🦅🦅🧺",
     "rank": 2,
     "total_strokes": null,
     "total_score": null,
@@ -6467,13 +6467,13 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 9,
     "registered_players": {
-      "player_name": "Bird"
+      "player_name": "🦅🦅🧺"
     }
   },
   {
     "id": "3b082c06-d87f-432d-a93b-8532d993052d",
     "round_id": "637dcbef-e69b-4b86-a78f-b453e6682e08",
-    "player_name": "Bird",
+    "player_name": "🦅🦅🧺",
     "rank": 2,
     "total_strokes": null,
     "total_score": null,
@@ -6495,13 +6495,13 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 9,
     "registered_players": {
-      "player_name": "Bird"
+      "player_name": "🦅🦅🧺"
     }
   },
   {
     "id": "65c77b89-2218-4256-ab47-5cbce243782c",
     "round_id": "5160fb86-de62-406a-a7ac-eb4f1a718715",
-    "player_name": "Shogun",
+    "player_name": "Xerxes",
     "rank": 2,
     "total_strokes": 67,
     "total_score": 3,
@@ -6542,7 +6542,7 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 5,
     "registered_players": {
-      "player_name": "Shogun"
+      "player_name": "Xerxes"
     }
   },
   {
@@ -6830,7 +6830,7 @@ export const playerRounds = [
   {
     "id": "045a7dd6-7090-4c2f-96a2-e0356d65fe77",
     "round_id": "836abc23-b50c-4693-b5ad-dfa181dd3f72",
-    "player_name": "Bird",
+    "player_name": "🦅🦅🧺",
     "rank": 2,
     "total_strokes": null,
     "total_score": null,
@@ -6852,13 +6852,13 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 9,
     "registered_players": {
-      "player_name": "Bird"
+      "player_name": "🦅🦅🧺"
     }
   },
   {
     "id": "db44259e-c45d-48a4-acc0-b2f9a2d1632f",
     "round_id": "bcf1ffdd-af4a-4351-bcb9-b91627c7dec7",
-    "player_name": "Bird",
+    "player_name": "🦅🦅🧺",
     "rank": 2,
     "total_strokes": null,
     "total_score": null,
@@ -6880,13 +6880,13 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 9,
     "registered_players": {
-      "player_name": "Bird"
+      "player_name": "🦅🦅🧺"
     }
   },
   {
     "id": "11f0b7eb-629b-4fef-8cd8-4aa2534d95d7",
     "round_id": "01955eca-0cf0-4301-8f3d-c1d938debc48",
-    "player_name": "Bird",
+    "player_name": "🦅🦅🧺",
     "rank": 1,
     "total_strokes": null,
     "total_score": null,
@@ -6908,13 +6908,13 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 9,
     "registered_players": {
-      "player_name": "Bird"
+      "player_name": "🦅🦅🧺"
     }
   },
   {
     "id": "c2ce448d-2598-41ac-bc91-7eb61e3b2b9f",
     "round_id": "7cb2e69e-8666-46a3-9c8d-3543484cc12a",
-    "player_name": "Bird",
+    "player_name": "🦅🦅🧺",
     "rank": 3,
     "total_strokes": null,
     "total_score": null,
@@ -6936,13 +6936,13 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 9,
     "registered_players": {
-      "player_name": "Bird"
+      "player_name": "🦅🦅🧺"
     }
   },
   {
     "id": "b32af74a-7d4d-4347-bd3e-c056ba666395",
     "round_id": "96a8e52a-20e6-4449-b70d-7ecbcb8a4f1a",
-    "player_name": "Bird",
+    "player_name": "🦅🦅🧺",
     "rank": 1,
     "total_strokes": null,
     "total_score": null,
@@ -6964,13 +6964,13 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 9,
     "registered_players": {
-      "player_name": "Bird"
+      "player_name": "🦅🦅🧺"
     }
   },
   {
     "id": "10c57dab-5240-4d2b-aacc-61668ceba1e1",
     "round_id": "e501d3f7-e14d-43b4-982f-c1d0c8491b51",
-    "player_name": "Bird",
+    "player_name": "🦅🦅🧺",
     "rank": 3,
     "total_strokes": null,
     "total_score": null,
@@ -6992,13 +6992,13 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 9,
     "registered_players": {
-      "player_name": "Bird"
+      "player_name": "🦅🦅🧺"
     }
   },
   {
     "id": "46958ccd-beb9-42b2-a108-74cfd16727f1",
     "round_id": "69e3f432-de90-40a7-9b6f-f76f0400d098",
-    "player_name": "Bird",
+    "player_name": "🦅🦅🧺",
     "rank": 2,
     "total_strokes": null,
     "total_score": null,
@@ -7020,13 +7020,13 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 9,
     "registered_players": {
-      "player_name": "Bird"
+      "player_name": "🦅🦅🧺"
     }
   },
   {
     "id": "da3e40b0-9463-480c-9d1a-5b66b0f68bcd",
     "round_id": "efde6f2c-cca4-426c-b81b-aa5bd83d20fa",
-    "player_name": "Bird",
+    "player_name": "🦅🦅🧺",
     "rank": 2,
     "total_strokes": null,
     "total_score": null,
@@ -7048,7 +7048,7 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 9,
     "registered_players": {
-      "player_name": "Bird"
+      "player_name": "🦅🦅🧺"
     }
   },
   {
@@ -7430,7 +7430,7 @@ export const playerRounds = [
   {
     "id": "97194c18-2cc5-4841-b0e3-c3c386eea7a2",
     "round_id": "d2e9d7b2-739e-4f9f-84c3-2824b02de727",
-    "player_name": "Bird",
+    "player_name": "🦅🦅🧺",
     "rank": 4,
     "total_strokes": null,
     "total_score": null,
@@ -7452,13 +7452,13 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 9,
     "registered_players": {
-      "player_name": "Bird"
+      "player_name": "🦅🦅🧺"
     }
   },
   {
     "id": "bfeb025a-75ff-4f1c-bc7e-cabf0fbae6e8",
     "round_id": "33bae796-98af-44d8-8f00-04ba65100c32",
-    "player_name": "Bird",
+    "player_name": "🦅🦅🧺",
     "rank": 1,
     "total_strokes": null,
     "total_score": null,
@@ -7480,7 +7480,7 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 9,
     "registered_players": {
-      "player_name": "Bird"
+      "player_name": "🦅🦅🧺"
     }
   },
   {
@@ -7514,7 +7514,7 @@ export const playerRounds = [
   {
     "id": "aa85ca62-0a7c-4d2c-a6bc-5ffc3150e9b3",
     "round_id": "628c3eae-5578-40a7-bb21-4ccb388c1443",
-    "player_name": "Shogun",
+    "player_name": "Xerxes",
     "rank": 1,
     "total_strokes": 66,
     "total_score": 4,
@@ -7555,7 +7555,7 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 5,
     "registered_players": {
-      "player_name": "Shogun"
+      "player_name": "Xerxes"
     }
   },
   {
@@ -7767,7 +7767,7 @@ export const playerRounds = [
   {
     "id": "97f4b745-e82e-4ede-8027-009cd323ba25",
     "round_id": "35f950b1-cd7e-42f0-adac-5459a13caa9a",
-    "player_name": "Shogun",
+    "player_name": "Xerxes",
     "rank": 4,
     "total_strokes": null,
     "total_score": null,
@@ -7789,7 +7789,7 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 5,
     "registered_players": {
-      "player_name": "Shogun"
+      "player_name": "Xerxes"
     }
   },
   {
@@ -8047,7 +8047,7 @@ export const playerRounds = [
   {
     "id": "664cc188-e712-452e-a943-0434abc4d13e",
     "round_id": "d2e9d7b2-739e-4f9f-84c3-2824b02de727",
-    "player_name": "Shogun",
+    "player_name": "Xerxes",
     "rank": 2,
     "total_strokes": null,
     "total_score": null,
@@ -8069,7 +8069,7 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 5,
     "registered_players": {
-      "player_name": "Shogun"
+      "player_name": "Xerxes"
     }
   },
   {
@@ -8271,7 +8271,7 @@ export const playerRounds = [
   {
     "id": "91fe71a3-be49-4499-8fa3-43af27d714a0",
     "round_id": "33bae796-98af-44d8-8f00-04ba65100c32",
-    "player_name": "Shogun",
+    "player_name": "Xerxes",
     "rank": 3,
     "total_strokes": null,
     "total_score": null,
@@ -8293,7 +8293,7 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 5,
     "registered_players": {
-      "player_name": "Shogun"
+      "player_name": "Xerxes"
     }
   },
   {
@@ -8495,7 +8495,7 @@ export const playerRounds = [
   {
     "id": "f1413176-a520-49cf-8fff-50ab804400be",
     "round_id": "39fa67f7-f1ff-466e-850f-0a61cf8a9337",
-    "player_name": "Shogun",
+    "player_name": "Xerxes",
     "rank": 1,
     "total_strokes": null,
     "total_score": null,
@@ -8517,7 +8517,7 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 5,
     "registered_players": {
-      "player_name": "Shogun"
+      "player_name": "Xerxes"
     }
   },
   {
@@ -8551,7 +8551,7 @@ export const playerRounds = [
   {
     "id": "d7d21471-8d8a-4341-8d44-c87f65f28b9c",
     "round_id": "86498cd5-5cb2-4a6c-a25b-ef8048a921b6",
-    "player_name": "Shogun",
+    "player_name": "Xerxes",
     "rank": 4,
     "total_strokes": null,
     "total_score": null,
@@ -8573,7 +8573,7 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 5,
     "registered_players": {
-      "player_name": "Shogun"
+      "player_name": "Xerxes"
     }
   },
   {
@@ -8747,7 +8747,7 @@ export const playerRounds = [
   {
     "id": "3e3a7a67-d46e-49d2-ad76-77bdcdf90185",
     "round_id": "9107f4ed-9010-46a6-b3c8-e259d190824a",
-    "player_name": "Shogun",
+    "player_name": "Xerxes",
     "rank": 2,
     "total_strokes": null,
     "total_score": null,
@@ -8769,7 +8769,7 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 5,
     "registered_players": {
-      "player_name": "Shogun"
+      "player_name": "Xerxes"
     }
   },
   {
@@ -8915,7 +8915,7 @@ export const playerRounds = [
   {
     "id": "08d61138-1bcc-4467-9acf-6e931b8b583e",
     "round_id": "9021197b-905c-4865-9e41-14f92b3068f6",
-    "player_name": "Shogun",
+    "player_name": "Xerxes",
     "rank": 2,
     "total_strokes": null,
     "total_score": null,
@@ -8937,7 +8937,7 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 5,
     "registered_players": {
-      "player_name": "Shogun"
+      "player_name": "Xerxes"
     }
   },
   {
@@ -9083,7 +9083,7 @@ export const playerRounds = [
   {
     "id": "3928e4d1-a14c-4a57-a8d1-3205ffa096e1",
     "round_id": "d629acd8-2955-44e0-bc02-d7b5586ef957",
-    "player_name": "Shogun",
+    "player_name": "Xerxes",
     "rank": 1,
     "total_strokes": null,
     "total_score": null,
@@ -9105,7 +9105,7 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 5,
     "registered_players": {
-      "player_name": "Shogun"
+      "player_name": "Xerxes"
     }
   },
   {
@@ -9195,7 +9195,7 @@ export const playerRounds = [
   {
     "id": "27ed0e7d-664f-4344-a403-8a30de434e6b",
     "round_id": "14466c13-6766-4ecd-9bbe-00aef841bee9",
-    "player_name": "Shogun",
+    "player_name": "Xerxes",
     "rank": 1,
     "total_strokes": null,
     "total_score": null,
@@ -9217,7 +9217,7 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 5,
     "registered_players": {
-      "player_name": "Shogun"
+      "player_name": "Xerxes"
     }
   },
   {
@@ -9363,7 +9363,7 @@ export const playerRounds = [
   {
     "id": "8370b55b-b10b-4081-a6da-09a574214494",
     "round_id": "ae295c69-2ae4-45ff-939a-11ea64952e4e",
-    "player_name": "Shogun",
+    "player_name": "Xerxes",
     "rank": 1,
     "total_strokes": null,
     "total_score": null,
@@ -9385,7 +9385,7 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 5,
     "registered_players": {
-      "player_name": "Shogun"
+      "player_name": "Xerxes"
     }
   },
   {
@@ -9531,7 +9531,7 @@ export const playerRounds = [
   {
     "id": "90ea6ae2-980f-4ce5-b941-18301bd22f87",
     "round_id": "c43d135c-553c-4487-b8ef-3cdeec4a9ca3",
-    "player_name": "Shogun",
+    "player_name": "Xerxes",
     "rank": 2,
     "total_strokes": null,
     "total_score": null,
@@ -9553,7 +9553,7 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 5,
     "registered_players": {
-      "player_name": "Shogun"
+      "player_name": "Xerxes"
     }
   },
   {
@@ -9979,7 +9979,7 @@ export const playerRounds = [
   {
     "id": "2fc07eef-4933-44c8-824a-97e050cda638",
     "round_id": "2127da3e-d288-4e1e-be6f-b913429aaf84",
-    "player_name": "Shogun",
+    "player_name": "Xerxes",
     "rank": 4,
     "total_strokes": null,
     "total_score": null,
@@ -10001,7 +10001,7 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 5,
     "registered_players": {
-      "player_name": "Shogun"
+      "player_name": "Xerxes"
     }
   },
   {
@@ -10091,7 +10091,7 @@ export const playerRounds = [
   {
     "id": "7ce725c3-ed56-4ac4-b152-2368545cfa91",
     "round_id": "ac32747e-e1eb-4c77-ac67-85a0fead23ce",
-    "player_name": "Shogun",
+    "player_name": "Xerxes",
     "rank": 1,
     "total_strokes": null,
     "total_score": null,
@@ -10113,7 +10113,7 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 5,
     "registered_players": {
-      "player_name": "Shogun"
+      "player_name": "Xerxes"
     }
   },
   {
@@ -10259,7 +10259,7 @@ export const playerRounds = [
   {
     "id": "0e072251-54ce-4e9f-965f-f54822973a63",
     "round_id": "dee302aa-138b-4427-91b0-dfbd2aae3316",
-    "player_name": "Shogun",
+    "player_name": "Xerxes",
     "rank": 4,
     "total_strokes": null,
     "total_score": null,
@@ -10281,7 +10281,7 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 5,
     "registered_players": {
-      "player_name": "Shogun"
+      "player_name": "Xerxes"
     }
   },
   {
@@ -10455,7 +10455,7 @@ export const playerRounds = [
   {
     "id": "7415b7ab-9533-4316-bad1-93dd9e6e4fad",
     "round_id": "6306da99-a2d1-4238-b95f-53b79b4f35ce",
-    "player_name": "Shogun",
+    "player_name": "Xerxes",
     "rank": 4,
     "total_strokes": null,
     "total_score": null,
@@ -10477,7 +10477,7 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 5,
     "registered_players": {
-      "player_name": "Shogun"
+      "player_name": "Xerxes"
     }
   },
   {
@@ -10567,7 +10567,7 @@ export const playerRounds = [
   {
     "id": "9ef77c17-879b-49b7-99d3-37d195d91bef",
     "round_id": "3c9468dc-5038-4439-a729-322d9d68423e",
-    "player_name": "Shogun",
+    "player_name": "Xerxes",
     "rank": 1,
     "total_strokes": null,
     "total_score": null,
@@ -10589,7 +10589,7 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 5,
     "registered_players": {
-      "player_name": "Shogun"
+      "player_name": "Xerxes"
     }
   },
   {
@@ -10819,7 +10819,7 @@ export const playerRounds = [
   {
     "id": "3b6fa9d9-ace1-4bde-83d4-ebf098efaec9",
     "round_id": "561a09ab-70a6-4b70-b380-88398f09cb91",
-    "player_name": "Shogun",
+    "player_name": "Xerxes",
     "rank": 3,
     "total_strokes": null,
     "total_score": null,
@@ -10841,7 +10841,7 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 5,
     "registered_players": {
-      "player_name": "Shogun"
+      "player_name": "Xerxes"
     }
   },
   {
@@ -10987,7 +10987,7 @@ export const playerRounds = [
   {
     "id": "b852b501-bd23-4d80-93cd-9555aae525cb",
     "round_id": "2687c7b6-6180-4a47-b928-d5439881b4b7",
-    "player_name": "Shogun",
+    "player_name": "Xerxes",
     "rank": 4,
     "total_strokes": null,
     "total_score": null,
@@ -11009,7 +11009,7 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 5,
     "registered_players": {
-      "player_name": "Shogun"
+      "player_name": "Xerxes"
     }
   },
   {
@@ -11183,7 +11183,7 @@ export const playerRounds = [
   {
     "id": "df19e863-1f84-444f-9f75-66c7a640bf06",
     "round_id": "caefaee8-be46-46a1-9cd7-de5df7c4c13c",
-    "player_name": "Shogun",
+    "player_name": "Xerxes",
     "rank": 3,
     "total_strokes": null,
     "total_score": null,
@@ -11205,7 +11205,7 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 5,
     "registered_players": {
-      "player_name": "Shogun"
+      "player_name": "Xerxes"
     }
   },
   {
@@ -11491,7 +11491,7 @@ export const playerRounds = [
   {
     "id": "a3587f0c-a8f6-417e-8734-67424e69674f",
     "round_id": "cd628c85-4324-46bf-a2cb-5ac5808f8156",
-    "player_name": "Shogun",
+    "player_name": "Xerxes",
     "rank": 1,
     "total_strokes": null,
     "total_score": null,
@@ -11513,7 +11513,7 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 5,
     "registered_players": {
-      "player_name": "Shogun"
+      "player_name": "Xerxes"
     }
   },
   {
@@ -11575,7 +11575,7 @@ export const playerRounds = [
   {
     "id": "3d373bbe-ab01-4982-b0f2-566de7b2efb2",
     "round_id": "836abc23-b50c-4693-b5ad-dfa181dd3f72",
-    "player_name": "Shogun",
+    "player_name": "Xerxes",
     "rank": 1,
     "total_strokes": null,
     "total_score": null,
@@ -11597,7 +11597,7 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 5,
     "registered_players": {
-      "player_name": "Shogun"
+      "player_name": "Xerxes"
     }
   },
   {
@@ -11687,7 +11687,7 @@ export const playerRounds = [
   {
     "id": "0453ba35-6ebf-4d6c-a4d5-a6e4fe21279b",
     "round_id": "bcf1ffdd-af4a-4351-bcb9-b91627c7dec7",
-    "player_name": "Shogun",
+    "player_name": "Xerxes",
     "rank": 4,
     "total_strokes": null,
     "total_score": null,
@@ -11709,7 +11709,7 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 5,
     "registered_players": {
-      "player_name": "Shogun"
+      "player_name": "Xerxes"
     }
   },
   {
@@ -11827,7 +11827,7 @@ export const playerRounds = [
   {
     "id": "f404ead8-582f-41d8-a240-de952126f276",
     "round_id": "01955eca-0cf0-4301-8f3d-c1d938debc48",
-    "player_name": "Shogun",
+    "player_name": "Xerxes",
     "rank": 2,
     "total_strokes": null,
     "total_score": null,
@@ -11849,7 +11849,7 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 5,
     "registered_players": {
-      "player_name": "Shogun"
+      "player_name": "Xerxes"
     }
   },
   {
@@ -11911,7 +11911,7 @@ export const playerRounds = [
   {
     "id": "e9430b2a-404c-4ea0-a182-7a0df38a2d75",
     "round_id": "7cb2e69e-8666-46a3-9c8d-3543484cc12a",
-    "player_name": "Shogun",
+    "player_name": "Xerxes",
     "rank": 1,
     "total_strokes": null,
     "total_score": null,
@@ -11933,7 +11933,7 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 5,
     "registered_players": {
-      "player_name": "Shogun"
+      "player_name": "Xerxes"
     }
   },
   {
@@ -12023,7 +12023,7 @@ export const playerRounds = [
   {
     "id": "723d9f8c-2abd-4afa-b9be-8eff2fd4690f",
     "round_id": "96a8e52a-20e6-4449-b70d-7ecbcb8a4f1a",
-    "player_name": "Shogun",
+    "player_name": "Xerxes",
     "rank": 2,
     "total_strokes": null,
     "total_score": null,
@@ -12045,7 +12045,7 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 5,
     "registered_players": {
-      "player_name": "Shogun"
+      "player_name": "Xerxes"
     }
   },
   {
@@ -12303,7 +12303,7 @@ export const playerRounds = [
   {
     "id": "2f5239bc-f1bc-4082-abbd-7264c2320f16",
     "round_id": "607ae9f3-77c7-4404-b863-d3b7d3b0a712",
-    "player_name": "Shogun",
+    "player_name": "Xerxes",
     "rank": 1,
     "total_strokes": null,
     "total_score": null,
@@ -12325,7 +12325,7 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 5,
     "registered_players": {
-      "player_name": "Shogun"
+      "player_name": "Xerxes"
     }
   },
   {
@@ -12443,7 +12443,7 @@ export const playerRounds = [
   {
     "id": "de50d5bb-85ef-43c3-9f5a-a12ca8186d00",
     "round_id": "69e3f432-de90-40a7-9b6f-f76f0400d098",
-    "player_name": "Shogun",
+    "player_name": "Xerxes",
     "rank": 1,
     "total_strokes": null,
     "total_score": null,
@@ -12465,7 +12465,7 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 5,
     "registered_players": {
-      "player_name": "Shogun"
+      "player_name": "Xerxes"
     }
   },
   {
@@ -12695,7 +12695,7 @@ export const playerRounds = [
   {
     "id": "d706fafc-9b64-4599-bd86-c828c53ed174",
     "round_id": "8e1025ec-19cb-4330-94cc-b495317f1703",
-    "player_name": "Shogun",
+    "player_name": "Xerxes",
     "rank": 1,
     "total_strokes": 62,
     "total_score": -1,
@@ -12736,7 +12736,7 @@ export const playerRounds = [
     "course_multiplier_applied": true,
     "player_id": 5,
     "registered_players": {
-      "player_name": "Shogun"
+      "player_name": "Xerxes"
     }
   },
   {

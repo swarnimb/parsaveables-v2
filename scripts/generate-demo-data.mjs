@@ -100,13 +100,19 @@ console.log(`  ${blessings.length} blessings · ${challenges.length} challenges 
 // Build a player_name lookup for joining
 const playerNameById = Object.fromEntries(players.map(p => [p.id, p.player_name]))
 
-// Enrich player_rounds with the registered_players.player_name join shape
-// that getLeaderboardForEvent + getPlayersForRound expect.
-const enrichedPlayerRounds = playerRounds.map(pr => ({
-  ...pr,
-  player_name: pr.player_name || playerNameById[pr.player_id] || 'Unknown',
-  registered_players: { player_name: pr.player_name || playerNameById[pr.player_id] || 'Unknown' },
-}))
+// Enrich player_rounds. CRITICAL: use the *current* player_name from
+// registered_players (via player_id), NOT the denormalized player_rounds.
+// player_name — that field holds whatever the player was called at the time
+// the round was recorded, and the real app's leaderboard groups by the
+// joined current name. Without this, renamed players appear as two rows.
+const enrichedPlayerRounds = playerRounds.map(pr => {
+  const currentName = playerNameById[pr.player_id] || pr.player_name || 'Unknown'
+  return {
+    ...pr,
+    player_name: currentName,
+    registered_players: { player_name: currentName },
+  }
+})
 
 // Enrich blessings with round join shape
 const roundById = Object.fromEntries(rounds.map(r => [r.id, r]))
