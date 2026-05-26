@@ -35,3 +35,6 @@ coverage/
 # Vercel
 .vercel
 profile.md
+
+# Playwright MCP artifacts
+.playwright-mcp/
