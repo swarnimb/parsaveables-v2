@@ -8,11 +8,14 @@
 
 ## Screenshots
 
-| Leaderboard | Round detail — AI-read scorecard |
-|:---:|:---:|
-| <img src="docs/screenshots/leaderboard.png" width="240" alt="Season leaderboard with podium and expandable player stats" /> | <img src="docs/screenshots/rounds.png" width="240" alt="Expanded round showing the UDisc scorecard image and computed standings" /> |
-| **PULP economy** | **AI-generated podcast** |
-| <img src="docs/screenshots/pulps.png" width="240" alt="PULP balance, PULPy window, blessings and challenges" /> | <img src="docs/screenshots/podcast.png" width="240" alt="Monthly AI-narrated recap episodes" /> |
+<p align="center">
+  <img src="docs/screenshots/leaderboard.png" width="24%" alt="Season leaderboard" />
+  <img src="docs/screenshots/rounds.png" width="24%" alt="Round detail with the AI-read UDisc scorecard" />
+  <img src="docs/screenshots/pulps.png" width="24%" alt="PULP economy" />
+  <img src="docs/screenshots/podcast.png" width="24%" alt="AI-generated podcast" />
+</p>
+
+<p align="center"><sub>Leaderboard&nbsp;·&nbsp;Round detail (AI-read scorecard)&nbsp;·&nbsp;PULP economy&nbsp;·&nbsp;AI podcast</sub></p>
 
 ## How It Works
 

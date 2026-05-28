@@ -38,21 +38,28 @@ await page.evaluateOnNewDocument(() => {
   }
 })
 
-async function snap(route, name, { beforeShot, fullPage = false } = {}) {
+async function snap(route, name, { beforeShot } = {}) {
   await page.goto(`${BASE}${route}`, { waitUntil: 'networkidle0' })
   await sleep(2600) // entrance animations settle
+  // Hide the demo banner so screenshots read as the real app, and pull the
+  // content up to sit flush under the (now banner-less) header.
+  await page.addStyleTag({
+    content: `
+      header > .bg-amber-500 { display: none !important; }
+      main { padding-top: 4rem !important; }
+    `,
+  })
   if (beforeShot) await beforeShot()
-  await page.screenshot({ path: join(outDir, name), fullPage })
+  // All shots share one viewport size → identical dimensions → clean single row
+  await page.screenshot({ path: join(outDir, name) })
   console.log('captured', name)
 }
 
 await snap('/leaderboard', 'leaderboard.png')
 
-// Rounds: taller viewport so the expanded round (scorecard + players) fits in
-// one clean frame instead of fullPage capturing all 63 rounds.
-await page.setViewport({ width: 420, height: 1320, deviceScaleFactor: 2 })
 await snap('/rounds', 'rounds.png', {
   beforeShot: async () => {
+    // Expand the first round to reveal the AI-read scorecard + standings
     await page.evaluate(() => {
       const btn = document.querySelector('main button')
       if (btn) btn.click()
@@ -60,7 +67,6 @@ await snap('/rounds', 'rounds.png', {
     await sleep(2200) // expand animation + scorecard image load
   },
 })
-await page.setViewport({ width: 420, height: 900, deviceScaleFactor: 2 })
 
 await snap('/pulps', 'pulps.png')
 await snap('/podcast', 'podcast.png')
