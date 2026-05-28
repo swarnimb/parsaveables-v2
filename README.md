@@ -1,6 +1,6 @@
 # ParSaveables
 
-**Gamified disc golf tracking for friend groups.** Players email a UDisc screenshot — AI reads the scores, updates the leaderboard, and runs a whole PULP betting economy on top. Every month it auto-generates a two-host podcast (AI-written, ElevenLabs voices) recapping the standings and rivalries. No manual data entry, ever.
+**Gamified disc golf tracking.** Players email a UDisc screenshot — AI reads the scores, updates the leaderboard, and runs a whole PULP betting economy on top. Every month it auto-generates a two-host podcast (AI-written, ElevenLabs voices) recapping the standings and rivalries. No manual data entry, ever.
 
 ### ▶︎ [Try the live demo →](https://swarnimb.github.io/parsaveables-v2/)
 
