@@ -109,7 +109,7 @@ export default function AppLayout() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className={`min-h-screen bg-background text-foreground ${isDemoMode ? 'sm:max-w-[430px] sm:mx-auto sm:shadow-2xl' : ''}`}>
       {showOnboarding && (
         <OnboardingTutorial onComplete={() => setShowOnboarding(false)} />
       )}

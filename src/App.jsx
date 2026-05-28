@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { BrowserRouter, HashRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { isDemoMode } from '@/lib/demoMode'
 import { AnimatePresence } from 'framer-motion'
@@ -83,6 +83,12 @@ function AnimatedRoutes() {
 
 function App() {
   const Router = isDemoMode ? HashRouter : BrowserRouter
+
+  // Tags <html> so the demo desktop background (defined in index.css) applies
+  useEffect(() => {
+    if (isDemoMode) document.documentElement.classList.add('demo-mode')
+  }, [])
+
   return (
     <ErrorBoundary>
       <Router>

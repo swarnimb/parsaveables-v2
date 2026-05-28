@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/hooks/useAuth'
 import { usePodcastNotifications } from '@/hooks/usePodcastNotifications'
+import { isDemoMode } from '@/lib/demoMode'
 
 const navItems = [
   { path: '/leaderboard', icon: Trophy, label: 'Leaderboard' },
@@ -34,7 +35,7 @@ export default function BottomNav() {
   const indicatorPosition = activeIndex >= 0 ? (activeIndex * 20) + 10 : 10
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-t border-border bottom-nav shadow-lg">
+    <nav className={`fixed bottom-0 z-50 bg-background/95 backdrop-blur-md border-t border-border bottom-nav shadow-lg ${isDemoMode ? 'left-1/2 -translate-x-1/2 w-full sm:max-w-[430px]' : 'left-0 right-0'}`}>
       <div className="relative flex items-center justify-around">
         {activeIndex >= 0 && (
           <motion.div
