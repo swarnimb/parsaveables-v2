@@ -1,6 +1,6 @@
 # ParSaveables
 
-**Gamified disc golf tracking for friend groups.** Players email a UDisc screenshot — AI reads the scores, updates the leaderboard, and runs a whole PULP betting economy on top. No manual data entry, ever.
+**Gamified disc golf tracking for friend groups.** Players email a UDisc screenshot — AI reads the scores, updates the leaderboard, and runs a whole PULP betting economy on top. Every month it auto-generates a two-host podcast (AI-written, ElevenLabs voices) recapping the standings and rivalries. No manual data entry, ever.
 
 ### ▶︎ [Try the live demo →](https://swarnimb.github.io/parsaveables-v2/)
 
@@ -11,11 +11,11 @@
 <p align="center">
   <img src="docs/screenshots/leaderboard.png" width="24%" alt="Season leaderboard" />
   <img src="docs/screenshots/rounds.png" width="24%" alt="Round detail with the AI-read UDisc scorecard" />
-  <img src="docs/screenshots/pulps.png" width="24%" alt="PULP economy" />
   <img src="docs/screenshots/podcast.png" width="24%" alt="AI-generated podcast" />
+  <img src="docs/screenshots/pulps.png" width="24%" alt="PULP economy" />
 </p>
 
-<p align="center"><sub>Leaderboard&nbsp;·&nbsp;Round detail (AI-read scorecard)&nbsp;·&nbsp;PULP economy&nbsp;·&nbsp;AI podcast</sub></p>
+<p align="center"><sub>Leaderboard&nbsp;·&nbsp;Round detail (AI-read scorecard)&nbsp;·&nbsp;AI podcast&nbsp;·&nbsp;PULP economy</sub></p>
 
 ## How It Works
 
