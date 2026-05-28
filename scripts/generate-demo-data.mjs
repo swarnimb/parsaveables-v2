@@ -79,12 +79,9 @@ const [
   fetchAll('challenges', q => q.select('*').order('issued_at', { ascending: false }).limit(40)),
   fetchAll('pulp_transactions', q => q.select('*').order('created_at', { ascending: false }).limit(100)),
   fetchAll('activity_feed', q => q.select('*').order('created_at', { ascending: false }).limit(50)),
-  fetchAll('podcast_episodes', q => q.select('*').eq('is_published', true).order('episode_number', { ascending: false })).then(eps =>
-    // Strip audio_url and scorecard URLs — they contain the prod Supabase
-    // host. The episode title/description still renders; the play button
-    // disables itself when audioUrl is empty.
-    eps.map(ep => ({ ...ep, audio_url: null }))
-  ),
+  // audio_url is a public Supabase storage URL — same reasoning as the
+  // scorecard URLs above. Keep so the demo podcast actually plays.
+  fetchAll('podcast_episodes', q => q.select('*').eq('is_published', true).order('episode_number', { ascending: false })),
   fetchAll('advantage_catalog', q => q.select('*').order('pulp_cost')),
 ])
 
