@@ -106,18 +106,6 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* Demo mode on desktop: render the app as a centered narrow column with a
-     contrasting background outside, so visitors get a mobile-ish preview
-     instead of a stretched-wide layout. Mobile (<640px) is unaffected. */
-  @media (min-width: 640px) {
-    html.demo-mode {
-      background: linear-gradient(135deg, hsl(160 25% 12%), hsl(160 20% 22%));
-    }
-    html.demo-mode body {
-      background: transparent;
-    }
-  }
-
   /* Headings */
   h1, h2, h3, h4, h5, h6 {
     @apply tracking-tight font-semibold;

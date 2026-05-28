@@ -18,7 +18,7 @@ export default function Header() {
   }
 
   return (
-    <header className={`fixed top-0 z-50 bg-background border-b border-border backdrop-blur-sm bg-opacity-95 ${isDemoMode ? 'left-1/2 -translate-x-1/2 w-full sm:max-w-[430px]' : 'left-0 right-0'}`}>
+    <header className="fixed top-0 left-0 right-0 z-50 bg-background border-b border-border backdrop-blur-sm bg-opacity-95">
       <DemoBanner />
       <div className="container mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
         {/* Logo */}

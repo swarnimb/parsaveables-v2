@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect } from 'react'
+import { lazy, Suspense, useState, useEffect } from 'react'
 import { BrowserRouter, HashRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { isDemoMode } from '@/lib/demoMode'
 import { AnimatePresence } from 'framer-motion'
@@ -81,13 +81,48 @@ function AnimatedRoutes() {
   )
 }
 
+/**
+ * On a wide screen, the demo renders the app inside a phone-sized iframe. The
+ * iframe reloads this same page; inside it the app sees a ~390px viewport, so
+ * the genuine mobile layout renders instead of a desktop layout squished into
+ * a narrow column. (Tailwind breakpoints read the viewport, not container
+ * width — so visually constraining width alone wouldn't switch components to
+ * their mobile variants.)
+ */
+function PhoneFrame() {
+  return (
+    <div className="fixed inset-0 flex items-center justify-center bg-gradient-to-br from-[hsl(160_25%_10%)] to-[hsl(160_18%_24%)] p-4">
+      <div className="relative h-[844px] max-h-[calc(100vh-2rem)] w-[390px] overflow-hidden rounded-[2.5rem] bg-white shadow-2xl ring-[6px] ring-black/85">
+        <iframe
+          src={window.location.href}
+          title="ParSaveables live demo"
+          className="h-full w-full border-0"
+          allow="autoplay; clipboard-write"
+        />
+      </div>
+    </div>
+  )
+}
+
 function App() {
   const Router = isDemoMode ? HashRouter : BrowserRouter
 
-  // Tags <html> so the demo desktop background (defined in index.css) applies
+  const isFramed = typeof window !== 'undefined' && window.self !== window.top
+  const [isWide, setIsWide] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia('(min-width: 768px)').matches
+  )
+
   useEffect(() => {
-    if (isDemoMode) document.documentElement.classList.add('demo-mode')
+    const mq = window.matchMedia('(min-width: 768px)')
+    const handler = (e) => setIsWide(e.matches)
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
   }, [])
+
+  // Wide desktop + demo + top-level window → show the phone frame.
+  if (isDemoMode && !isFramed && isWide) {
+    return <PhoneFrame />
+  }
 
   return (
     <ErrorBoundary>
