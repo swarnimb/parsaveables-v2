@@ -280,7 +280,7 @@ export const eventAPI = {
    * - For tournaments: sums all round scores
    */
   getLeaderboardForEvent: async (eventId) => {
-    if (isDemoMode) return demoLeaderboardForEvent(Number(eventId))
+    if (isDemoMode) return demoLeaderboardForEvent(eventId)
     // First, fetch the event to determine if it's a season or tournament
     const { data: event, error: eventError } = await queryWithTimeout(
       () => supabase
@@ -514,7 +514,7 @@ export const roundAPI = {
    * Get players for a specific round
    */
   getPlayersForRound: async (roundId) => {
-    if (isDemoMode) return demoPlayersForRound(Number(roundId))
+    if (isDemoMode) return demoPlayersForRound(roundId)
     const { data, error } = await queryWithTimeout(
       () => supabase
         .from('player_rounds')
