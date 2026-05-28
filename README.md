@@ -1,6 +1,26 @@
 # ParSaveables
 
-Gamified disc golf tracking platform for friend groups and small leagues. Players email UDisc screenshots — AI extracts scores, updates the leaderboard, and runs the PULP economy automatically.
+**Gamified disc golf tracking for friend groups.** Players email a UDisc screenshot — AI reads the scores, updates the leaderboard, and runs a whole PULP betting economy on top. No manual data entry, ever.
+
+### ▶︎ [Try the live demo →](https://swarnimb.github.io/parsaveables-v2/)
+
+> The demo is **read-only** and loaded with real data from an active league. Browse the leaderboard, expand rounds to see AI-processed scorecards, and listen to the AI-generated podcast. Actions like betting are disabled (it's a static preview).
+
+## Screenshots
+
+| Leaderboard | Round detail — AI-read scorecard |
+|:---:|:---:|
+| <img src="docs/screenshots/leaderboard.png" width="240" alt="Season leaderboard with podium and expandable player stats" /> | <img src="docs/screenshots/rounds.png" width="240" alt="Expanded round showing the UDisc scorecard image and computed standings" /> |
+| **PULP economy** | **AI-generated podcast** |
+| <img src="docs/screenshots/pulps.png" width="240" alt="PULP balance, PULPy window, blessings and challenges" /> | <img src="docs/screenshots/podcast.png" width="240" alt="Monthly AI-narrated recap episodes" /> |
+
+## How It Works
+
+1. **Play a round**, then email your UDisc scorecard screenshot to the league inbox.
+2. **Claude Vision** reads every player's score off the image — no typing.
+3. The system **scores the round**, updates the season leaderboard, and pays out **PULPs** (the in-app currency).
+4. Before the next round, players open a **PULPy Window** to bet PULPs via Blessings and Challenges.
+5. Once a month, an **AI podcast** recaps the standings, rivalries, and drama with synthesized voices.
 
 ## Features
 
@@ -10,7 +30,7 @@ Gamified disc golf tracking platform for friend groups and small leagues. Player
 - **PULPy Windows** — 5-minute windows before a round where players place Blessings and issue Challenges
 - **Blessings** — Bless 3 players to finish on a podium; get 2x back if the blessing works
 - **Challenges** — Head-to-head PULP duels; lower strokes wins both sides
-- **Advantages Shop** — Buy Mulligan, Anti-Mulligan, Bag Trump, and Shotgun Buddy with PULPs
+- **Advantages Shop** — Buy Mulligan, Bag Trump, and Shotgun Buddy with PULPs
 - **AI Podcast** — Monthly AI-generated recap with ElevenLabs voice narration
 - **Admin Control Center** — Manage events, players, courses, and points systems
 - **Mobile-First** — Built for phones, smooth animations, premium feel
@@ -57,6 +77,15 @@ npm run build
 npm run preview
 ```
 
+### Build the Demo
+
+The read-only demo runs entirely on static data (no Supabase calls). Refresh
+its data from prod with `node scripts/generate-demo-data.mjs`, then:
+
+```bash
+npm run build:demo
+```
+
 ### Tests
 
 ```bash
@@ -92,7 +121,7 @@ src/
 │   ├── core/               # Scorecard processing pipeline (vision, scoring, email)
 │   ├── gamification/       # PULP economy (pulp, blessing, challenge, window, advantage)
 │   └── supabase.js         # Frontend Supabase client
-└── lib/                    # Utilities (cn, etc.)
+└── lib/                    # Utilities + static demo data
 
 api/                        # Vercel serverless functions
 ├── processScorecard.js     # Email ingestion → AI vision → leaderboard update
@@ -126,3 +155,4 @@ GITHUB_TOKEN=
 - **Architecture:** `docs/ARCHITECTURE.md`
 - **Session Notes:** `docs/SESSION-HANDOFF.md`
 - **Binding Constraints:** `docs/constraints.md` — hard rules that must not be undone
+```
