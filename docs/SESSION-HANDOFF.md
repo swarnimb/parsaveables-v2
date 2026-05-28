@@ -1,8 +1,8 @@
 # ParSaveables v2 - Project Dashboard
 
-**Last Updated:** 2026-03-01 (End of Session)
+**Last Updated:** 2026-05-27 (End of Session)
 **Current Phase:** Phase 5 (Testing & Bug Fixes) - IN PROGRESS
-**Status:** Foundation | Auth & Layout | Leaderboard | Rounds | PULP Design | Backend Services | Frontend UI | Season Awareness | UX Enhancements | Testing Framework | Guest Login | Admin Control Center | Tutorial System | PULPy Window Rework | Google OAuth | Podcast Crash Fix | Course Alias Fix | PULPs Tab UX + Window Lifecycle Fixes COMPLETE
+**Status:** Foundation | Auth & Layout | Leaderboard | Rounds | PULP Design | Backend Services | Frontend UI | Season Awareness | UX Enhancements | Testing Framework | Guest Login | Admin Control Center | Tutorial System | PULPy Window Rework | Google OAuth | Podcast Crash Fix | Course Alias Fix | PULPs Tab UX + Window Lifecycle Fixes | Static GitHub Pages Demo + README Showcase COMPLETE
 
 ---
 
@@ -45,7 +45,38 @@
 
 ---
 
-## This Session Summary (2026-03-01 - Latest)
+## This Session Summary (2026-05-27 - Latest)
+
+### Static GitHub Pages Demo + README Showcase
+
+#### 1. Fully static read-only demo (no Supabase)
+- Live at `https://swarnimb.github.io/parsaveables-v2/`, gated by `VITE_DEMO_MODE=true`.
+- All reads come from `src/lib/demoData.js` (a prod snapshot). In demo mode `supabase.js` exports a chainable stub Proxy and **never calls `createClient`** — belt-and-suspenders so any missed read path returns null instead of hitting real Supabase.
+- Visitor auto-signs-in as "Intern Line Cook" (player id=1) via `useAuth` seeding. Login screen and admin routes are hidden/redirected.
+- Writes the visitor explicitly triggers (blessing, challenge, advantage, PULPy window) hit `demoBlock()` → "Read-only demo, visit GitHub" toast. Passive/tracking writes (notification mark-read, tutorial flags) use `demoSilent()` → no toast.
+- **Zero credentials in the bundle** — verified each build (no project ref, no `supabase.co`, no JWT).
+
+#### 2. Desktop phone-frame
+- On wide screens the demo renders inside a 390px iframe (`PhoneFrame` in `App.jsx`). The app inside sees a true mobile viewport, so the real mobile layouts render. (Constraining width alone failed — Tailwind breakpoints read the viewport, not container width, so the desktop leaderboard table got squished into a narrow column.)
+
+#### 3. Demo data snapshot tooling
+- `scripts/generate-demo-data.mjs` queries prod (anon, read-only) and rewrites `demoData.js`. Re-run anytime to refresh.
+- Keeps public storage URLs for scorecards + podcast audio (they play in the demo).
+- Uses the **current** `registered_players.player_name` for each `player_rounds` row — renamed players (e.g. "Shogun" → "Xerxes") now merge into one leaderboard entry.
+
+#### 4. README restructured for visitors
+- Live-demo link, single-row 4-screenshot showcase (`scripts/capture-demo-screenshots.mjs`, demo banner hidden), how-it-works flow.
+
+#### 5. "Betting" reframed as loyalty-points economy
+- User-facing copy only (README, Activity feed, admin ProcessScorecards). Internal DB columns / identifiers / historical docs left as-is.
+
+### Known Issues / Next Session
+- **PROD RLS HOLE (security):** 5 tables — `activity_feed`, `event_players`, `player_rounds`, `registered_players`, `rounds` — have RLS policies allowing anon writes (`WITH CHECK true`). The admin tabs in prod write through the anon key gated only by a JS password, which is bypassable via DevTools on the live site. The static demo is unaffected (no Supabase calls). Fix: route admin writes through a service-role serverless endpoint, or restrict to `auth.uid() IN (<admin ids>)`. Linter also flagged 3 functions with mutable `search_path` and Auth leaked-password protection disabled.
+- Internal docs (`ARCHITECTURE.md`, `API-CONTRACT.md`, older sections of this file) still use "betting" — historical; scrub only if desired.
+
+---
+
+## This Session Summary (2026-03-01)
 
 ### PULPs Tab UX Rework & Window Lifecycle Bug Fixes
 

@@ -91,3 +91,31 @@ Adding `|| []` only on the return value of a function is too late if the crash h
 
 ### Work directly on `main` for this project
 **Decision:** `feature/pulp-economy` was the long-running feature branch — it's merged and deleted. For this project, commit directly to `main` or use short-lived branches that merge cleanly (no cherry-pick divergence).
+
+---
+
+## Demo Build (GitHub Pages)
+
+### The demo is fully static — never reaches real Supabase
+**Decision:** `VITE_DEMO_MODE=true` builds a read-only demo served on GitHub Pages. All data comes from `src/lib/demoData.js`; `supabase.js` exports a chainable stub and never calls `createClient`.
+**Rule:** Any new read path must branch on `isDemoMode` (return fixture data) before any `supabase` call. The stub is a safety net, not an excuse to skip the branch.
+
+### Demo bundle must contain zero credentials
+**Decision:** `vite.config.js` `define` replaces `import.meta.env.VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` with `""` in demo builds. `supabase.js` reads env only via **static** `import.meta.env.X` access.
+**Rule:** Never use dynamic `import.meta.env[key]` indexing — it forces Vite to inline the entire env object, which leaks the prod anon JWT into the bundle. Verify every demo build: grep the bundle for the project ref / a JWT and expect zero matches.
+
+### Demo data keeps prod's real ID types
+**Decision:** The snapshot preserves real IDs — `rounds` use UUID strings, `events` use integers.
+**Rule:** Do not `Number()`-coerce IDs in demo API branches. `Number("<uuid>")` is `NaN`, which silently matches nothing (this caused the round player-list to come up empty).
+
+### Refresh demo data via the snapshot script
+**Decision:** `scripts/generate-demo-data.mjs` regenerates `demoData.js` from prod (anon, read-only). It maps each `player_rounds` row to the **current** `registered_players.player_name`, so renamed players merge correctly on the leaderboard.
+**Rule:** Re-run the script to refresh demo data; do not hand-edit `demoData.js`.
+
+---
+
+## Product Framing
+
+### PULP is a loyalty-points economy — not betting or prediction
+**Decision:** The PULP system is a loyalty-points economy. User-facing copy must not call it "betting," "bets," "wager," or "prediction." Players "give Blessings" and "issue Challenges."
+**Rule:** Keep those words out of UI text, the README, and any visitor-facing copy. (Internal DB columns such as `betting_interest_shown` remain for now — renaming them is a separate migration.)
