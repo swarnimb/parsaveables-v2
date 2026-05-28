@@ -69,10 +69,10 @@ const [
   fetchAll('registered_players', q => q.select('*').order('player_name')),
   fetchAll('events', q => q.select('*').order('start_date', { ascending: false })),
   fetchAll('event_players', q => q.select('event_id, player_id')),
-  fetchAll('rounds', q => q.select('*').order('date', { ascending: false })).then(rs =>
-    // Strip scorecard_image_url — prod storage URLs reveal the project host
-    rs.map(r => ({ ...r, scorecard_image_url: null }))
-  ),
+  // scorecard_image_url is a public Supabase storage URL. It reveals the
+  // prod project ref, but that's not a credential — the actual gate is RLS.
+  // We keep these so the demo can show off scorecard images on round expand.
+  fetchAll('rounds', q => q.select('*').order('date', { ascending: false })),
   fetchAll('player_rounds', q => q.select('*')),
   fetchAll('pulpy_windows', q => q.select('*').order('opened_at', { ascending: false }).limit(10)),
   fetchAll('blessings', q => q.select('*').order('created_at', { ascending: false }).limit(40)),

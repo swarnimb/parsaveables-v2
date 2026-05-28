@@ -783,7 +783,7 @@ export const rounds = [
     "bets": [],
     "head_to_head_challenge": null,
     "advantages_used": [],
-    "scorecard_image_url": null
+    "scorecard_image_url": "https://bcovevbtcdsgzbrieiin.supabase.co/storage/v1/object/public/scorecards/temp-2026-05-18-mpb51z8m.jpg"
   },
   {
     "id": "056511a9-282b-4808-ad2f-8a028690adaa",
@@ -802,7 +802,7 @@ export const rounds = [
     "bets": [],
     "head_to_head_challenge": null,
     "advantages_used": [],
-    "scorecard_image_url": null
+    "scorecard_image_url": "https://bcovevbtcdsgzbrieiin.supabase.co/storage/v1/object/public/scorecards/temp-2026-05-18-mpb52gbp.jpg"
   },
   {
     "id": "8b84dd1f-5cd0-4084-9258-365077663724",
@@ -821,7 +821,7 @@ export const rounds = [
     "bets": [],
     "head_to_head_challenge": null,
     "advantages_used": [],
-    "scorecard_image_url": null
+    "scorecard_image_url": "https://bcovevbtcdsgzbrieiin.supabase.co/storage/v1/object/public/scorecards/temp-2026-04-18-mo4jzwjq.jpg"
   },
   {
     "id": "402af122-aee9-4b0e-a0d6-827605b36248",
@@ -840,7 +840,7 @@ export const rounds = [
     "bets": [],
     "head_to_head_challenge": null,
     "advantages_used": [],
-    "scorecard_image_url": null
+    "scorecard_image_url": "https://bcovevbtcdsgzbrieiin.supabase.co/storage/v1/object/public/scorecards/temp-2026-04-15-mnzg56qx.jpg"
   },
   {
     "id": "501b5309-8ddb-4e99-8588-29a127823dfe",
@@ -859,7 +859,7 @@ export const rounds = [
     "bets": [],
     "head_to_head_challenge": null,
     "advantages_used": [],
-    "scorecard_image_url": null
+    "scorecard_image_url": "https://bcovevbtcdsgzbrieiin.supabase.co/storage/v1/object/public/scorecards/temp-2026-03-28-mnaoqnne.jpg"
   },
   {
     "id": "df06cec1-63b2-4023-811f-e4fd9e9760cf",
@@ -878,7 +878,7 @@ export const rounds = [
     "bets": [],
     "head_to_head_challenge": null,
     "advantages_used": [],
-    "scorecard_image_url": null
+    "scorecard_image_url": "https://bcovevbtcdsgzbrieiin.supabase.co/storage/v1/object/public/scorecards/temp-2026-03-21-mn0z226z.jpg"
   },
   {
     "id": "74099a59-3277-48f9-bf8c-d12d4746d8c7",
@@ -897,7 +897,7 @@ export const rounds = [
     "bets": [],
     "head_to_head_challenge": null,
     "advantages_used": [],
-    "scorecard_image_url": null
+    "scorecard_image_url": "https://bcovevbtcdsgzbrieiin.supabase.co/storage/v1/object/public/scorecards/temp-2026-03-21-mn0z1mdv.jpg"
   },
   {
     "id": "2e0762c9-b376-4ffa-b626-626c9a5d78d6",
@@ -916,7 +916,7 @@ export const rounds = [
     "bets": [],
     "head_to_head_challenge": null,
     "advantages_used": [],
-    "scorecard_image_url": null
+    "scorecard_image_url": "https://bcovevbtcdsgzbrieiin.supabase.co/storage/v1/object/public/scorecards/temp-2026-03-21-mn0z2dv9.jpg"
   },
   {
     "id": "628c3eae-5578-40a7-bb21-4ccb388c1443",
@@ -935,7 +935,7 @@ export const rounds = [
     "bets": [],
     "head_to_head_challenge": null,
     "advantages_used": [],
-    "scorecard_image_url": null
+    "scorecard_image_url": "https://bcovevbtcdsgzbrieiin.supabase.co/storage/v1/object/public/scorecards/temp-2026-03-01-mm74cok7.jpg"
   },
   {
     "id": "3328e729-1398-47ff-b0b6-8dcbb033d253",
@@ -954,7 +954,7 @@ export const rounds = [
     "bets": [],
     "head_to_head_challenge": null,
     "advantages_used": [],
-    "scorecard_image_url": null
+    "scorecard_image_url": "https://bcovevbtcdsgzbrieiin.supabase.co/storage/v1/object/public/scorecards/temp-2026-02-21-mlwv7kzf.jpg"
   },
   {
     "id": "f6f23095-ff3a-4c78-b859-cc3268ef01b4",
@@ -973,7 +973,7 @@ export const rounds = [
     "bets": [],
     "head_to_head_challenge": null,
     "advantages_used": [],
-    "scorecard_image_url": null
+    "scorecard_image_url": "https://bcovevbtcdsgzbrieiin.supabase.co/storage/v1/object/public/scorecards/temp-2026-02-14-mlmusblp.jpg"
   },
   {
     "id": "5160fb86-de62-406a-a7ac-eb4f1a718715",
@@ -992,7 +992,7 @@ export const rounds = [
     "bets": [],
     "head_to_head_challenge": null,
     "advantages_used": [],
-    "scorecard_image_url": null
+    "scorecard_image_url": "https://bcovevbtcdsgzbrieiin.supabase.co/storage/v1/object/public/scorecards/temp-2026-02-07-mlclo16y.jpg"
   },
   {
     "id": "4103c5f0-f4e7-442e-941b-463f33a6970c",
@@ -1011,7 +1011,7 @@ export const rounds = [
     "bets": [],
     "head_to_head_challenge": null,
     "advantages_used": [],
-    "scorecard_image_url": null
+    "scorecard_image_url": "https://bcovevbtcdsgzbrieiin.supabase.co/storage/v1/object/public/scorecards/temp-2026-02-05-ml9wu1t0.jpg"
   },
   {
     "id": "c32161ed-3492-4120-b994-becf181c3cb0",
@@ -1030,7 +1030,7 @@ export const rounds = [
     "bets": [],
     "head_to_head_challenge": null,
     "advantages_used": [],
-    "scorecard_image_url": null
+    "scorecard_image_url": "https://bcovevbtcdsgzbrieiin.supabase.co/storage/v1/object/public/scorecards/temp-2026-01-19-mkleejei.jpg"
   },
   {
     "id": "dabbcdf7-8ae1-46d5-a2c8-cb6bdcec1944",
@@ -1049,7 +1049,7 @@ export const rounds = [
     "bets": [],
     "head_to_head_challenge": null,
     "advantages_used": [],
-    "scorecard_image_url": null
+    "scorecard_image_url": "https://bcovevbtcdsgzbrieiin.supabase.co/storage/v1/object/public/scorecards/temp-2026-01-19-mklhkly1.jpg"
   },
   {
     "id": "391234a8-482e-4f68-a326-d566baaeb16b",
@@ -1068,7 +1068,7 @@ export const rounds = [
     "bets": [],
     "head_to_head_challenge": null,
     "advantages_used": [],
-    "scorecard_image_url": null
+    "scorecard_image_url": "https://bcovevbtcdsgzbrieiin.supabase.co/storage/v1/object/public/scorecards/temp-2026-01-19-mklhk4hd.jpg"
   },
   {
     "id": "8e1025ec-19cb-4330-94cc-b495317f1703",
@@ -1087,7 +1087,7 @@ export const rounds = [
     "bets": [],
     "head_to_head_challenge": null,
     "advantages_used": [],
-    "scorecard_image_url": null
+    "scorecard_image_url": "https://bcovevbtcdsgzbrieiin.supabase.co/storage/v1/object/public/scorecards/temp-2026-01-19-mklhjml4.jpg"
   },
   {
     "id": "230370e9-081b-4731-94e1-8655384972fd",
@@ -1106,7 +1106,7 @@ export const rounds = [
     "bets": [],
     "head_to_head_challenge": null,
     "advantages_used": [],
-    "scorecard_image_url": null
+    "scorecard_image_url": ""
   },
   {
     "id": "0dd59ad1-6a41-4fa6-aac5-b64a787509fa",

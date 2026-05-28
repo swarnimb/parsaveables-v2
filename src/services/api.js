@@ -1,6 +1,6 @@
 import { supabase } from './supabase'
 import { queryWithTimeout, authQueryWithTimeout } from './supabaseWithTimeout'
-import { isDemoMode, demoBlock } from '@/lib/demoMode'
+import { isDemoMode, demoBlock, demoSilent } from '@/lib/demoMode'
 import {
   demoUser,
   demoPlayer,
@@ -419,7 +419,7 @@ export const tutorialAPI = {
    * Mark onboarding tutorial as completed
    */
   completeOnboarding: async (playerId) => {
-    if (isDemoMode) { demoBlock('Complete onboarding'); return }
+    if (isDemoMode) { demoSilent(); return }
     const { error } = await queryWithTimeout(
       () => supabase
         .from('registered_players')
@@ -435,7 +435,7 @@ export const tutorialAPI = {
    * Mark betting tutorial as shown
    */
   markBettingInterestShown: async (playerId) => {
-    if (isDemoMode) { demoBlock('Mark betting interest'); return }
+    if (isDemoMode) { demoSilent(); return }
     const { error } = await queryWithTimeout(
       () => supabase
         .from('registered_players')
@@ -451,7 +451,7 @@ export const tutorialAPI = {
    * Confirm user interest in betting feature
    */
   confirmBettingInterest: async (playerId) => {
-    if (isDemoMode) { demoBlock('Confirm betting interest'); return }
+    if (isDemoMode) { demoSilent(); return }
     const { error } = await queryWithTimeout(
       () => supabase
         .from('registered_players')
