@@ -1,10 +1,10 @@
 # ParSaveables
 
-**Gamified disc golf tracking.** Players email a UDisc screenshot — AI reads the scores, updates the leaderboard, and runs a whole PULP betting economy on top. Every month it auto-generates a two-host podcast (Claude-written, ElevenLabs-voiced) recapping the standings and rivalries. No manual data entry, ever.
+**Gamified disc golf tracking.** Players email a UDisc screenshot — AI reads the scores, updates the leaderboard, and runs a whole PULP loyalty-points economy on top. Every month it auto-generates a two-host podcast (Claude-written, ElevenLabs-voiced) recapping the standings and rivalries. No manual data entry, ever.
 
 ### ▶︎ [Try the live demo →](https://swarnimb.github.io/parsaveables-v2/)
 
-> The demo is **read-only** and loaded with real data from an active league. Browse the leaderboard, expand rounds to see AI-processed scorecards, and listen to the AI-generated podcast. Actions like betting are disabled (it's a static preview).
+> The demo is **read-only** and loaded with real data from an active league. Browse the leaderboard, expand rounds to see AI-processed scorecards, and listen to the AI-generated podcast. Interactions are disabled (it's a static preview).
 
 ## Screenshots
 
@@ -22,7 +22,7 @@
 1. **Play a round**, then email your UDisc scorecard screenshot to the league inbox.
 2. **Claude Vision** reads every player's score off the image — no typing.
 3. The system **scores the round**, updates the season leaderboard, and pays out **PULPs** (the in-app currency).
-4. Before the next round, players open a **PULPy Window** to bet PULPs via Blessings and Challenges.
+4. Before the next round, players open a **PULPy Window** to spend PULPs on Blessings and Challenges.
 5. Once a month, an **AI podcast** recaps the standings, rivalries, and drama with synthesized voices.
 
 ## Features

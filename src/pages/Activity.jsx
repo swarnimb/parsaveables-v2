@@ -43,7 +43,7 @@ export default function Activity() {
         const challenges = demoChallenges.filter(c => c.challenger_id === player.id || c.challenged_id === player.id)
         const feed = []
         transactions.forEach(txn => feed.push({ id: `txn-${txn.id}`, type: 'transaction', timestamp: new Date(txn.created_at), data: txn }))
-        blessings.forEach(b => feed.push({ id: `blessing-${b.id}`, type: 'bet', timestamp: new Date(b.created_at), data: b }))
+        blessings.forEach(b => feed.push({ id: `blessing-${b.id}`, type: 'blessing', timestamp: new Date(b.created_at), data: b }))
         challenges.forEach(c => feed.push({ id: `challenge-${c.id}`, type: 'challenge', timestamp: new Date(c.issued_at), data: c }))
         feed.sort((a, b) => b.timestamp - a.timestamp)
         setPlayerFeed(feed.slice(0, 20))
@@ -104,7 +104,7 @@ export default function Activity() {
         blessings?.forEach(blessing => {
           feed.push({
             id: `blessing-${blessing.id}`,
-            type: 'bet',
+            type: 'blessing',
             timestamp: new Date(blessing.created_at),
             data: blessing
           })
@@ -234,8 +234,8 @@ export default function Activity() {
       )
     }
 
-    // Bet item
-    if (type === 'bet') {
+    // Blessing item
+    if (type === 'blessing') {
       return (
         <motion.div
           key={item.id}
@@ -249,7 +249,7 @@ export default function Activity() {
             </div>
             <div className="flex-1">
               <p className="font-medium">
-                {isPlayerFeed ? 'You placed a bet' : `${player?.player_name} placed a bet`}
+                {isPlayerFeed ? 'You gave a Blessing' : `${player?.player_name} gave a Blessing`}
               </p>
               <p className="text-sm text-muted-foreground">
                 {data.round?.date} - {data.round?.course_name}
@@ -447,7 +447,7 @@ export default function Activity() {
           {playerFeed.length === 0 ? (
             <Card className="p-8 text-center">
               <p className="text-muted-foreground">
-                No activity yet. Place some bets or play a round to get started!
+                No activity yet. Give a Blessing or play a round to get started!
               </p>
             </Card>
           ) : (

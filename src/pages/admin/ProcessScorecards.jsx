@@ -13,7 +13,7 @@ const PROCESSING_STEPS = [
   'Calculating points...',
   'Updating leaderboard...',
   'Awarding PULPs...',
-  'Resolving bets & challenges...'
+  'Resolving blessings & challenges...'
 ]
 
 export default function ProcessScorecards() {
@@ -225,7 +225,7 @@ export default function ProcessScorecards() {
 
                 <div className="text-center">
                   <p className="text-xl font-bold text-green-600 mb-2">
-                    Scorecard processed, points updated, and bets resolved
+                    Scorecard processed, points updated, and blessings resolved
                   </p>
                   {skipped && skipped.length > 0 && (
                     <div className="mt-2 mb-3 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
