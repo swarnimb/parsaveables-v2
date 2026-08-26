@@ -9,13 +9,18 @@
 ## Screenshots
 
 <p align="center">
-  <img src="docs/screenshots/leaderboard.png" width="24%" alt="Season leaderboard" />
-  <img src="docs/screenshots/rounds.png" width="24%" alt="Round detail with the AI-read UDisc scorecard" />
-  <img src="docs/screenshots/podcast.png" width="24%" alt="AI-generated podcast" />
-  <img src="docs/screenshots/pulps.png" width="24%" alt="PULP economy" />
+  <img src="docs/screenshots/ps-lead.png" width="100%" alt="Four ParSaveables screens: leaderboard, rounds, podcast and PULPs" />
 </p>
 
-<p align="center"><sub>Leaderboard&nbsp;·&nbsp;Round detail (AI-read scorecard)&nbsp;·&nbsp;AI podcast&nbsp;·&nbsp;PULP economy</sub></p>
+<p align="center">
+  <img src="docs/screenshots/ps-slide-1.png" width="49%" alt="Season leaderboard with the top three podium and ranked players below" />
+  <img src="docs/screenshots/ps-slide-2.png" width="49%" alt="Round detail showing the UDisc scorecard image and the points each player earned" />
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/ps-slide-3.png" width="49%" alt="Podcast tab listing monthly AI-generated recap episodes" />
+  <img src="docs/screenshots/ps-slide-4.png" width="49%" alt="PULPs screen showing a points balance and the wagers available to spend it on" />
+</p>
 
 ## How It Works
 
