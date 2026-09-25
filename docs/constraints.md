@@ -87,6 +87,35 @@ Adding `|| []` only on the return value of a function is too late if the crash h
 
 ---
 
+## Player Management
+
+### Renaming a player — update every copy of the name
+**Decision:** Added 2026-09-24 (player 9 renamed `🦅🦅🧺` → `Grandpa`). The name is stored as text in `player_rounds.player_name` and in `blessings.prediction_first/second/third`, not just `registered_players`. Dashboard, blessing settlement and the podcast match on that text, so renaming only `registered_players` empties the player's Dashboard stats and can wrongly settle open blessings.
+**Rule:** Never rename via the admin UI or a single `UPDATE`. Run this in the Supabase SQL Editor (swap in the player's `id` and new name; find the id with `SELECT id, player_name, aliases FROM registered_players ORDER BY id;`):
+```sql
+BEGIN;
+-- keep the old name as an alias so old-style scorecards still match
+UPDATE registered_players SET aliases = aliases || to_jsonb(player_name) WHERE id = <ID>;
+UPDATE player_rounds SET player_name = '<NEW_NAME>' WHERE player_id = <ID>;
+UPDATE blessings SET prediction_first  = '<NEW_NAME>' WHERE prediction_first  = (SELECT player_name FROM registered_players WHERE id = <ID>);
+UPDATE blessings SET prediction_second = '<NEW_NAME>' WHERE prediction_second = (SELECT player_name FROM registered_players WHERE id = <ID>);
+UPDATE blessings SET prediction_third  = '<NEW_NAME>' WHERE prediction_third  = (SELECT player_name FROM registered_players WHERE id = <ID>);
+-- rename last: the lines above use the old name to find rows
+UPDATE registered_players SET player_name = '<NEW_NAME>' WHERE id = <ID>;
+COMMIT;
+```
+**Verify:** `rounds_still_old` must be 0.
+```sql
+SELECT
+  (SELECT player_name FROM registered_players WHERE id = <ID>) AS new_name,
+  (SELECT aliases FROM registered_players WHERE id = <ID>) AS aliases,
+  (SELECT count(*) FROM player_rounds WHERE player_id = <ID> AND player_name =  '<NEW_NAME>') AS rounds_as_new,
+  (SELECT count(*) FROM player_rounds WHERE player_id = <ID> AND player_name <> '<NEW_NAME>') AS rounds_still_old;
+```
+**Note:** Always target by `id` — alias/name matching is case- and emoji-sensitive. Activity feed text, `rounds.advantages_used` and past podcasts keep the old name; that's expected history.
+
+---
+
 ## Git / Branch Hygiene
 
 ### Work directly on `main` for this project
