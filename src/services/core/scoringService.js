@@ -85,79 +85,63 @@ export function getFirstBirdieHole(holeByHole, holes) {
   return 999; // No birdies found
 }
 
+// Default tie-breaker order, matching the Rules tab default
+export const DEFAULT_TIE_BREAKERS = ['aces', 'eagles', 'birdies', 'earliest_birdie'];
+
+/**
+ * Compare two players on one tie-breaker
+ *
+ * @returns {number} Negative if a ranks higher, positive if b ranks higher, 0 if equal
+ */
+function compareOnTieBreaker(tieBreaker, a, b, holes) {
+  switch (tieBreaker) {
+    case 'aces':
+      return (b.aces || 0) - (a.aces || 0);
+    case 'eagles':
+      return (b.eagles || 0) - (a.eagles || 0);
+    case 'birdies':
+      return (b.birdies || 0) - (a.birdies || 0);
+    case 'earliest_birdie':
+      return getFirstBirdieHole(a.holeByHole, holes) - getFirstBirdieHole(b.holeByHole, holes);
+    default:
+      return 0;
+  }
+}
+
 /**
  * Rank players based on total score with tie-breaking rules
  *
- * Tie-breaker priority:
  * 1. Lower total score wins
- * 2. More birdies wins
- * 3. More pars wins
- * 4. Earlier first birdie wins
- * 5. If still tied, players share the rank
+ * 2. Tie-breakers applied in the configured order (points_systems.config.tie_breaking.priority)
+ * 3. If still tied, players share the rank
  *
  * @param {Array<Object>} players - Array of player objects with scores and stats
  * @param {Array<Object>} holes - Array of hole info for tie-breaking
+ * @param {Array<string>} [tieBreakers] - Tie-breaker priority; blank/unknown entries are ignored
  * @returns {Array<Object>} Players sorted with rank assigned
  */
-export function rankPlayers(players, holes) {
-  logger.info('Ranking players', { count: players.length });
+export function rankPlayers(players, holes, tieBreakers = DEFAULT_TIE_BREAKERS) {
+  const activeTieBreakers = (tieBreakers || []).filter(tb => tb && tb !== 'none');
+  logger.info('Ranking players', { count: players.length, tieBreakers: activeTieBreakers });
 
-  // Sort players using tie-breaker logic
-  const sorted = [...players].sort((a, b) => {
-    // 1. Total score (lower is better)
+  const compare = (a, b) => {
     if (a.totalScore !== b.totalScore) {
       return a.totalScore - b.totalScore;
     }
-
-    // 2. More birdies wins
-    if (a.birdies !== b.birdies) {
-      return b.birdies - a.birdies;
+    for (const tieBreaker of activeTieBreakers) {
+      const result = compareOnTieBreaker(tieBreaker, a, b, holes);
+      if (result !== 0) return result;
     }
-
-    // 3. More pars wins
-    if (a.pars !== b.pars) {
-      return b.pars - a.pars;
-    }
-
-    // 4. Earlier first birdie wins
-    const aFirstBirdie = getFirstBirdieHole(a.holeByHole, holes);
-    const bFirstBirdie = getFirstBirdieHole(b.holeByHole, holes);
-    if (aFirstBirdie !== bFirstBirdie) {
-      return aFirstBirdie - bFirstBirdie;
-    }
-
-    // 5. Still tied - share rank
     return 0;
-  });
+  };
 
-  // Assign ranks (handle ties properly)
-  let currentRank = 1;
+  const sorted = [...players].sort(compare);
+
+  // Assign ranks: fully tied players share the rank, next rank skips (1, 2, 2, 4)
   for (let i = 0; i < sorted.length; i++) {
-    // If not first player and scores match, share previous rank
-    if (i > 0 && sorted[i].totalScore === sorted[i - 1].totalScore) {
-      // Check if tie-breakers also match
-      const prevPlayer = sorted[i - 1];
-      const currPlayer = sorted[i];
-
-      const isTied =
-        prevPlayer.birdies === currPlayer.birdies &&
-        prevPlayer.pars === currPlayer.pars &&
-        getFirstBirdieHole(prevPlayer.holeByHole, holes) ===
-        getFirstBirdieHole(currPlayer.holeByHole, holes);
-
-      if (isTied) {
-        // Share previous rank
-        sorted[i].rank = sorted[i - 1].rank;
-      } else {
-        // Tie broken, assign current rank
-        sorted[i].rank = currentRank;
-      }
-    } else {
-      // New score, assign current rank
-      sorted[i].rank = currentRank;
-    }
-
-    currentRank++;
+    sorted[i].rank = i > 0 && compare(sorted[i - 1], sorted[i]) === 0
+      ? sorted[i - 1].rank
+      : i + 1;
   }
 
   logger.info('Players ranked', {
@@ -172,9 +156,10 @@ export function rankPlayers(players, holes) {
  * Process raw scorecard data: verify stats and assign ranks
  *
  * @param {Object} scorecardData - Raw data from vision API
+ * @param {Array<string>} [tieBreakers] - Tie-breaker priority from the points system config
  * @returns {Object} Processed data with verified stats and ranks
  */
-export function processScorecard(scorecardData) {
+export function processScorecard(scorecardData, tieBreakers) {
   logger.info('Processing scorecard', {
     course: scorecardData.courseName,
     playerCount: scorecardData.players.length
@@ -206,7 +191,7 @@ export function processScorecard(scorecardData) {
   });
 
   // Rank players with tie-breaking
-  const rankedPlayers = rankPlayers(playersWithStats, scorecardData.holes);
+  const rankedPlayers = rankPlayers(playersWithStats, scorecardData.holes, tieBreakers);
 
   logger.info('Scorecard processed', {
     playersRanked: rankedPlayers.length,

@@ -69,6 +69,10 @@ Adding `|| []` only on the return value of a function is too late if the crash h
 ### Tied rank point averaging
 **Decision:** When players share all 4 tie-breakers, rank points are averaged across the positions they span. This is wired into `calculatePoints()` in `pointsService.js`.
 
+### Ranking follows the Rules tab tie-breakers
+**Decision:** Added 2026-09-26. `rankPlayers()` applies the event's `points_systems.config.tie_breaking.priority` after total score (previously a hardcoded score → birdies → pars → first birdie order ignored the Rules tab). Missing config falls back to `aces → eagles → birdies → earliest_birdie`; blank entries are skipped.
+**Rule:** Load configuration before `processScorecard()` and pass the priority in. Pars are not a tie-breaker unless added as a Rules tab option.
+
 ---
 
 ## PULPy Window Lifecycle

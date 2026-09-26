@@ -209,17 +209,33 @@ async function processSingleImage(scorecardImage, imageIndex, totalImages) {
     eventType: event.type
   });
 
-  // Step 6: Process scorecard (calculate stats, rank players)
-  logger.info('Step 6: Processing scorecard stats and rankings');
-  const processedData = scoringService.processScorecard(scorecardData);
+  // Step 6: Load configuration (tie-breakers are needed for ranking)
+  logger.info('Step 6: Loading configuration');
+  const configuration = await configService.loadConfiguration(
+    event,
+    scorecardData.courseName
+  );
+
+  logger.info('Configuration loaded', {
+    pointsSystem: configuration.pointsSystem.name,
+    course: configuration.course.course_name,
+    multiplier: configuration.course.multiplier
+  });
+
+  // Step 7: Process scorecard (calculate stats, rank players)
+  logger.info('Step 7: Processing scorecard stats and rankings');
+  const processedData = scoringService.processScorecard(
+    scorecardData,
+    configuration.pointsSystem.config?.tie_breaking?.priority
+  );
 
   logger.info('Scorecard processed', {
     playerCount: processedData.players.length,
     topPlayer: processedData.players[0]?.name
   });
 
-  // Step 7: Validate players
-  logger.info('Step 7: Validating players');
+  // Step 8: Validate players
+  logger.info('Step 8: Validating players');
   let playerValidation;
 
   try {
@@ -262,19 +278,6 @@ async function processSingleImage(scorecardImage, imageIndex, totalImages) {
     matched: validPlayers.length,
     unmatched: playerValidation.unmatched?.length || 0,
     fuzzyMatches: playerValidation.stats?.fuzzyMatches || 0
-  });
-
-  // Step 8: Load configuration
-  logger.info('Step 8: Loading configuration');
-  const configuration = await configService.loadConfiguration(
-    event,
-    scorecardData.courseName
-  );
-
-  logger.info('Configuration loaded', {
-    pointsSystem: configuration.pointsSystem.name,
-    course: configuration.course.course_name,
-    multiplier: configuration.course.multiplier
   });
 
   // Step 9: Calculate points
@@ -519,10 +522,19 @@ export async function processSingleScorecard(imageUrl, options = {}) {
   // Step 3: Assign event
   const event = await eventService.assignEvent(scorecardData.date);
 
-  // Step 4: Process scorecard
-  const processedData = scoringService.processScorecard(scorecardData);
+  // Step 4: Load configuration (tie-breakers are needed for ranking)
+  const configuration = await configService.loadConfiguration(
+    event,
+    scorecardData.courseName
+  );
 
-  // Step 5: Validate players
+  // Step 5: Process scorecard
+  const processedData = scoringService.processScorecard(
+    scorecardData,
+    configuration.pointsSystem.config?.tie_breaking?.priority
+  );
+
+  // Step 6: Validate players
   const playerValidation = await playerService.validatePlayers(
     processedData.players
   );
@@ -532,12 +544,6 @@ export async function processSingleScorecard(imageUrl, options = {}) {
   if (validPlayers.length === 0) {
     throw new Error('No registered players found in scorecard');
   }
-
-  // Step 6: Load configuration
-  const configuration = await configService.loadConfiguration(
-    event,
-    scorecardData.courseName
-  );
 
   // Step 7: Calculate points
   const playersWithPoints = pointsService.calculatePoints(
