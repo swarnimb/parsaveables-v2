@@ -20,9 +20,10 @@ ParSaveables is a disc golf tournament and season tracking platform designed for
 - **Season-Aware System**: Automatically defaults to current season based on calendar year (2025 → Season 2025, 2026 → Season 2026)
 - **Comprehensive Dashboard**: Event dropdown (All Time + seasons/tournaments), 14 detailed stats including win rate, avg points/round, scoring stats
 - **Expandable Leaderboard**: Click players to see detailed stats (wins, podiums, avg points, birdies, eagles, aces)
-- **Next Round Betting**: Predict top 3 for next round (no need to pre-create future rounds)
-- **Next Round Challenges**: Challenge higher-ranked players for next round
-- **Advantages Shop**: Spend PULPs on in-game advantages (Mulligans, Anti-Mulligans, Cancel, Bag Trump, Shotgun Buddy)
+- **PULPy Windows**: A player opens a 5-minute window; all PULP transactions (blessings, challenges, advantages) require an open window, and the next processed scorecard settles it
+- **Blessings** (formerly "bets"): Predict the top 3 for the next round
+- **Challenges**: Challenge higher-ranked players for the next round
+- **Advantages Shop**: Spend PULPs on in-game advantages (Mulligan, Bag Trump, Shotgun Buddy)
 - **Automated Podcast**: Monthly AI-generated podcast recapping highlights, rivalries, and drama
 - **Notification Dropdown**: Shows 5 recent activities with icons, timestamps, and "View All" link
 - **Admin Control Center**: Password-protected CRUD for events, players, courses, and points systems
@@ -60,13 +61,13 @@ ParSaveables is a disc golf tournament and season tracking platform designed for
 src/components/
 ├── ui/              # Shadcn base components (12 total: button, card, dialog, tabs, input, label, select, accordion, progress, badge, dropdown-menu, checkbox)
 ├── layout/          # Header, BottomNav, NotificationBell (dropdown), AdminDropdown, ProfileDropdown
-├── dashboard/       # StatCard, RivalryCard
 ├── leaderboard/     # LeaderboardTable (expandable rows), PodiumDisplay
-├── betting/         # PredictionsSection (next round), ChallengesSection (next round), AdvantagesSection
+├── pulps/           # BlessingsSection, ChallengesSection, AdvantagesSection, PULPyWindowModal
+├── betting/         # LEGACY — not imported anywhere; use pulps/
 ├── rounds/          # RoundCard (accordion)
 ├── tutorial/        # Tutorial modal, tutorialData
 ├── admin/           # EventsTab_new, PlayersTab, CoursesTab, RulesTab
-└── shared/          # PulpCounter, Confetti, LoadingSpinner (future)
+└── shared/          # PulpCounter, Confetti, CelebrationModal, ErrorBoundary, OfflineDetector
 ```
 
 **Design principles:**
@@ -101,7 +102,7 @@ The Control Center is a password-protected admin interface accessible via Admin 
 
 **Tab 4: Rules**
 - Grouped dropdown (Seasons/Tournaments/Other)
-- Default selection to "Season 2025"
+- Default selection is hardcoded to "Season 2025" (see Known Issues)
 - Configure placement points, performance bonuses
 - 4-priority tie-breaker system
 - Toggle course difficulty multipliers
@@ -109,12 +110,13 @@ The Control Center is a password-protected admin interface accessible via Admin 
 
 ## Project-Specific Rules
 - **Season Awareness**: All pages default to current season based on calendar year (auto-rollover Jan 1st)
-- **Next Round Logic**: Bets and challenges use `roundId: null` and resolve when next scorecard is processed
+- **Window Logic**: Blessings and challenges carry a `window_id`; a window locks 5 minutes after opening, settles on the next processed scorecard, and expires (refunding wagers) after 15 days with no scorecard
 - **PULP Economy**: Central feature - all interactions revolve around earning/spending PULPs
-- **Starting Balance**: 100 PULPs per player
+- **Starting Balance**: 40 PULPs for new players (DB default + Players tab). Migration 016 reset existing balances to 20 once.
 - **Advantages**: One per type limit (no stacking), expire at 11:59 PM same day
-- **Betting Lock**: Admin sets `events.betting_lock_time`, system prevents new bets after lock
-- **Minimum 4 Players**: Scorecards with <4 players are skipped gracefully (no error email, labeled `ParSaveables/Skipped`). Betting lock is NOT reset for skipped-only emails.
+- **Minimum 4 Players**: Scorecards with <4 players are skipped gracefully (no error email, labeled `ParSaveables/Skipped`). Skipped-only emails do not settle a PULPy window.
+- **Most Birdies Bonus**: Paid only to the round's sole birdie leader (ties get nothing), stored in `player_rounds.most_birdies_points`
+- **Points Breakdown Must Add Up**: `validatePointsBreakdown` fails scorecard processing if (rank + bonuses) × multiplier ≠ final_total
 - **Tied Rank Point Averaging**: When players share a rank (all 4 tie-breakers fail), their rank points are averaged across the positions they span (e.g., 2 tied for 2nd → avg of 2nd+3rd place points)
 - **Expandable UI**: Leaderboard rows expand to show detailed stats (accordion behavior)
 - **Mobile-First**: Thumb-friendly design, smooth animations, premium feel
@@ -145,6 +147,9 @@ The Control Center is a password-protected admin interface accessible via Admin 
 - Current state: docs/SESSION-HANDOFF.md
 - Architecture: docs/ARCHITECTURE.md
 - API contracts: docs/API-CONTRACT.md
+- Binding constraints (read before changing DB/economy code): docs/constraints.md
 
 ## Known Issues
-- **PULP Settlement Broken**: Bets and challenges are NOT resolving after scorecard processing - needs debugging
+- **PULP Settlement Unverified**: Never confirmed working end-to-end since the migration 016 rework. As of 2026-09-27 no blessings or challenges exist, and the only window (opened 2026-05-07) is stuck in `locked` — it was never settled or expired despite passing its 15-day expiry.
+- **Prod RLS Hole (security)**: `activity_feed`, `event_players`, `player_rounds`, `registered_players`, `rounds` allow anon writes; admin tabs are protected only by a client-side password. See docs/SESSION-HANDOFF.md.
+- **Rules Tab Default**: Hardcoded to "Season 2025" instead of the current season.
