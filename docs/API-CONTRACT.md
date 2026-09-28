@@ -535,6 +535,8 @@ const updatedConfig = {
   tie_breaking: { priority: ['aces', 'eagles', 'birdies', 'earliest_birdie'] },
   course_multiplier: { enabled: true, source: 'course_tier' }
 }
+// most_birdies: awarded only to the sole birdie leader of a round (ties award nothing),
+// stored per player in player_rounds.most_birdies_points, before the course multiplier
 
 const { error } = await supabase
   .from('points_systems')

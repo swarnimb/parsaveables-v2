@@ -1,6 +1,6 @@
 # ParSaveables v2 - Project Dashboard
 
-**Last Updated:** 2026-05-27 (End of Session)
+**Last Updated:** 2026-09-27
 **Current Phase:** Phase 5 (Testing & Bug Fixes) - IN PROGRESS
 **Status:** Foundation | Auth & Layout | Leaderboard | Rounds | PULP Design | Backend Services | Frontend UI | Season Awareness | UX Enhancements | Testing Framework | Guest Login | Admin Control Center | Tutorial System | PULPy Window Rework | Google OAuth | Podcast Crash Fix | Course Alias Fix | PULPs Tab UX + Window Lifecycle Fixes | Static GitHub Pages Demo + README Showcase COMPLETE
 
@@ -45,7 +45,18 @@
 
 ---
 
-## This Session Summary (2026-05-27 - Latest)
+## This Session Summary (2026-09-27 - Latest)
+
+### Most Birdies Bonus Fix
+- **Bug:** `performance_points.most_birdies` was configurable (Rules tab, migration 007) but `pointsService` never applied it, so no one ever received it.
+- **Fix:** `pointsService.calculatePoints` awards it to the **sole** birdie leader (ties or zero birdies award nothing), before the course multiplier; exposed as `points.mostBirdiesPoints`.
+- **Migration 017 applied:** `player_rounds.most_birdies_points NUMERIC(5,2) DEFAULT 0`.
+- **Guardrail:** `validatePointsBreakdown` runs on both save paths in `api/processScorecard.js`; processing throws if (rank + birdie + eagle + ace + most_birdies) × multiplier ≠ final_total.
+- **Tests:** `src/services/core/pointsService.test.js` (9 tests).
+- **Known data quirk (left as-is by decision):** Crotchless Disc Bag, Queen City 9/26 round 1 — `ace_points = 0` though final_total includes the 5-pt ace.
+- **Pre-existing test failures:** `advantageService.test.js` and `challengeService.test.js` fail to load without `GMAIL_CLIENT_ID` in env.
+
+## This Session Summary (2026-05-27)
 
 ### Static GitHub Pages Demo + README Showcase
 

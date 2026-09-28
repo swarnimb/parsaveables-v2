@@ -571,6 +571,9 @@ export default function RulesTab() {
                   onChange={(e) => setPerformancePoints({ ...performancePoints, most_birdies: parseInt(e.target.value) || 0 })}
                   className="mt-1.5"
                 />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Sole leader only; ties get nothing.
+                </p>
               </div>
             </div>
           </Card>

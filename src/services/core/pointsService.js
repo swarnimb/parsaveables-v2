@@ -37,14 +37,19 @@ export function calculatePoints(rankedPlayers, configuration) {
     }
   }
 
+  const birdieLeader = findSoleBirdieLeader(rankedPlayers);
+  const mostBirdiesBonus = config.performance_points?.most_birdies || 0;
+
   const playersWithPoints = rankedPlayers.map((player) => {
     // 1. Calculate rank points (use averaged if tied)
     const rankPoints = tiedRankPointsMap.has(player.rank)
       ? tiedRankPointsMap.get(player.rank)
       : calculateRankPoints(player.rank, config.rank_points);
 
-    // 2. Calculate performance points
-    const performancePoints = calculatePerformancePoints(player, config.performance_points);
+    // 2. Calculate performance points (incl. most-birdies bonus for the sole leader)
+    const mostBirdiesPoints = player === birdieLeader ? mostBirdiesBonus : 0;
+    const performancePoints =
+      calculatePerformancePoints(player, config.performance_points) + mostBirdiesPoints;
 
     // 3. Calculate raw total (before multiplier)
     const rawTotal = rankPoints + performancePoints;
@@ -73,6 +78,7 @@ export function calculatePoints(rankedPlayers, configuration) {
         birdiePoints: (player.birdies || 0) * (config.performance_points?.birdie || 0),
         eaglePoints: (player.eagles || 0) * (config.performance_points?.eagle || 0),
         acePoints: (player.aces || 0) * (config.performance_points?.ace || 0),
+        mostBirdiesPoints,
         performancePoints,
         rawTotal,
         courseMultiplier,
@@ -147,6 +153,45 @@ function calculatePerformancePoints(player, performanceConfig) {
 }
 
 /**
+ * Find the single player with the most birdies in a round
+ * Ties for the lead, or a round with no birdies, have no leader
+ *
+ * @param {Array<Object>} players - Players with birdie counts
+ * @returns {Object|null} The sole birdie leader, or null
+ */
+export function findSoleBirdieLeader(players) {
+  const maxBirdies = Math.max(0, ...players.map(p => p.birdies || 0));
+  if (maxBirdies === 0) {
+    return null;
+  }
+
+  const leaders = players.filter(p => (p.birdies || 0) === maxBirdies);
+  return leaders.length === 1 ? leaders[0] : null;
+}
+
+/**
+ * Verify a player's stored points breakdown adds up to their final total
+ * Throws so a mismatched breakdown can never be saved silently
+ *
+ * @param {Object} player - Player with name and points breakdown
+ * @throws {Error} When (components) × multiplier ≠ finalTotal
+ */
+export function validatePointsBreakdown(player) {
+  const p = player.points;
+  const components = p.rankPoints + p.birdiePoints + p.eaglePoints + p.acePoints + p.mostBirdiesPoints;
+  const expected = parseFloat((components * p.courseMultiplier).toFixed(2));
+
+  if (Math.abs(expected - p.finalTotal) > 0.01) {
+    const details = { player: player.name, ...p, expected };
+    logger.error('Points breakdown does not add up to final total', details);
+    throw new Error(
+      `Points breakdown mismatch for ${player.name}: components sum × multiplier = ${expected}, ` +
+      `but finalTotal = ${p.finalTotal} (${JSON.stringify(details)})`
+    );
+  }
+}
+
+/**
  * Calculate points for tied ranks with averaging
  * Example: If 3 players tie for 2nd place with ranks worth 7, 5, 3 points
  * Each player gets (7 + 5 + 3) / 3 = 5 points
@@ -183,5 +228,7 @@ export function calculateTiedRankPoints(ranks, rankConfig) {
 
 export default {
   calculatePoints,
-  calculateTiedRankPoints
+  calculateTiedRankPoints,
+  findSoleBirdieLeader,
+  validatePointsBreakdown
 };

@@ -286,6 +286,7 @@ async function processSingleImage(scorecardImage, imageIndex, totalImages) {
     validPlayers,
     configuration
   );
+  playersWithPoints.forEach(pointsService.validatePointsBreakdown);
 
   logger.info('Points calculated', {
     playerCount: playersWithPoints.length,
@@ -344,6 +345,7 @@ async function processSingleImage(scorecardImage, imageIndex, totalImages) {
     birdie_points: player.points.birdiePoints,
     eagle_points: player.points.eaglePoints,
     ace_points: player.points.acePoints,
+    most_birdies_points: player.points.mostBirdiesPoints,
     raw_total: player.points.rawTotal,
     final_total: player.points.finalTotal,
     hole_by_hole: player.holeByHole,
@@ -550,6 +552,7 @@ export async function processSingleScorecard(imageUrl, options = {}) {
     validPlayers,
     configuration
   );
+  playersWithPoints.forEach(pointsService.validatePointsBreakdown);
 
   // Step 8: Store in Supabase
   const roundData = {
@@ -585,6 +588,7 @@ export async function processSingleScorecard(imageUrl, options = {}) {
     birdie_points: player.points.birdiePoints,
     eagle_points: player.points.eaglePoints,
     ace_points: player.points.acePoints,
+    most_birdies_points: player.points.mostBirdiesPoints,
     raw_total: player.points.rawTotal,
     course_multiplier_applied: player.points.courseMultiplier !== 1.0,
     final_total: player.points.finalTotal,
