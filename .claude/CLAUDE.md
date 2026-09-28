@@ -120,13 +120,19 @@ The Control Center is a password-protected admin interface accessible via Admin 
 - **Mobile-First**: Thumb-friendly design, smooth animations, premium feel
 - **Cost Control**: Stay under $5/month operational cost
 
-## Database Migrations (11 Total)
-- 001-006: Core PULP economy tables
-- 007: Podcast system
+## Database Migrations (001-017; numbers 002-005 and 007 each have two files)
+- 001-006: Core PULP economy tables, RLS/signup fixes, course aliases, scorecard image URL
+- 007: Podcast system + points systems structure (tie-breakers, most_birdies config)
 - 008: Standardize events columns
 - 009: Create event_players junction table
 - 010: Add event_players write policies
 - 011: Clear PULP activity data (reset to 100)
+- 012: Add activity_feed description
+- 013: Add activity_feed update policy (mark notifications read)
+- 014: Add tutorial tracking
+- 015: Add player aliases
+- 016: PULPy window rework (replaces admin betting lock)
+- 017: Add player_rounds.most_birdies_points
 
 ## Coding Standards
 - **No Hacks or Workarounds**: Always implement proper, scalable solutions instead of hard-coded fixes for specific cases
